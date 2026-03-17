@@ -1,55 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reflect/core/presentation/app_scaffold.dart';
-import 'package:reflect/features/post/presentation/post_detail_screen.dart';
-import 'package:reflect/features/post/presentation/posts_screen.dart';
+import 'package:reflect/features/tasks/presentation/pages/today_page.dart';
+import 'package:reflect/features/tasks/presentation/pages/backlog_page.dart';
+import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
+import 'package:reflect/features/review/presentation/pages/daily_review_page.dart';
+import 'package:reflect/features/insights/presentation/pages/insights_page.dart';
+import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
+import 'package:reflect/features/planning/presentation/pages/planning_page.dart';
 
-import 'package:reflect/features/profile/profile.dart';
-
-// Create a function so we can pass the bloc for redirection logic
 GoRouter createAppRouter() {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
-  final sectionNavigatorKey = GlobalKey<NavigatorState>();
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: '/today',
     routes: [
-      // StatefulShellRoute implements the persistent bottom navigation
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return ScaffoldWithNavBar(navigationShell: navigationShell);
         },
         branches: [
-          // Branch 1: Posts
+          // Branch 1: Today
           StatefulShellBranch(
-            navigatorKey: sectionNavigatorKey,
             routes: [
               GoRoute(
-                path: '/',
-                builder: (context, state) => const PostsScreen(),
+                path: '/today',
+                builder: (context, state) => const TodayPage(),
                 routes: [
-                  // This child route will cover the bottom nav when opened.
-                  // To make it appear *inside* the tab (with nav bar still visible),
-                  // just move 'parentNavigatorKey' to sectionNavigatorKey.
                   GoRoute(
-                    path: 'posts/:postId',
-                    parentNavigatorKey: rootNavigatorKey, // Covers bottom nav
+                    path: 'task/:id',
+                    parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
-                      final postId = state.pathParameters['postId'];
-                      return PostDetailScreen(postId: postId ?? '0');
+                      final id = state.pathParameters['id'] ?? 'new';
+                      return TaskDetailPage(taskId: id);
                     },
+                  ),
+                  GoRoute(
+                    path: 'planning',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const PlanningPage(),
+                  ),
+                  GoRoute(
+                    path: 'review',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const DailyReviewPage(),
                   ),
                 ],
               ),
             ],
           ),
-          // Branch 2: Profile
+          // Branch 2: Backlog
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/profile',
-                builder: (context, state) => const ProfileScreen(),
+                path: '/backlog',
+                builder: (context, state) => const BacklogPage(),
+              ),
+            ],
+          ),
+          // Branch 3: Goals
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/goals',
+                builder: (context, state) => const GoalsPage(),
+              ),
+            ],
+          ),
+          // Branch 4: Reflect
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/reflect',
+                builder: (context, state) => const DailyReviewPage(),
+              ),
+            ],
+          ),
+          // Branch 5: Insights
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/insights',
+                builder: (context, state) => const InsightsPage(),
               ),
             ],
           ),

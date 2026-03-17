@@ -1,74 +1,96 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 
 import 'planning_state.dart';
 
 class PlanningCubit extends Cubit<PlanningState> {
-  final TaskRepository _taskRepository;
+  final ITaskRepository _taskRepository;
 
   PlanningCubit(this._taskRepository) : super(const PlanningState());
 
   Future<void> loadPlanningData() async {
     emit(state.copyWith(isLoading: true));
-    try {
-      final yesterday = await _taskRepository.getYesterdayIncomplete();
-      final backlog = await _taskRepository.getBacklogTasks();
-      emit(state.copyWith(
-        isLoading: false,
-        yesterdayIncomplete: yesterday,
-        backlogTasks: backlog,
-      ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
-    }
+
+    final yesterday = await _taskRepository.getTasksForDate(
+      DateTime.now().subtract(const Duration(days: 1)),
+    );
+    final backlog = await _taskRepository.getBacklogTasks();
+
+    yesterday.fold(
+      (failure) => emit(state.copyWith(isLoading: false, error: failure.errorMessage)),
+      (yesterdayTasks) {
+        backlog.fold(
+          (failure) => emit(state.copyWith(isLoading: false, error: failure.errorMessage)),
+          (backlogTasks) {
+            final incomplete = yesterdayTasks
+                .where((t) => t.status != TaskStatus.completed)
+                .toList();
+            emit(state.copyWith(
+              isLoading: false,
+              yesterdayIncomplete: incomplete,
+              backlogTasks: backlogTasks,
+            ));
+          },
+        );
+      },
+    );
   }
 
-  Future<void> doToday(String taskId) async {
-    try {
-      await _taskRepository.pullTaskFromBacklog(taskId, DateTime.now());
-      final updatedPulledIds = Set<String>.from(state.pulledTodayIds)..add(taskId);
-      emit(state.copyWith(pulledTodayIds: updatedPulledIds));
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
-    }
+  Future<void> doToday(Task task) async {
+    final updatedTask = task.copyWith(
+      dueDate: DateTime.now(),
+      status: TaskStatus.pending,
+      updatedAt: DateTime.now(),
+    );
+    final result = await _taskRepository.updateTask(updatedTask);
+    result.fold(
+      (failure) => emit(state.copyWith(error: failure.errorMessage)),
+      (_) {
+        final updatedPulledIds = Set<String>.from(state.pulledTodayIds)
+          ..add(task.id);
+        emit(state.copyWith(pulledTodayIds: updatedPulledIds));
+      },
+    );
   }
 
-  Future<void> pushFurther(String taskId, DateTime newDate) async {
-    try {
-      await _taskRepository.pushTaskFurther(taskId, newDate);
-      final updatedYesterday = state.yesterdayIncomplete.where((t) => t.id != taskId).toList();
-      emit(state.copyWith(yesterdayIncomplete: updatedYesterday));
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
-    }
+  Future<void> pushFurther(Task task, DateTime newDate) async {
+    final updatedTask = task.copyWith(
+      dueDate: newDate,
+      updatedAt: DateTime.now(),
+    );
+    final result = await _taskRepository.updateTask(updatedTask);
+    result.fold(
+      (failure) => emit(state.copyWith(error: failure.errorMessage)),
+      (_) {
+        final updatedYesterday =
+            state.yesterdayIncomplete.where((t) => t.id != task.id).toList();
+        emit(state.copyWith(yesterdayIncomplete: updatedYesterday));
+      },
+    );
   }
 
-  Future<void> moveToBacklog(String taskId) async {
-    try {
-      await _taskRepository.moveToBacklog(taskId);
-      final updatedYesterday = state.yesterdayIncomplete.where((t) => t.id != taskId).toList();
-      emit(state.copyWith(yesterdayIncomplete: updatedYesterday));
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
-    }
-  }
-
-  Future<void> pullFromBacklog(String taskId) async {
-    try {
-      await _taskRepository.pullTaskFromBacklog(taskId, DateTime.now());
-      final updatedBacklog = state.backlogTasks.where((t) => t.id != taskId).toList();
-      final updatedPulledIds = Set<String>.from(state.pulledTodayIds)..add(taskId);
-      emit(state.copyWith(
-        backlogTasks: updatedBacklog,
-        pulledTodayIds: updatedPulledIds,
-      ));
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
-    }
+  Future<void> moveToBacklog(Task task) async {
+    final updatedTask = task.copyWith(
+      dueDate: null,
+      updatedAt: DateTime.now(),
+    );
+    final result = await _taskRepository.updateTask(updatedTask);
+    result.fold(
+      (failure) => emit(state.copyWith(error: failure.errorMessage)),
+      (_) {
+        final updatedYesterday =
+            state.yesterdayIncomplete.where((t) => t.id != task.id).toList();
+        final updatedBacklog = List<Task>.from(state.backlogTasks)..add(updatedTask);
+        emit(state.copyWith(
+          yesterdayIncomplete: updatedYesterday,
+          backlogTasks: updatedBacklog,
+        ));
+      },
+    );
   }
 
   Future<void> confirmPlanning() async {
-    // Logic to finalize planning session
-    emit(const PlanningState()); // Reset or navigate away
+    emit(const PlanningState());
   }
 }

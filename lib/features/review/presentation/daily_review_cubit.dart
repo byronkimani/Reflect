@@ -4,7 +4,7 @@ import 'package:reflect/features/review/domain/repositories/review_repository.da
 import 'daily_review_state.dart';
 
 class DailyReviewCubit extends Cubit<DailyReviewState> {
-  final ReviewRepository _reviewRepository;
+  final IReviewRepository _reviewRepository;
 
   DailyReviewCubit(this._reviewRepository) : super(const DailyReviewState());
 
@@ -34,17 +34,11 @@ class DailyReviewCubit extends Cubit<DailyReviewState> {
     if (!state.canSubmit) return;
 
     emit(state.copyWith(isSubmitting: true, error: null));
-    try {
-      await _reviewRepository.submitDailyReview(
-        rating: state.dayRating,
-        wentWell: state.wentWell,
-        couldBeBetter: state.couldBeBetter,
-        gratitudes: [state.gratitude1, state.gratitude2, state.gratitude3],
-        completionRate: state.taskCompletionRate,
-      );
-      emit(state.copyWith(isSubmitting: false, isSuccess: true));
-    } catch (e) {
-      emit(state.copyWith(isSubmitting: false, error: e.toString()));
-    }
+    final result = await _reviewRepository.saveDailyReview(state);
+    
+    result.fold(
+      (failure) => emit(state.copyWith(isSubmitting: false, error: failure.errorMessage)),
+      (_) => emit(state.copyWith(isSubmitting: false, isSuccess: true)),
+    );
   }
 }

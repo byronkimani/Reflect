@@ -6,8 +6,8 @@ import 'package:reflect/features/gcal/domain/repositories/gcal_repository.dart';
 import 'g_cal_sync_state.dart';
 
 class GCalSyncCubit extends Cubit<GCalSyncState> {
-  final GCalRepository _gcalRepository;
-  StreamSubscription<int>? _queueSubscription;
+  final IGCalRepository _gcalRepository;
+  StreamSubscription? _queueSubscription;
 
   GCalSyncCubit(this._gcalRepository) : super(const GCalSyncState()) {
     _monitorQueue();
@@ -21,35 +21,32 @@ class GCalSyncCubit extends Cubit<GCalSyncState> {
   }
 
   Future<void> signIn() async {
-    try {
-      emit(state.copyWith(isSyncing: true, lastError: null));
-      await _gcalRepository.signIn();
-      emit(state.copyWith(isSignedIn: true, isSyncing: false));
-    } catch (e) {
-      emit(state.copyWith(isSyncing: false, lastError: e.toString()));
-    }
+    emit(state.copyWith(isSyncing: true, lastError: null));
+    final result = await _gcalRepository.signIn();
+    result.fold(
+      (failure) => emit(state.copyWith(isSyncing: false, lastError: failure.errorMessage)),
+      (_) => emit(state.copyWith(isSignedIn: true, isSyncing: false)),
+    );
   }
 
   Future<void> signOut() async {
-    try {
-      emit(state.copyWith(isSyncing: true, lastError: null));
-      await _gcalRepository.signOut();
-      emit(state.copyWith(isSignedIn: false, isSyncing: false));
-    } catch (e) {
-      emit(state.copyWith(isSyncing: false, lastError: e.toString()));
-    }
+    emit(state.copyWith(isSyncing: true, lastError: null));
+    final result = await _gcalRepository.signOut();
+    result.fold(
+      (failure) => emit(state.copyWith(isSyncing: false, lastError: failure.errorMessage)),
+      (_) => emit(state.copyWith(isSignedIn: false, isSyncing: false)),
+    );
   }
 
   Future<void> processQueue() async {
     if (state.isSyncing) return;
     
-    try {
-      emit(state.copyWith(isSyncing: true, lastError: null));
-      await _gcalRepository.processQueue();
-      emit(state.copyWith(isSyncing: false));
-    } catch (e) {
-      emit(state.copyWith(isSyncing: false, lastError: e.toString()));
-    }
+    emit(state.copyWith(isSyncing: true, lastError: null));
+    final result = await _gcalRepository.processQueue();
+    result.fold(
+      (failure) => emit(state.copyWith(isSyncing: false, lastError: failure.errorMessage)),
+      (_) => emit(state.copyWith(isSyncing: false)),
+    );
   }
 
   @override

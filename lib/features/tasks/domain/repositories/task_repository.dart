@@ -1,14 +1,16 @@
+import 'package:fpdart/fpdart.dart' hide Task;
+import 'package:reflect/core/errors/failure.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
-abstract class TaskRepository {
-  Stream<List<Task>> watchTasksForDate(DateTime date);
-  Stream<List<Task>> watchBacklog();
-  Future<void> completeTask(String id);
-  Future<void> pushToTomorrow(String id);
-  Future<void> deleteTask(String id);
-  Future<void> pullTaskFromBacklog(String taskId, DateTime date);
-  Future<void> pushTaskFurther(String taskId, DateTime newDate);
-  Future<void> moveToBacklog(String taskId);
-  Future<List<Task>> getYesterdayIncomplete();
-  Future<List<Task>> getBacklogTasks();
+abstract class ITaskRepository {
+  Stream<Either<Failure, List<Task>>> watchTasksForDate(DateTime date);
+  Stream<Either<Failure, List<Task>>> watchBacklogTasks();
+
+  Future<Either<Failure, List<Task>>> getTasksForDate(DateTime date);
+  Future<Either<Failure, List<Task>>> getBacklogTasks();
+
+  Future<Either<Failure, Task>> createTask(Task task);
+  Future<Either<Failure, Task>> updateTask(Task task);
+  Future<Either<Failure, Task>> completeTask(String id);
+  Future<Either<Failure, Unit>> deleteTask(String id);
 }

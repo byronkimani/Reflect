@@ -1,9 +1,8 @@
-abstract class ReviewRepository {
-  Future<void> submitDailyReview({
-    required int rating,
-    required String wentWell,
-    required String couldBeBetter,
-    required List<String> gratitudes,
-    required double completionRate,
-  });
+import 'package:fpdart/fpdart.dart';
+import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/features/review/presentation/daily_review_state.dart';
+
+abstract class IReviewRepository {
+  Future<Either<Failure, Unit>> saveDailyReview(DailyReviewState review);
+  Future<Either<Failure, DailyReviewState?>> getDailyReview(DateTime date);
 }
