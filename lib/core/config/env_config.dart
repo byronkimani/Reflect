@@ -13,8 +13,7 @@ class EnvConfig {
     await dotenv.load(fileName: '.env.$_flavor');
   }
 
-  static String get baseUrl =>
-      dotenv.env['BASE_URL'] ?? 'https://fallback-url.com';
+  static String get baseUrl => 'https://fallback-url.com';
 
   /// The Single Source of Truth for the environment.
   /// This comes directly from the file content (APP_ENV), not the filename.
