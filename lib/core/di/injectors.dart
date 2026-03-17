@@ -21,6 +21,7 @@ import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
+import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
 import 'package:reflect/main.dart';
 
 void setupDependencies() {
@@ -84,6 +85,9 @@ void setupDependencies() {
   );
   getIt.registerFactory<DailyReviewCubit>(
     () => DailyReviewCubit(getIt<IReviewRepository>()),
+  );
+  getIt.registerFactory<AnalyticsBloc>(
+    () => AnalyticsBloc(getIt<AppDatabase>().analyticsDao),
   );
 
   // 9. Notifications

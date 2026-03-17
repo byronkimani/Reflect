@@ -13,35 +13,37 @@ import 'package:reflect/features/analytics/data/daos/analytics_dao.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [
-  Tasks,
-  Subtasks,
-  Tags,
-  TaskTags,
-  RecurrenceRules,
-  DailyReviews,
-  WeeklyPlans,
-  WeeklyReviews,
-  WeeklyGoals,
-  MonthlyPlans,
-  MonthlyReviews,
-  MonthlyGoals,
-  GCalSyncQueue,
-], daos: [
-  AnalyticsDao,
-])
+@DriftDatabase(
+  tables: [
+    Tasks,
+    Subtasks,
+    Tags,
+    TaskTags,
+    RecurrenceRules,
+    DailyReviews,
+    WeeklyPlans,
+    WeeklyReviews,
+    WeeklyGoals,
+    MonthlyPlans,
+    MonthlyReviews,
+    MonthlyGoals,
+    GCalSyncQueue,
+  ],
+  daos: [AnalyticsDao],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  AppDatabase.forTesting(DatabaseConnection super.connection);
 
   @override
   int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

@@ -5,7 +5,7 @@ import 'package:reflect/features/tasks/presentation/pages/today_page.dart';
 import 'package:reflect/features/tasks/presentation/pages/backlog_page.dart';
 import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
 import 'package:reflect/features/review/presentation/pages/daily_review_page.dart';
-import 'package:reflect/features/insights/presentation/pages/insights_page.dart';
+import 'package:reflect/features/analytics/presentation/pages/insights_page.dart';
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
 import 'package:reflect/features/planning/presentation/pages/planning_page.dart';
 
