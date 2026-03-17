@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reflect/features/network/data/connectivity_bloc.dart';
+import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
+import 'package:reflect/core/network/presentation/connectivity_state.dart';
 import 'app_snackbar.dart';
 
 class ConnectivityWrapper extends StatelessWidget {

@@ -24,5 +24,5 @@ void main() async {
   // 3. Set up dependency injection
   setupDependencies();
 
-  runApp(const MyApp());
+  runApp(const ReflectApp());
 }

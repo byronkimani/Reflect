@@ -1,43 +1,47 @@
-import 'package:reflect/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reflect/core/network/network_info.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
+import 'package:reflect/core/network/presentation/connectivity_event.dart';
 import 'package:reflect/core/presentation/connectivity_wrapper.dart';
 import 'package:reflect/core/router/app_router.dart';
 import 'package:reflect/core/theme/app_theme.dart';
-import 'package:reflect/features/network/data/connectivity_bloc.dart';
-import 'package:reflect/features/post/data/post_bloc.dart';
-import 'package:reflect/features/post/data/post_repository.dart';
+import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
+import 'package:reflect/features/planning/presentation/planning_cubit.dart';
+import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
+import 'package:reflect/l10n/app_localizations.dart';
 import 'package:reflect/main.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ReflectApp extends StatelessWidget {
+  const ReflectApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // network info
-        BlocProvider(
-          create: (context) =>
-              ConnectivityBloc(getIt<NetworkInfo>())
-                ..add(const ConnectivityEvent.started()),
+        BlocProvider<ConnectivityBloc>(
+          create: (_) => getIt<ConnectivityBloc>()..add(const ConnectivityEvent.monitorStarted()),
         ),
-
-        // posts
-        BlocProvider(
-          create: (context) =>
-              PostBloc(getIt<PostRepository>())..add(const PostEvent.started()),
+        BlocProvider<GCalSyncCubit>(
+          create: (_) => getIt<GCalSyncCubit>()..processQueue(),
+        ),
+        BlocProvider<TaskListBloc>(
+          create: (_) => getIt<TaskListBloc>()..add(TaskListEvent.loadTasksForDate(DateTime.now())),
+        ),
+        BlocProvider<PlanningCubit>(
+          create: (_) => getIt<PlanningCubit>(),
+        ),
+        BlocProvider<DailyReviewCubit>(
+          create: (_) => getIt<DailyReviewCubit>(),
         ),
       ],
-      // We wrap MaterialApp with a Builder or use a widget to access the AuthBloc
-      // so we can pass it to the Router for redirection logic
       child: Builder(
         builder: (context) {
           return MaterialApp.router(
-            title: 'App shell',
-            localizationsDelegates: [
+            title: 'Reflect',
+            localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -47,7 +51,7 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.system,
-            routerConfig: createAppRouter(), // No AuthBloc needed
+            routerConfig: createAppRouter(),
             builder: (context, child) {
               return ConnectivityWrapper(
                 child: child ?? const SizedBox.shrink(),
