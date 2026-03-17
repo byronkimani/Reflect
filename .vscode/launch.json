@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter (Testing)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=ENV=testing"
+            ]
+        },
+        {
+            "name": "Flutter (Production)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=ENV=production"
+            ]
+        },
+        {
+            "name": "Flutter (Production - Profile)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "args": [
+                "--dart-define=ENV=production"
+            ]
+        }
+    ]
+}
