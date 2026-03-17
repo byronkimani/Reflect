@@ -1,0 +1,10 @@
+{
+  "@@locale": "en",
+  "postsTitle": "Latest Posts",
+  "postDetailsTitle": "Post Details",
+  "loginWelcome": "Welcome Back",
+  "loginGoogle": "Sign in with Google",
+  "loginApple": "Sign in with Apple",
+  "errorGeneric": "Something went wrong",
+  "retry": "Try Again"
+}
