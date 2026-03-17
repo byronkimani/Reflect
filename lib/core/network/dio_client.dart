@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:reflect/core/network/auth_interceptor.dart';
 import 'package:reflect/core/storage/token_storage.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import '../errors/failure.dart';
 
 class DioClient {
@@ -27,7 +26,6 @@ class DioClient {
     // Only add interceptors if we're not using override (for testing)
     if (dioOverride == null) {
       _dio.interceptors.add(AuthInterceptor(tokenStorage, _dio));
-      _dio.interceptors.add(_SentryLoggingInterceptor());
     }
   }
 
@@ -80,51 +78,5 @@ class DioClient {
           statusCode: statusCode,
         );
     }
-  }
-}
-
-class _SentryLoggingInterceptor extends Interceptor {
-  @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
-    final sanitizedResponse = _sanitizeData(err.response?.data);
-
-    Sentry.addBreadcrumb(
-      Breadcrumb(
-        type: 'http',
-        category: 'network.error',
-        data: {
-          'url': err.requestOptions.uri.toString(),
-          'method': err.requestOptions.method,
-          'status_code': err.response?.statusCode,
-          'response_snippet': sanitizedResponse,
-        },
-        level: SentryLevel.error,
-      ),
-    );
-
-    Sentry.captureException(
-      err,
-      stackTrace: err.stackTrace,
-      withScope: (scope) {
-        scope.setTag('network_error', '${err.response?.statusCode}');
-      },
-    );
-
-    super.onError(err, handler);
-  }
-
-  dynamic _sanitizeData(dynamic data) {
-    if (data is Map<String, dynamic>) {
-      final Map<String, dynamic> sanitized = Map.from(data);
-      const sensitiveKeys = ['password', 'token', 'auth', 'credit_card'];
-
-      for (var key in sensitiveKeys) {
-        if (sanitized.containsKey(key)) {
-          sanitized[key] = '[REDACTED]';
-        }
-      }
-      return sanitized;
-    }
-    return data;
   }
 }

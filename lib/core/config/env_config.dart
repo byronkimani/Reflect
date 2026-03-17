@@ -15,7 +15,6 @@ class EnvConfig {
 
   static String get baseUrl =>
       dotenv.env['BASE_URL'] ?? 'https://fallback-url.com';
-  static String get sentryDsn => dotenv.env['SENTRY_DSN'] ?? '';
 
   /// The Single Source of Truth for the environment.
   /// This comes directly from the file content (APP_ENV), not the filename.
