@@ -9,9 +9,9 @@ import 'package:reflect/features/insights/presentation/pages/insights_page.dart'
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
 import 'package:reflect/features/planning/presentation/pages/planning_page.dart';
 
-GoRouter createAppRouter() {
-  final rootNavigatorKey = GlobalKey<NavigatorState>();
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
+GoRouter createAppRouter() {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/today',

@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import 'tables/task_tables.dart';
 import 'tables/review_tables.dart';
 import 'tables/sync_tables.dart';
+import 'package:reflect/features/analytics/data/daos/analytics_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -26,6 +27,8 @@ part 'app_database.g.dart';
   MonthlyReviews,
   MonthlyGoals,
   GCalSyncQueue,
+], daos: [
+  AnalyticsDao,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());

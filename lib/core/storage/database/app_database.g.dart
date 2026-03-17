@@ -6099,6 +6099,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MonthlyReviewsTable monthlyReviews = $MonthlyReviewsTable(this);
   late final $MonthlyGoalsTable monthlyGoals = $MonthlyGoalsTable(this);
   late final $GCalSyncQueueTable gCalSyncQueue = $GCalSyncQueueTable(this);
+  late final AnalyticsDao analyticsDao = AnalyticsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
