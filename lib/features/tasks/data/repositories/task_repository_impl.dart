@@ -11,6 +11,7 @@ import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
 import 'package:reflect/features/tasks/data/models/mappers.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
+import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 
@@ -19,12 +20,14 @@ class TaskRepositoryImpl implements ITaskRepository {
   final NetworkInfo _networkInfo;
   final GCalApiService _gcalApiService;
   final RecurrenceEngine _recurrenceEngine;
+  final NotificationScheduler _notificationScheduler;
 
   TaskRepositoryImpl(
     this._db,
     this._networkInfo,
     this._gcalApiService,
     this._recurrenceEngine,
+    this._notificationScheduler,
   );
 
   Future<List<Task>> _loadTasksWithSubtasks(List<TaskData> rows) async {
@@ -37,9 +40,29 @@ class TaskRepositoryImpl implements ITaskRepository {
     for (final s in subtaskRows) {
       subtasksByTask.putIfAbsent(s.taskId, () => []).add(s.toDomain());
     }
-    return rows
-        .map((r) => r.toDomain(subtasks: subtasksByTask[r.id] ?? []))
+    final ruleIds = rows
+        .map((r) => r.recurrenceRuleId)
+        .whereType<String>()
+        .toSet()
         .toList();
+    final ruleMap = <String, RecurrenceRuleData>{};
+    if (ruleIds.isNotEmpty) {
+      final ruleRows = await (_db.select(_db.recurrenceRules)
+            ..where((r) => r.id.isIn(ruleIds)))
+          .get();
+      for (final r in ruleRows) {
+        ruleMap[r.id] = r;
+      }
+    }
+    return rows.map((r) {
+      final rule = r.recurrenceRuleId != null
+          ? ruleMap[r.recurrenceRuleId]?.toDomain()
+          : null;
+      return r.toDomain(
+        subtasks: subtasksByTask[r.id] ?? [],
+        recurrenceRule: rule,
+      );
+    }).toList();
   }
 
   @override
@@ -114,6 +137,12 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Future<Either<Failure, Task>> createTask(Task task) async {
     try {
+      if (task.recurrenceRule != null) {
+        await _db.into(_db.recurrenceRules).insert(
+              task.recurrenceRule!.toCompanion(),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
       final companion = task.toCompanion();
       await _db.into(_db.tasks).insert(companion);
       for (final subtask in task.subtasks) {
@@ -121,6 +150,11 @@ class TaskRepositoryImpl implements ITaskRepository {
       }
       if (task.syncToGcal) {
         _handleGCalSync(task, 'CREATE');
+      }
+      if (task.hasEnabledReminder && task.dueDate != null && task.dueTime != null) {
+        await _notificationScheduler.scheduleTaskReminder(task);
+      } else {
+        await _notificationScheduler.cancelTaskReminder(task.id);
       }
       return Right(task);
     } catch (e) {
@@ -131,13 +165,24 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Future<Either<Failure, Task>> updateTask(Task task) async {
     try {
-      await _db.update(_db.tasks).replace(task.toCompanion());
+      if (task.recurrenceRule != null) {
+        await _db.into(_db.recurrenceRules).insert(
+              task.recurrenceRule!.toCompanion(),
+              mode: InsertMode.insertOrReplace,
+            );
+      }
       await (_db.delete(_db.subtasks)..where((s) => s.taskId.equals(task.id))).go();
       for (final subtask in task.subtasks) {
         await _db.into(_db.subtasks).insert(subtask.toCompanion());
       }
+      await _db.update(_db.tasks).replace(task.toCompanion());
       if (task.syncToGcal) {
         _handleGCalSync(task, 'UPDATE');
+      }
+      if (task.hasEnabledReminder && task.dueDate != null && task.dueTime != null) {
+        await _notificationScheduler.scheduleTaskReminder(task);
+      } else {
+        await _notificationScheduler.cancelTaskReminder(task.id);
       }
       return Right(task);
     } catch (e) {
@@ -150,7 +195,8 @@ class TaskRepositoryImpl implements ITaskRepository {
     try {
       final query = _db.select(_db.tasks)..where((t) => t.id.equals(id));
       final taskData = await query.getSingle();
-      final task = taskData.toDomain();
+      final tasks = await _loadTasksWithSubtasks([taskData]);
+      final task = tasks.first;
 
       // 1. Update Drift
       final updatedTask = task.copyWith(
@@ -190,7 +236,8 @@ class TaskRepositoryImpl implements ITaskRepository {
     try {
       final query = _db.select(_db.tasks)..where((t) => t.id.equals(id));
       final taskData = await query.getSingle();
-      final task = taskData.toDomain();
+      final tasks = await _loadTasksWithSubtasks([taskData]);
+      final task = tasks.first;
 
       final updatedTask = task.copyWith(
         status: TaskStatus.pending,
@@ -217,7 +264,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       if (taskData != null) {
         final task = taskData.toDomain();
         await (_db.delete(_db.tasks)..where((t) => t.id.equals(id))).go();
-        
+        await _notificationScheduler.cancelTaskReminder(id);
         if (task.syncToGcal && task.gcalEventId != null) {
           _handleGCalSync(task, 'DELETE');
         }

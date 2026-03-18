@@ -19,6 +19,8 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     on<ReopenTask>(_onReopenTask);
     on<PushToTomorrow>(_onPushToTomorrow);
     on<DeleteTask>(_onDeleteTask);
+    on<SortChanged>(_onSortChanged);
+    on<FilterChanged>(_onFilterChanged);
   }
 
   Future<void> _onLoadTasksForDate(
@@ -50,19 +52,61 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
   }
 
   TaskListState _mapTasksToState(List<Task> tasks) {
-    final pending = tasks
-        .where((t) => t.status == TaskStatus.pending && !t.isOverdue)
-        .toList();
-    final completed =
-        tasks.where((t) => t.status == TaskStatus.completed).toList();
-    final overdue = tasks
-        .where((t) => t.isOverdue && t.status != TaskStatus.completed)
-        .toList();
+    // Partition so each task appears in exactly one list (avoids duplicate in UI).
+    final List<Task> pending = [];
+    final List<Task> completed = [];
+    final List<Task> overdue = [];
+    for (final t in tasks) {
+      if (t.status == TaskStatus.completed) {
+        completed.add(t);
+      } else if (t.isOverdue) {
+        overdue.add(t);
+      } else {
+        pending.add(t);
+      }
+    }
+
+    final sortMode = state.maybeWhen(
+      loaded: (pending, completed, overdue, s, f) => s,
+      orElse: () => SortMode.statusPendingFirst,
+    );
+    final filter = state.maybeWhen(
+      loaded: (pending, completed, overdue, s, f) => f,
+      orElse: () => const TaskListFilter(),
+    );
 
     return TaskListState.loaded(
       pending: pending,
       completed: completed,
       overdue: overdue,
+      sortMode: sortMode,
+      filter: filter,
+    );
+  }
+
+  void _onSortChanged(SortChanged event, Emitter<TaskListState> emit) {
+    state.maybeWhen(
+      loaded: (p, c, o, _, filter) => emit(TaskListState.loaded(
+        pending: p,
+        completed: c,
+        overdue: o,
+        sortMode: event.sortMode,
+        filter: filter,
+      )),
+      orElse: () {},
+    );
+  }
+
+  void _onFilterChanged(FilterChanged event, Emitter<TaskListState> emit) {
+    state.maybeWhen(
+      loaded: (p, c, o, sortMode, _) => emit(TaskListState.loaded(
+        pending: p,
+        completed: c,
+        overdue: o,
+        sortMode: sortMode,
+        filter: event.filter,
+      )),
+      orElse: () {},
     );
   }
 

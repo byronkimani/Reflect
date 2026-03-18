@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:reflect/features/notifications/notification_service.dart';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
 
 /// Handles the business logic for scheduling specific app notifications.
 class NotificationScheduler {
@@ -141,6 +142,67 @@ class NotificationScheduler {
   /// Cancels a specific notification by ID.
   Future<void> cancelNotification(int id) async {
     await _plugin.cancel(id: id);
+  }
+
+  /// Task reminder notification ID base (avoids collision with 1001, 1002, 1003, 1100+).
+  static const int _taskReminderIdBase = 2000000;
+
+  /// Returns a stable notification ID for a task (for scheduling and canceling).
+  static int taskReminderNotificationId(String taskId) {
+    final hash = taskId.hashCode;
+    return _taskReminderIdBase + (hash < 0 ? -hash : hash) % 1000000;
+  }
+
+  /// Schedules a one-off reminder at the task's due date+time. No-op if task has no
+  /// due date, due time, or hasEnabledReminder is false.
+  Future<void> scheduleTaskReminder(Task task) async {
+    if (!task.hasEnabledReminder ||
+        task.dueDate == null ||
+        task.dueTime == null ||
+        task.dueTime!.isEmpty) {
+      return;
+    }
+    final parts = task.dueTime!.split(':');
+    if (parts.length < 2) {
+      return;
+    }
+    final hour = int.tryParse(parts[0]) ?? 0;
+    final minute = int.tryParse(parts[1]) ?? 0;
+    final due = DateTime(
+      task.dueDate!.year,
+      task.dueDate!.month,
+      task.dueDate!.day,
+      hour,
+      minute,
+    );
+    final tzDue = tz.TZDateTime.from(due, tz.local);
+    if (tzDue.isBefore(tz.TZDateTime.now(tz.local))) {
+      return;
+    }
+    final id = taskReminderNotificationId(task.id);
+    await _plugin.zonedSchedule(
+      id: id,
+      title: 'Task due',
+      body: task.title,
+      scheduledDate: tzDue,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'task_reminders',
+          'Task Reminders',
+          channelDescription: 'Reminders when a task is due',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: '/task/${task.id}',
+    );
+  }
+
+  /// Cancels the reminder notification for the given task.
+  Future<void> cancelTaskReminder(String taskId) async {
+    await _plugin.cancel(id: taskReminderNotificationId(taskId));
   }
 
   /// Helper to get the next instance of a specific time.

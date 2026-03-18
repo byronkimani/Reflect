@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:go_router/go_router.dart';
 import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
@@ -38,16 +39,17 @@ class TaskCard extends StatelessWidget {
         elevation: 0,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         color: isOverdue
-            ? colorScheme.errorContainer.withValues(alpha: 0.2)
+            ? colorScheme.errorContainer.withValues(alpha: 0.25)
             : isCompleted
-                ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
-                : colorScheme.surfaceContainerLow,
+                ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+                : colorScheme.surfaceContainer,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: isOverdue ? BorderSide(color: colorScheme.error, width: 1.5) : BorderSide.none,
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          onTap: () => context.push('/today/task/${task.id}', extra: task),
           leading: Transform.scale(
             scale: 1.2,
             child: Checkbox(
@@ -77,8 +79,12 @@ class TaskCard extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: PriorityChip(priority: task.priority),
+                child: PriorityChip(priority: task.priority, compact: true),
               ),
+              if (task.recurrenceRule != null) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.repeat, size: 16, color: colorScheme.onSurfaceVariant),
+              ],
               if (task.subtasks.isNotEmpty) ...[
                 const SizedBox(width: 12),
                 Icon(Icons.checklist_outlined, size: 16, color: colorScheme.onSurfaceVariant),

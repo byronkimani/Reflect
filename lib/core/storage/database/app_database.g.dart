@@ -704,6 +704,17 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
         requiredDuringInsert: false,
         $customConstraints: 'REFERENCES tasks(id) ON DELETE CASCADE',
       );
+  static const VerificationMeta _hasEnabledReminderMeta =
+      const VerificationMeta('hasEnabledReminder');
+  @override
+  late final GeneratedColumn<int> hasEnabledReminder = GeneratedColumn<int>(
+    'has_enabled_reminder',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _gcalEventIdMeta = const VerificationMeta(
     'gcalEventId',
   );
@@ -762,6 +773,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
     overdueDay,
     recurrenceRuleId,
     recurrenceParentId,
+    hasEnabledReminder,
     gcalEventId,
     syncToGcal,
     createdAt,
@@ -852,6 +864,15 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
         ),
       );
     }
+    if (data.containsKey('has_enabled_reminder')) {
+      context.handle(
+        _hasEnabledReminderMeta,
+        hasEnabledReminder.isAcceptableOrUnknown(
+          data['has_enabled_reminder']!,
+          _hasEnabledReminderMeta,
+        ),
+      );
+    }
     if (data.containsKey('gcal_event_id')) {
       context.handle(
         _gcalEventIdMeta,
@@ -939,6 +960,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
         DriftSqlType.string,
         data['${effectivePrefix}recurrence_parent_id'],
       ),
+      hasEnabledReminder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}has_enabled_reminder'],
+      )!,
       gcalEventId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}gcal_event_id'],
@@ -976,6 +1001,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
   final int overdueDay;
   final String? recurrenceRuleId;
   final String? recurrenceParentId;
+  final int hasEnabledReminder;
   final String? gcalEventId;
   final int syncToGcal;
   final int createdAt;
@@ -992,6 +1018,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     required this.overdueDay,
     this.recurrenceRuleId,
     this.recurrenceParentId,
+    required this.hasEnabledReminder,
     this.gcalEventId,
     required this.syncToGcal,
     required this.createdAt,
@@ -1021,6 +1048,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     if (!nullToAbsent || recurrenceParentId != null) {
       map['recurrence_parent_id'] = Variable<String>(recurrenceParentId);
     }
+    map['has_enabled_reminder'] = Variable<int>(hasEnabledReminder);
     if (!nullToAbsent || gcalEventId != null) {
       map['gcal_event_id'] = Variable<String>(gcalEventId);
     }
@@ -1053,6 +1081,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       recurrenceParentId: recurrenceParentId == null && nullToAbsent
           ? const Value.absent()
           : Value(recurrenceParentId),
+      hasEnabledReminder: Value(hasEnabledReminder),
       gcalEventId: gcalEventId == null && nullToAbsent
           ? const Value.absent()
           : Value(gcalEventId),
@@ -1081,6 +1110,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       recurrenceParentId: serializer.fromJson<String?>(
         json['recurrenceParentId'],
       ),
+      hasEnabledReminder: serializer.fromJson<int>(json['hasEnabledReminder']),
       gcalEventId: serializer.fromJson<String?>(json['gcalEventId']),
       syncToGcal: serializer.fromJson<int>(json['syncToGcal']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
@@ -1102,6 +1132,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       'overdueDay': serializer.toJson<int>(overdueDay),
       'recurrenceRuleId': serializer.toJson<String?>(recurrenceRuleId),
       'recurrenceParentId': serializer.toJson<String?>(recurrenceParentId),
+      'hasEnabledReminder': serializer.toJson<int>(hasEnabledReminder),
       'gcalEventId': serializer.toJson<String?>(gcalEventId),
       'syncToGcal': serializer.toJson<int>(syncToGcal),
       'createdAt': serializer.toJson<int>(createdAt),
@@ -1121,6 +1152,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     int? overdueDay,
     Value<String?> recurrenceRuleId = const Value.absent(),
     Value<String?> recurrenceParentId = const Value.absent(),
+    int? hasEnabledReminder,
     Value<String?> gcalEventId = const Value.absent(),
     int? syncToGcal,
     int? createdAt,
@@ -1141,6 +1173,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     recurrenceParentId: recurrenceParentId.present
         ? recurrenceParentId.value
         : this.recurrenceParentId,
+    hasEnabledReminder: hasEnabledReminder ?? this.hasEnabledReminder,
     gcalEventId: gcalEventId.present ? gcalEventId.value : this.gcalEventId,
     syncToGcal: syncToGcal ?? this.syncToGcal,
     createdAt: createdAt ?? this.createdAt,
@@ -1165,6 +1198,9 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       recurrenceParentId: data.recurrenceParentId.present
           ? data.recurrenceParentId.value
           : this.recurrenceParentId,
+      hasEnabledReminder: data.hasEnabledReminder.present
+          ? data.hasEnabledReminder.value
+          : this.hasEnabledReminder,
       gcalEventId: data.gcalEventId.present
           ? data.gcalEventId.value
           : this.gcalEventId,
@@ -1190,6 +1226,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           ..write('overdueDay: $overdueDay, ')
           ..write('recurrenceRuleId: $recurrenceRuleId, ')
           ..write('recurrenceParentId: $recurrenceParentId, ')
+          ..write('hasEnabledReminder: $hasEnabledReminder, ')
           ..write('gcalEventId: $gcalEventId, ')
           ..write('syncToGcal: $syncToGcal, ')
           ..write('createdAt: $createdAt, ')
@@ -1211,6 +1248,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     overdueDay,
     recurrenceRuleId,
     recurrenceParentId,
+    hasEnabledReminder,
     gcalEventId,
     syncToGcal,
     createdAt,
@@ -1231,6 +1269,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           other.overdueDay == this.overdueDay &&
           other.recurrenceRuleId == this.recurrenceRuleId &&
           other.recurrenceParentId == this.recurrenceParentId &&
+          other.hasEnabledReminder == this.hasEnabledReminder &&
           other.gcalEventId == this.gcalEventId &&
           other.syncToGcal == this.syncToGcal &&
           other.createdAt == this.createdAt &&
@@ -1249,6 +1288,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
   final Value<int> overdueDay;
   final Value<String?> recurrenceRuleId;
   final Value<String?> recurrenceParentId;
+  final Value<int> hasEnabledReminder;
   final Value<String?> gcalEventId;
   final Value<int> syncToGcal;
   final Value<int> createdAt;
@@ -1266,6 +1306,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     this.overdueDay = const Value.absent(),
     this.recurrenceRuleId = const Value.absent(),
     this.recurrenceParentId = const Value.absent(),
+    this.hasEnabledReminder = const Value.absent(),
     this.gcalEventId = const Value.absent(),
     this.syncToGcal = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1284,6 +1325,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     this.overdueDay = const Value.absent(),
     this.recurrenceRuleId = const Value.absent(),
     this.recurrenceParentId = const Value.absent(),
+    this.hasEnabledReminder = const Value.absent(),
     this.gcalEventId = const Value.absent(),
     this.syncToGcal = const Value.absent(),
     required int createdAt,
@@ -1305,6 +1347,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     Expression<int>? overdueDay,
     Expression<String>? recurrenceRuleId,
     Expression<String>? recurrenceParentId,
+    Expression<int>? hasEnabledReminder,
     Expression<String>? gcalEventId,
     Expression<int>? syncToGcal,
     Expression<int>? createdAt,
@@ -1324,6 +1367,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
       if (recurrenceRuleId != null) 'recurrence_rule_id': recurrenceRuleId,
       if (recurrenceParentId != null)
         'recurrence_parent_id': recurrenceParentId,
+      if (hasEnabledReminder != null)
+        'has_enabled_reminder': hasEnabledReminder,
       if (gcalEventId != null) 'gcal_event_id': gcalEventId,
       if (syncToGcal != null) 'sync_to_gcal': syncToGcal,
       if (createdAt != null) 'created_at': createdAt,
@@ -1344,6 +1389,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     Value<int>? overdueDay,
     Value<String?>? recurrenceRuleId,
     Value<String?>? recurrenceParentId,
+    Value<int>? hasEnabledReminder,
     Value<String?>? gcalEventId,
     Value<int>? syncToGcal,
     Value<int>? createdAt,
@@ -1362,6 +1408,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
       overdueDay: overdueDay ?? this.overdueDay,
       recurrenceRuleId: recurrenceRuleId ?? this.recurrenceRuleId,
       recurrenceParentId: recurrenceParentId ?? this.recurrenceParentId,
+      hasEnabledReminder: hasEnabledReminder ?? this.hasEnabledReminder,
       gcalEventId: gcalEventId ?? this.gcalEventId,
       syncToGcal: syncToGcal ?? this.syncToGcal,
       createdAt: createdAt ?? this.createdAt,
@@ -1406,6 +1453,9 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     if (recurrenceParentId.present) {
       map['recurrence_parent_id'] = Variable<String>(recurrenceParentId.value);
     }
+    if (hasEnabledReminder.present) {
+      map['has_enabled_reminder'] = Variable<int>(hasEnabledReminder.value);
+    }
     if (gcalEventId.present) {
       map['gcal_event_id'] = Variable<String>(gcalEventId.value);
     }
@@ -1438,6 +1488,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
           ..write('overdueDay: $overdueDay, ')
           ..write('recurrenceRuleId: $recurrenceRuleId, ')
           ..write('recurrenceParentId: $recurrenceParentId, ')
+          ..write('hasEnabledReminder: $hasEnabledReminder, ')
           ..write('gcalEventId: $gcalEventId, ')
           ..write('syncToGcal: $syncToGcal, ')
           ..write('createdAt: $createdAt, ')
@@ -6566,6 +6617,7 @@ typedef $$TasksTableCreateCompanionBuilder =
       Value<int> overdueDay,
       Value<String?> recurrenceRuleId,
       Value<String?> recurrenceParentId,
+      Value<int> hasEnabledReminder,
       Value<String?> gcalEventId,
       Value<int> syncToGcal,
       required int createdAt,
@@ -6585,6 +6637,7 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<int> overdueDay,
       Value<String?> recurrenceRuleId,
       Value<String?> recurrenceParentId,
+      Value<int> hasEnabledReminder,
       Value<String?> gcalEventId,
       Value<int> syncToGcal,
       Value<int> createdAt,
@@ -6707,6 +6760,11 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
 
   ColumnFilters<String> get recurrenceParentId => $composableBuilder(
     column: $table.recurrenceParentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get hasEnabledReminder => $composableBuilder(
+    column: $table.hasEnabledReminder,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6863,6 +6921,11 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get hasEnabledReminder => $composableBuilder(
+    column: $table.hasEnabledReminder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get gcalEventId => $composableBuilder(
     column: $table.gcalEventId,
     builder: (column) => ColumnOrderings(column),
@@ -6947,6 +7010,11 @@ class $$TasksTableAnnotationComposer
 
   GeneratedColumn<String> get recurrenceParentId => $composableBuilder(
     column: $table.recurrenceParentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get hasEnabledReminder => $composableBuilder(
+    column: $table.hasEnabledReminder,
     builder: (column) => column,
   );
 
@@ -7083,6 +7151,7 @@ class $$TasksTableTableManager
                 Value<int> overdueDay = const Value.absent(),
                 Value<String?> recurrenceRuleId = const Value.absent(),
                 Value<String?> recurrenceParentId = const Value.absent(),
+                Value<int> hasEnabledReminder = const Value.absent(),
                 Value<String?> gcalEventId = const Value.absent(),
                 Value<int> syncToGcal = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
@@ -7100,6 +7169,7 @@ class $$TasksTableTableManager
                 overdueDay: overdueDay,
                 recurrenceRuleId: recurrenceRuleId,
                 recurrenceParentId: recurrenceParentId,
+                hasEnabledReminder: hasEnabledReminder,
                 gcalEventId: gcalEventId,
                 syncToGcal: syncToGcal,
                 createdAt: createdAt,
@@ -7119,6 +7189,7 @@ class $$TasksTableTableManager
                 Value<int> overdueDay = const Value.absent(),
                 Value<String?> recurrenceRuleId = const Value.absent(),
                 Value<String?> recurrenceParentId = const Value.absent(),
+                Value<int> hasEnabledReminder = const Value.absent(),
                 Value<String?> gcalEventId = const Value.absent(),
                 Value<int> syncToGcal = const Value.absent(),
                 required int createdAt,
@@ -7136,6 +7207,7 @@ class $$TasksTableTableManager
                 overdueDay: overdueDay,
                 recurrenceRuleId: recurrenceRuleId,
                 recurrenceParentId: recurrenceParentId,
+                hasEnabledReminder: hasEnabledReminder,
                 gcalEventId: gcalEventId,
                 syncToGcal: syncToGcal,
                 createdAt: createdAt,

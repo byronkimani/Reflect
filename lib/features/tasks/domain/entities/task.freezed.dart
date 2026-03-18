@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Task {
 
- String get id; String get title; TaskPriority get priority; DateTime? get dueDate; String? get dueTime; String? get notes; List<Tag> get tags; TaskStatus get status; bool get isOverdue; int get overdueDay; RecurrenceRule? get recurrenceRule; String? get recurrenceParentId; List<Subtask> get subtasks; String? get gcalEventId; bool get syncToGcal; DateTime get createdAt; DateTime get updatedAt;
+ String get id; String get title; TaskPriority get priority; DateTime? get dueDate; String? get dueTime; String? get notes; List<Tag> get tags; TaskStatus get status; bool get isOverdue; int get overdueDay; RecurrenceRule? get recurrenceRule; String? get recurrenceParentId; List<Subtask> get subtasks; String? get gcalEventId; bool get syncToGcal; bool get hasEnabledReminder; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $TaskCopyWith<Task> get copyWith => _$TaskCopyWithImpl<Task>(this as Task, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.status, status) || other.status == status)&&(identical(other.isOverdue, isOverdue) || other.isOverdue == isOverdue)&&(identical(other.overdueDay, overdueDay) || other.overdueDay == overdueDay)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.recurrenceParentId, recurrenceParentId) || other.recurrenceParentId == recurrenceParentId)&&const DeepCollectionEquality().equals(other.subtasks, subtasks)&&(identical(other.gcalEventId, gcalEventId) || other.gcalEventId == gcalEventId)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.status, status) || other.status == status)&&(identical(other.isOverdue, isOverdue) || other.isOverdue == isOverdue)&&(identical(other.overdueDay, overdueDay) || other.overdueDay == overdueDay)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.recurrenceParentId, recurrenceParentId) || other.recurrenceParentId == recurrenceParentId)&&const DeepCollectionEquality().equals(other.subtasks, subtasks)&&(identical(other.gcalEventId, gcalEventId) || other.gcalEventId == gcalEventId)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.hasEnabledReminder, hasEnabledReminder) || other.hasEnabledReminder == hasEnabledReminder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,priority,dueDate,dueTime,notes,const DeepCollectionEquality().hash(tags),status,isOverdue,overdueDay,recurrenceRule,recurrenceParentId,const DeepCollectionEquality().hash(subtasks),gcalEventId,syncToGcal,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,title,priority,dueDate,dueTime,notes,const DeepCollectionEquality().hash(tags),status,isOverdue,overdueDay,recurrenceRule,recurrenceParentId,const DeepCollectionEquality().hash(subtasks),gcalEventId,syncToGcal,hasEnabledReminder,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Task(id: $id, title: $title, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, notes: $notes, tags: $tags, status: $status, isOverdue: $isOverdue, overdueDay: $overdueDay, recurrenceRule: $recurrenceRule, recurrenceParentId: $recurrenceParentId, subtasks: $subtasks, gcalEventId: $gcalEventId, syncToGcal: $syncToGcal, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Task(id: $id, title: $title, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, notes: $notes, tags: $tags, status: $status, isOverdue: $isOverdue, overdueDay: $overdueDay, recurrenceRule: $recurrenceRule, recurrenceParentId: $recurrenceParentId, subtasks: $subtasks, gcalEventId: $gcalEventId, syncToGcal: $syncToGcal, hasEnabledReminder: $hasEnabledReminder, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $TaskCopyWith<$Res>  {
   factory $TaskCopyWith(Task value, $Res Function(Task) _then) = _$TaskCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, TaskPriority priority, DateTime? dueDate, String? dueTime, String? notes, List<Tag> tags, TaskStatus status, bool isOverdue, int overdueDay, RecurrenceRule? recurrenceRule, String? recurrenceParentId, List<Subtask> subtasks, String? gcalEventId, bool syncToGcal, DateTime createdAt, DateTime updatedAt
+ String id, String title, TaskPriority priority, DateTime? dueDate, String? dueTime, String? notes, List<Tag> tags, TaskStatus status, bool isOverdue, int overdueDay, RecurrenceRule? recurrenceRule, String? recurrenceParentId, List<Subtask> subtasks, String? gcalEventId, bool syncToGcal, bool hasEnabledReminder, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -65,7 +65,7 @@ class _$TaskCopyWithImpl<$Res>
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? notes = freezed,Object? tags = null,Object? status = null,Object? isOverdue = null,Object? overdueDay = null,Object? recurrenceRule = freezed,Object? recurrenceParentId = freezed,Object? subtasks = null,Object? gcalEventId = freezed,Object? syncToGcal = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? notes = freezed,Object? tags = null,Object? status = null,Object? isOverdue = null,Object? overdueDay = null,Object? recurrenceRule = freezed,Object? recurrenceParentId = freezed,Object? subtasks = null,Object? gcalEventId = freezed,Object? syncToGcal = null,Object? hasEnabledReminder = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -82,6 +82,7 @@ as RecurrenceRule?,recurrenceParentId: freezed == recurrenceParentId ? _self.rec
 as String?,subtasks: null == subtasks ? _self.subtasks : subtasks // ignore: cast_nullable_to_non_nullable
 as List<Subtask>,gcalEventId: freezed == gcalEventId ? _self.gcalEventId : gcalEventId // ignore: cast_nullable_to_non_nullable
 as String?,syncToGcal: null == syncToGcal ? _self.syncToGcal : syncToGcal // ignore: cast_nullable_to_non_nullable
+as bool,hasEnabledReminder: null == hasEnabledReminder ? _self.hasEnabledReminder : hasEnabledReminder // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -181,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  String? notes,  List<Tag> tags,  TaskStatus status,  bool isOverdue,  int overdueDay,  RecurrenceRule? recurrenceRule,  String? recurrenceParentId,  List<Subtask> subtasks,  String? gcalEventId,  bool syncToGcal,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  String? notes,  List<Tag> tags,  TaskStatus status,  bool isOverdue,  int overdueDay,  RecurrenceRule? recurrenceRule,  String? recurrenceParentId,  List<Subtask> subtasks,  String? gcalEventId,  bool syncToGcal,  bool hasEnabledReminder,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Task() when $default != null:
-return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,_that.notes,_that.tags,_that.status,_that.isOverdue,_that.overdueDay,_that.recurrenceRule,_that.recurrenceParentId,_that.subtasks,_that.gcalEventId,_that.syncToGcal,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,_that.notes,_that.tags,_that.status,_that.isOverdue,_that.overdueDay,_that.recurrenceRule,_that.recurrenceParentId,_that.subtasks,_that.gcalEventId,_that.syncToGcal,_that.hasEnabledReminder,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -202,10 +203,10 @@ return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  String? notes,  List<Tag> tags,  TaskStatus status,  bool isOverdue,  int overdueDay,  RecurrenceRule? recurrenceRule,  String? recurrenceParentId,  List<Subtask> subtasks,  String? gcalEventId,  bool syncToGcal,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  String? notes,  List<Tag> tags,  TaskStatus status,  bool isOverdue,  int overdueDay,  RecurrenceRule? recurrenceRule,  String? recurrenceParentId,  List<Subtask> subtasks,  String? gcalEventId,  bool syncToGcal,  bool hasEnabledReminder,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Task():
-return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,_that.notes,_that.tags,_that.status,_that.isOverdue,_that.overdueDay,_that.recurrenceRule,_that.recurrenceParentId,_that.subtasks,_that.gcalEventId,_that.syncToGcal,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,_that.notes,_that.tags,_that.status,_that.isOverdue,_that.overdueDay,_that.recurrenceRule,_that.recurrenceParentId,_that.subtasks,_that.gcalEventId,_that.syncToGcal,_that.hasEnabledReminder,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -222,10 +223,10 @@ return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  String? notes,  List<Tag> tags,  TaskStatus status,  bool isOverdue,  int overdueDay,  RecurrenceRule? recurrenceRule,  String? recurrenceParentId,  List<Subtask> subtasks,  String? gcalEventId,  bool syncToGcal,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  String? notes,  List<Tag> tags,  TaskStatus status,  bool isOverdue,  int overdueDay,  RecurrenceRule? recurrenceRule,  String? recurrenceParentId,  List<Subtask> subtasks,  String? gcalEventId,  bool syncToGcal,  bool hasEnabledReminder,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Task() when $default != null:
-return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,_that.notes,_that.tags,_that.status,_that.isOverdue,_that.overdueDay,_that.recurrenceRule,_that.recurrenceParentId,_that.subtasks,_that.gcalEventId,_that.syncToGcal,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,_that.notes,_that.tags,_that.status,_that.isOverdue,_that.overdueDay,_that.recurrenceRule,_that.recurrenceParentId,_that.subtasks,_that.gcalEventId,_that.syncToGcal,_that.hasEnabledReminder,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -237,7 +238,7 @@ return $default(_that.id,_that.title,_that.priority,_that.dueDate,_that.dueTime,
 @JsonSerializable()
 
 class _Task extends Task {
-  const _Task({required this.id, required this.title, this.priority = TaskPriority.p4, this.dueDate, this.dueTime, this.notes, final  List<Tag> tags = const [], this.status = TaskStatus.pending, this.isOverdue = false, this.overdueDay = 0, this.recurrenceRule, this.recurrenceParentId, final  List<Subtask> subtasks = const [], this.gcalEventId, this.syncToGcal = false, required this.createdAt, required this.updatedAt}): _tags = tags,_subtasks = subtasks,super._();
+  const _Task({required this.id, required this.title, this.priority = TaskPriority.p4, this.dueDate, this.dueTime, this.notes, final  List<Tag> tags = const [], this.status = TaskStatus.pending, this.isOverdue = false, this.overdueDay = 0, this.recurrenceRule, this.recurrenceParentId, final  List<Subtask> subtasks = const [], this.gcalEventId, this.syncToGcal = false, this.hasEnabledReminder = false, required this.createdAt, required this.updatedAt}): _tags = tags,_subtasks = subtasks,super._();
   factory _Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
 @override final  String id;
@@ -267,6 +268,7 @@ class _Task extends Task {
 
 @override final  String? gcalEventId;
 @override@JsonKey() final  bool syncToGcal;
+@override@JsonKey() final  bool hasEnabledReminder;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 
@@ -283,16 +285,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.status, status) || other.status == status)&&(identical(other.isOverdue, isOverdue) || other.isOverdue == isOverdue)&&(identical(other.overdueDay, overdueDay) || other.overdueDay == overdueDay)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.recurrenceParentId, recurrenceParentId) || other.recurrenceParentId == recurrenceParentId)&&const DeepCollectionEquality().equals(other._subtasks, _subtasks)&&(identical(other.gcalEventId, gcalEventId) || other.gcalEventId == gcalEventId)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&(identical(other.notes, notes) || other.notes == notes)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.status, status) || other.status == status)&&(identical(other.isOverdue, isOverdue) || other.isOverdue == isOverdue)&&(identical(other.overdueDay, overdueDay) || other.overdueDay == overdueDay)&&(identical(other.recurrenceRule, recurrenceRule) || other.recurrenceRule == recurrenceRule)&&(identical(other.recurrenceParentId, recurrenceParentId) || other.recurrenceParentId == recurrenceParentId)&&const DeepCollectionEquality().equals(other._subtasks, _subtasks)&&(identical(other.gcalEventId, gcalEventId) || other.gcalEventId == gcalEventId)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.hasEnabledReminder, hasEnabledReminder) || other.hasEnabledReminder == hasEnabledReminder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,priority,dueDate,dueTime,notes,const DeepCollectionEquality().hash(_tags),status,isOverdue,overdueDay,recurrenceRule,recurrenceParentId,const DeepCollectionEquality().hash(_subtasks),gcalEventId,syncToGcal,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,title,priority,dueDate,dueTime,notes,const DeepCollectionEquality().hash(_tags),status,isOverdue,overdueDay,recurrenceRule,recurrenceParentId,const DeepCollectionEquality().hash(_subtasks),gcalEventId,syncToGcal,hasEnabledReminder,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Task(id: $id, title: $title, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, notes: $notes, tags: $tags, status: $status, isOverdue: $isOverdue, overdueDay: $overdueDay, recurrenceRule: $recurrenceRule, recurrenceParentId: $recurrenceParentId, subtasks: $subtasks, gcalEventId: $gcalEventId, syncToGcal: $syncToGcal, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Task(id: $id, title: $title, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, notes: $notes, tags: $tags, status: $status, isOverdue: $isOverdue, overdueDay: $overdueDay, recurrenceRule: $recurrenceRule, recurrenceParentId: $recurrenceParentId, subtasks: $subtasks, gcalEventId: $gcalEventId, syncToGcal: $syncToGcal, hasEnabledReminder: $hasEnabledReminder, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -303,7 +305,7 @@ abstract mixin class _$TaskCopyWith<$Res> implements $TaskCopyWith<$Res> {
   factory _$TaskCopyWith(_Task value, $Res Function(_Task) _then) = __$TaskCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, TaskPriority priority, DateTime? dueDate, String? dueTime, String? notes, List<Tag> tags, TaskStatus status, bool isOverdue, int overdueDay, RecurrenceRule? recurrenceRule, String? recurrenceParentId, List<Subtask> subtasks, String? gcalEventId, bool syncToGcal, DateTime createdAt, DateTime updatedAt
+ String id, String title, TaskPriority priority, DateTime? dueDate, String? dueTime, String? notes, List<Tag> tags, TaskStatus status, bool isOverdue, int overdueDay, RecurrenceRule? recurrenceRule, String? recurrenceParentId, List<Subtask> subtasks, String? gcalEventId, bool syncToGcal, bool hasEnabledReminder, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -320,7 +322,7 @@ class __$TaskCopyWithImpl<$Res>
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? notes = freezed,Object? tags = null,Object? status = null,Object? isOverdue = null,Object? overdueDay = null,Object? recurrenceRule = freezed,Object? recurrenceParentId = freezed,Object? subtasks = null,Object? gcalEventId = freezed,Object? syncToGcal = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? notes = freezed,Object? tags = null,Object? status = null,Object? isOverdue = null,Object? overdueDay = null,Object? recurrenceRule = freezed,Object? recurrenceParentId = freezed,Object? subtasks = null,Object? gcalEventId = freezed,Object? syncToGcal = null,Object? hasEnabledReminder = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Task(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -337,6 +339,7 @@ as RecurrenceRule?,recurrenceParentId: freezed == recurrenceParentId ? _self.rec
 as String?,subtasks: null == subtasks ? _self._subtasks : subtasks // ignore: cast_nullable_to_non_nullable
 as List<Subtask>,gcalEventId: freezed == gcalEventId ? _self.gcalEventId : gcalEventId // ignore: cast_nullable_to_non_nullable
 as String?,syncToGcal: null == syncToGcal ? _self.syncToGcal : syncToGcal // ignore: cast_nullable_to_non_nullable
+as bool,hasEnabledReminder: null == hasEnabledReminder ? _self.hasEnabledReminder : hasEnabledReminder // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,

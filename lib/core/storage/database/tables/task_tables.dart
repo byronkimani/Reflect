@@ -18,6 +18,8 @@ class Tasks extends Table {
   TextColumn get recurrenceParentId => 
       text().nullable().customConstraint('REFERENCES tasks(id) ON DELETE CASCADE')();
 
+  IntColumn get hasEnabledReminder => integer().withDefault(const Constant(0))();
+
   TextColumn get gcalEventId => text().nullable()();
   IntColumn get syncToGcal => integer().withDefault(const Constant(0))();
   

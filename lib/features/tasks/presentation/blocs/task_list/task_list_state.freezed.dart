@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<Task> pending,  List<Task> completed,  List<Task> overdue,  SortMode sortMode)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<Task> pending,  List<Task> completed,  List<Task> overdue,  SortMode sortMode,  TaskListFilter filter)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.pending,_that.completed,_that.overdue,_that.sortMode);case _Error() when error != null:
+return loaded(_that.pending,_that.completed,_that.overdue,_that.sortMode,_that.filter);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<Task> pending,  List<Task> completed,  List<Task> overdue,  SortMode sortMode)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<Task> pending,  List<Task> completed,  List<Task> overdue,  SortMode sortMode,  TaskListFilter filter)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.pending,_that.completed,_that.overdue,_that.sortMode);case _Error():
+return loaded(_that.pending,_that.completed,_that.overdue,_that.sortMode,_that.filter);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<Task> pending,  List<Task> completed,  List<Task> overdue,  SortMode sortMode)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<Task> pending,  List<Task> completed,  List<Task> overdue,  SortMode sortMode,  TaskListFilter filter)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.pending,_that.completed,_that.overdue,_that.sortMode);case _Error() when error != null:
+return loaded(_that.pending,_that.completed,_that.overdue,_that.sortMode,_that.filter);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,7 +257,7 @@ String toString() {
 
 
 class _Loaded implements TaskListState {
-  const _Loaded({required final  List<Task> pending, required final  List<Task> completed, required final  List<Task> overdue, this.sortMode = SortMode.manual}): _pending = pending,_completed = completed,_overdue = overdue;
+  const _Loaded({required final  List<Task> pending, required final  List<Task> completed, required final  List<Task> overdue, this.sortMode = SortMode.statusPendingFirst, this.filter = const TaskListFilter()}): _pending = pending,_completed = completed,_overdue = overdue;
   
 
  final  List<Task> _pending;
@@ -282,6 +282,7 @@ class _Loaded implements TaskListState {
 }
 
 @JsonKey() final  SortMode sortMode;
+@JsonKey() final  TaskListFilter filter;
 
 /// Create a copy of TaskListState
 /// with the given fields replaced by the non-null parameter values.
@@ -293,16 +294,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._pending, _pending)&&const DeepCollectionEquality().equals(other._completed, _completed)&&const DeepCollectionEquality().equals(other._overdue, _overdue)&&(identical(other.sortMode, sortMode) || other.sortMode == sortMode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._pending, _pending)&&const DeepCollectionEquality().equals(other._completed, _completed)&&const DeepCollectionEquality().equals(other._overdue, _overdue)&&(identical(other.sortMode, sortMode) || other.sortMode == sortMode)&&(identical(other.filter, filter) || other.filter == filter));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_pending),const DeepCollectionEquality().hash(_completed),const DeepCollectionEquality().hash(_overdue),sortMode);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_pending),const DeepCollectionEquality().hash(_completed),const DeepCollectionEquality().hash(_overdue),sortMode,filter);
 
 @override
 String toString() {
-  return 'TaskListState.loaded(pending: $pending, completed: $completed, overdue: $overdue, sortMode: $sortMode)';
+  return 'TaskListState.loaded(pending: $pending, completed: $completed, overdue: $overdue, sortMode: $sortMode, filter: $filter)';
 }
 
 
@@ -313,7 +314,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $TaskListStateCopyWith<$R
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- List<Task> pending, List<Task> completed, List<Task> overdue, SortMode sortMode
+ List<Task> pending, List<Task> completed, List<Task> overdue, SortMode sortMode, TaskListFilter filter
 });
 
 
@@ -330,13 +331,14 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of TaskListState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? pending = null,Object? completed = null,Object? overdue = null,Object? sortMode = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? pending = null,Object? completed = null,Object? overdue = null,Object? sortMode = null,Object? filter = null,}) {
   return _then(_Loaded(
 pending: null == pending ? _self._pending : pending // ignore: cast_nullable_to_non_nullable
 as List<Task>,completed: null == completed ? _self._completed : completed // ignore: cast_nullable_to_non_nullable
 as List<Task>,overdue: null == overdue ? _self._overdue : overdue // ignore: cast_nullable_to_non_nullable
 as List<Task>,sortMode: null == sortMode ? _self.sortMode : sortMode // ignore: cast_nullable_to_non_nullable
-as SortMode,
+as SortMode,filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
+as TaskListFilter,
   ));
 }
 

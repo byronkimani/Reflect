@@ -34,6 +34,7 @@ extension TaskDataX on TaskData {
       tags: tags,
       gcalEventId: gcalEventId,
       syncToGcal: syncToGcal == 1,
+      hasEnabledReminder: hasEnabledReminder == 1,
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAt),
     );
@@ -56,6 +57,7 @@ extension TaskX on Task {
       recurrenceParentId: Value(recurrenceParentId),
       gcalEventId: Value(gcalEventId),
       syncToGcal: Value(syncToGcal ? 1 : 0),
+      hasEnabledReminder: Value(hasEnabledReminder ? 1 : 0),
       createdAt: Value(createdAt.millisecondsSinceEpoch),
       updatedAt: Value(updatedAt.millisecondsSinceEpoch),
     );

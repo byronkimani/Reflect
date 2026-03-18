@@ -30,6 +30,7 @@ abstract class Task with _$Task {
     @Default([]) List<Subtask> subtasks,
     String? gcalEventId,
     @Default(false) bool syncToGcal,
+    @Default(false) bool hasEnabledReminder,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Task;

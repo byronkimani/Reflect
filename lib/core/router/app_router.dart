@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reflect/core/presentation/app_scaffold.dart';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/presentation/pages/today_page.dart';
 import 'package:reflect/features/tasks/presentation/pages/backlog_page.dart';
 import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
@@ -33,7 +34,8 @@ GoRouter createAppRouter() {
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
                       final id = state.pathParameters['id'] ?? 'new';
-                      return TaskDetailPage(taskId: id);
+                      final task = state.extra as Task?;
+                      return TaskDetailPage(taskId: id, initialTask: task);
                     },
                   ),
                   GoRoute(

@@ -61,6 +61,7 @@ void setupDependencies() {
       getIt<NetworkInfo>(),
       getIt<GCalApiService>(),
       getIt<RecurrenceEngine>(),
+      getIt<NotificationScheduler>(),
     ),
   );
   getIt.registerLazySingleton<IGCalRepository>(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/subtask_form_item.dart';
@@ -13,19 +14,15 @@ import 'package:reflect/main.dart';
 
 class TaskDetailPage extends StatelessWidget {
   final String taskId;
+  final Task? initialTask;
 
-  const TaskDetailPage({super.key, required this.taskId});
+  const TaskDetailPage({super.key, required this.taskId, this.initialTask});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) {
-        final cubit = TaskFormCubit(getIt<ITaskRepository>(), null);
-        if (taskId != 'new') {
-          // In a real app, we'd fetch the task here.
-        }
-        return cubit;
-      },
+      create: (context) =>
+          TaskFormCubit(getIt<ITaskRepository>(), initialTask),
       child: const TaskFormView(),
     );
   }
@@ -40,6 +37,7 @@ class TaskFormView extends StatefulWidget {
 
 class _TaskFormViewState extends State<TaskFormView> {
   final FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _lastSubtaskFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -52,6 +50,7 @@ class _TaskFormViewState extends State<TaskFormView> {
   @override
   void dispose() {
     _titleFocusNode.dispose();
+    _lastSubtaskFocusNode.dispose();
     super.dispose();
   }
 
@@ -177,10 +176,12 @@ class _TaskFormViewState extends State<TaskFormView> {
                 ...state.subtaskItems.asMap().entries.map((entry) {
                   final index = entry.key;
                   final item = entry.value;
+                  final isLast = index == state.subtaskItems.length - 1;
                   return _SubtaskFormTile(
                     key: ValueKey(item.id),
                     item: item,
                     index: index,
+                    focusNode: isLast ? _lastSubtaskFocusNode : null,
                     onToggle: () => context
                         .read<TaskFormCubit>()
                         .toggleSubtaskCompletedAt(index),
@@ -193,6 +194,7 @@ class _TaskFormViewState extends State<TaskFormView> {
                 }),
                 OutlinedButton.icon(
                   onPressed: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
                     context.read<TaskFormCubit>().addSubtask('');
                   },
                   icon: const Icon(Icons.add, size: 20),
@@ -264,6 +266,190 @@ class _TaskFormViewState extends State<TaskFormView> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                // Optional time
+                InkWell(
+                  onTap: () async {
+                    TimeOfDay initial = const TimeOfDay(hour: 9, minute: 0);
+                    if (state.dueTime != null && state.dueTime!.isNotEmpty) {
+                      final parts = state.dueTime!.split(':');
+                      if (parts.length >= 2) {
+                        initial = TimeOfDay(
+                          hour: int.tryParse(parts[0]) ?? 9,
+                          minute: int.tryParse(parts[1]) ?? 0,
+                        );
+                      }
+                    }
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: initial,
+                    );
+                    if (time != null && context.mounted) {
+                      context.read<TaskFormCubit>().dueTimeChanged(
+                            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
+                          );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_outlined,
+                          color: colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Time (optional)',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                state.dueTime != null && state.dueTime!.isNotEmpty
+                                    ? state.dueTime!
+                                    : 'No time set',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Remind me when due',
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  value: state.hasEnabledReminder,
+                  onChanged: (value) => context
+                      .read<TaskFormCubit>()
+                      .hasEnabledReminderChanged(value),
+                  activeThumbColor: colorScheme.primary,
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Repeats',
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  value: state.isRepeating,
+                  onChanged: (value) => context
+                      .read<TaskFormCubit>()
+                      .isRepeatingChanged(value),
+                  activeThumbColor: colorScheme.primary,
+                ),
+                if (state.isRepeating) ...[
+                  const SizedBox(height: 12),
+                  SegmentedButton<RecurrenceFrequency>(
+                    segments: const [
+                      ButtonSegment<RecurrenceFrequency>(
+                        value: RecurrenceFrequency.DAILY,
+                        label: Text('Daily'),
+                        icon: Icon(Icons.today_outlined, size: 18),
+                      ),
+                      ButtonSegment<RecurrenceFrequency>(
+                        value: RecurrenceFrequency.WEEKLY,
+                        label: Text('Weekly'),
+                        icon: Icon(Icons.date_range_outlined, size: 18),
+                      ),
+                    ],
+                    selected: {state.recurrenceFrequency ?? RecurrenceFrequency.DAILY},
+                    onSelectionChanged: (Set<RecurrenceFrequency> selected) {
+                      context.read<TaskFormCubit>().recurrenceFrequencyChanged(
+                            selected.first,
+                          );
+                    },
+                  ),
+                  if (state.recurrenceFrequency == RecurrenceFrequency.WEEKLY) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _DayPresetChip(
+                          label: 'Weekdays',
+                          isSelected: _listEquals(
+                            state.recurrenceDaysOfWeek,
+                            weekdaysPreset,
+                          ),
+                          onTap: () => context
+                              .read<TaskFormCubit>()
+                              .recurrenceDaysOfWeekChanged(weekdaysPreset),
+                        ),
+                        _DayPresetChip(
+                          label: 'Every day',
+                          isSelected: _listEquals(
+                            state.recurrenceDaysOfWeek,
+                            everyDayPreset,
+                          ),
+                          onTap: () => context
+                              .read<TaskFormCubit>()
+                              .recurrenceDaysOfWeekChanged(everyDayPreset),
+                        ),
+                        _DayPresetChip(
+                          label: 'Weekend',
+                          isSelected: _listEquals(
+                            state.recurrenceDaysOfWeek,
+                            weekendPreset,
+                          ),
+                          onTap: () => context
+                              .read<TaskFormCubit>()
+                              .recurrenceDaysOfWeekChanged(weekendPreset),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Custom',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                          .asMap()
+                          .entries
+                          .map((e) {
+                        final weekday = e.key + 1; // 1 = Mon .. 7 = Sun
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: FilterChip(
+                            label: Text(e.value),
+                            selected: state.recurrenceDaysOfWeek.contains(weekday),
+                            onSelected: (_) => context
+                                .read<TaskFormCubit>()
+                                .toggleRecurrenceDay(weekday),
+                            showCheckmark: true,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ],
                 const SizedBox(height: 24),
                 Text(
                   'Details',
@@ -323,28 +509,100 @@ class _TaskFormViewState extends State<TaskFormView> {
   }
 }
 
-/// One subtask row: checkbox, title (editable), swipe to delete. No due date (inherits from parent).
-class _SubtaskFormTile extends StatelessWidget {
-  final SubtaskFormItem item;
-  final int index;
-  final VoidCallback onToggle;
-  final ValueChanged<String> onTitleChanged;
-  final VoidCallback onDelete;
+bool _listEquals(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
 
+/// Preset chip for weekly recurrence (Weekdays, Every day, Weekend).
+class _DayPresetChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DayPresetChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      showCheckmark: true,
+    );
+  }
+}
+
+/// One subtask row: checkbox, title (editable), swipe to delete. No due date (inherits from parent).
+/// When [focusNode] is provided (for the last subtask), focus is requested when the tile is first built.
+class _SubtaskFormTile extends StatefulWidget {
   const _SubtaskFormTile({
     super.key,
     required this.item,
     required this.index,
+    this.focusNode,
     required this.onToggle,
     required this.onTitleChanged,
     required this.onDelete,
   });
+
+  final SubtaskFormItem item;
+  final int index;
+  final FocusNode? focusNode;
+  final VoidCallback onToggle;
+  final ValueChanged<String> onTitleChanged;
+  final VoidCallback onDelete;
+
+  @override
+  State<_SubtaskFormTile> createState() => _SubtaskFormTileState();
+}
+
+class _SubtaskFormTileState extends State<_SubtaskFormTile> {
+  bool _focusRequested = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.focusNode != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_focusRequested && mounted) {
+          _focusRequested = true;
+          widget.focusNode!.requestFocus();
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _SubtaskFormTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.focusNode != null && widget.focusNode != oldWidget.focusNode) {
+      _focusRequested = false;
+    }
+    if (widget.focusNode != null && !_focusRequested) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_focusRequested && mounted) {
+          _focusRequested = true;
+          widget.focusNode!.requestFocus();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final item = widget.item;
+    final index = widget.index;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -355,7 +613,7 @@ class _SubtaskFormTile extends StatelessWidget {
           extentRatio: 0.25,
           children: [
             SlidableAction(
-              onPressed: (_) => onDelete(),
+              onPressed: (_) => widget.onDelete(),
               backgroundColor: colorScheme.error,
               foregroundColor: colorScheme.onError,
               icon: Icons.delete_outline,
@@ -378,12 +636,13 @@ class _SubtaskFormTile extends StatelessWidget {
             ),
             leading: Checkbox(
               value: item.isCompleted,
-              onChanged: (_) => onToggle(),
+              onChanged: (_) => widget.onToggle(),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
             title: TextFormField(
+              focusNode: widget.focusNode,
               initialValue: item.title,
               style: textTheme.titleMedium?.copyWith(
                 decoration: item.isCompleted
@@ -407,7 +666,7 @@ class _SubtaskFormTile extends StatelessWidget {
                   horizontal: 0,
                 ),
               ),
-              onChanged: onTitleChanged,
+              onChanged: widget.onTitleChanged,
             ),
           ),
         ),

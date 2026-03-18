@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
@@ -17,7 +18,47 @@ class TaskFormCubit extends Cubit<TaskFormState> {
   void notesChanged(String value) => emit(state.copyWith(notes: value));
   void priorityChanged(TaskPriority value) => emit(state.copyWith(priority: value));
   void dueDateChanged(DateTime? value) => emit(state.copyWith(dueDate: value));
+  void dueTimeChanged(String? value) => emit(state.copyWith(dueTime: value));
+  void hasEnabledReminderChanged(bool value) => emit(state.copyWith(hasEnabledReminder: value));
   void syncToGcalChanged(bool value) => emit(state.copyWith(syncToGcal: value));
+
+  void isRepeatingChanged(bool value) {
+    if (value) {
+      emit(state.copyWith(
+        isRepeating: true,
+        recurrenceFrequency: RecurrenceFrequency.DAILY,
+        recurrenceDaysOfWeek: [],
+      ));
+    } else {
+      emit(state.copyWith(
+        isRepeating: false,
+        recurrenceFrequency: null,
+        recurrenceDaysOfWeek: [],
+      ));
+    }
+  }
+
+  void recurrenceFrequencyChanged(RecurrenceFrequency value) {
+    emit(state.copyWith(
+      recurrenceFrequency: value,
+      recurrenceDaysOfWeek: value == RecurrenceFrequency.WEEKLY ? weekdaysPreset : [],
+    ));
+  }
+
+  void recurrenceDaysOfWeekChanged(List<int> days) {
+    emit(state.copyWith(recurrenceDaysOfWeek: List<int>.from(days)));
+  }
+
+  void toggleRecurrenceDay(int weekday) {
+    final current = List<int>.from(state.recurrenceDaysOfWeek);
+    if (current.contains(weekday)) {
+      current.remove(weekday);
+    } else {
+      current.add(weekday);
+      current.sort();
+    }
+    emit(state.copyWith(recurrenceDaysOfWeek: current));
+  }
 
   void addSubtask([String title = '']) {
     emit(state.copyWith(
@@ -82,11 +123,39 @@ class TaskFormCubit extends Cubit<TaskFormState> {
             ))
         .toList();
 
+    RecurrenceRule? recurrenceRule;
+    if (state.isRepeating && state.recurrenceFrequency != null) {
+      final ruleId = state.initialTask?.recurrenceRule?.id ?? const Uuid().v4();
+      if (state.recurrenceFrequency == RecurrenceFrequency.DAILY) {
+        recurrenceRule = RecurrenceRule(
+          id: ruleId,
+          frequency: RecurrenceFrequency.DAILY,
+          intervalVal: 1,
+          endType: RecurrenceEndType.NEVER,
+        );
+      } else {
+        final days = state.recurrenceDaysOfWeek.isNotEmpty
+            ? state.recurrenceDaysOfWeek
+            : weekdaysPreset;
+        recurrenceRule = RecurrenceRule(
+          id: ruleId,
+          frequency: RecurrenceFrequency.WEEKLY,
+          intervalVal: 1,
+          daysOfWeek: days,
+          endType: RecurrenceEndType.NEVER,
+        );
+      }
+    }
+
     final task = state.initialTask?.copyWith(
           title: state.title,
           notes: notes,
           priority: state.priority,
           dueDate: state.dueDate,
+          dueTime: state.dueTime,
+          hasEnabledReminder: state.hasEnabledReminder,
+          recurrenceRule: recurrenceRule,
+          recurrenceParentId: null,
           subtasks: subtasks,
           syncToGcal: state.syncToGcal,
           updatedAt: now,
@@ -97,6 +166,10 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           priority: state.priority,
           status: TaskStatus.pending,
           dueDate: state.dueDate,
+          dueTime: state.dueTime,
+          hasEnabledReminder: state.hasEnabledReminder,
+          recurrenceRule: recurrenceRule,
+          recurrenceParentId: null,
           notes: notes,
           subtasks: subtasks,
           syncToGcal: state.syncToGcal,

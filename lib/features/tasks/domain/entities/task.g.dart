@@ -38,6 +38,7 @@ _Task _$TaskFromJson(Map<String, dynamic> json) => _Task(
       const [],
   gcalEventId: json['gcalEventId'] as String?,
   syncToGcal: json['syncToGcal'] as bool? ?? false,
+  hasEnabledReminder: json['hasEnabledReminder'] as bool? ?? false,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
@@ -58,6 +59,7 @@ Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
   'subtasks': instance.subtasks,
   'gcalEventId': instance.gcalEventId,
   'syncToGcal': instance.syncToGcal,
+  'hasEnabledReminder': instance.hasEnabledReminder,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
 };

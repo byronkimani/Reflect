@@ -11,16 +11,19 @@ const priorityChipColors = [
 
 /// Same chip style as the New Task page: pill shape, solid colors.
 /// Use for display (e.g. Today page) or selectable (e.g. task form with [onTap] and [isSelected]).
+/// Set [compact] to true for a slightly smaller height (e.g. on Today page) to keep a rectangular look.
 class PriorityChip extends StatelessWidget {
   final TaskPriority priority;
   final bool isSelected;
   final VoidCallback? onTap;
+  final bool compact;
 
   const PriorityChip({
     super.key,
     required this.priority,
     this.isSelected = false,
     this.onTap,
+    this.compact = false,
   });
 
   static Color colorFor(TaskPriority priority) =>
@@ -32,9 +35,10 @@ class PriorityChip extends StatelessWidget {
     final backgroundColor = isSelected ? color.withValues(alpha: 0.75) : color;
     final textTheme = Theme.of(context).textTheme;
 
+    final height = compact ? 32.0 : 40.0;
     final child = Container(
       width: 52,
-      height: 40,
+      height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         border: isSelected
