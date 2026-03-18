@@ -55,13 +55,14 @@ extension TaskListEventPatterns on TaskListEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadTasksForDate value)?  loadTasksForDate,TResult Function( LoadBacklog value)?  loadBacklog,TResult Function( CompleteTask value)?  completeTask,TResult Function( PushToTomorrow value)?  pushToTomorrow,TResult Function( DeleteTask value)?  deleteTask,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadTasksForDate value)?  loadTasksForDate,TResult Function( LoadBacklog value)?  loadBacklog,TResult Function( CompleteTask value)?  completeTask,TResult Function( ReopenTask value)?  reopenTask,TResult Function( PushToTomorrow value)?  pushToTomorrow,TResult Function( DeleteTask value)?  deleteTask,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that);case LoadBacklog() when loadBacklog != null:
 return loadBacklog(_that);case CompleteTask() when completeTask != null:
-return completeTask(_that);case PushToTomorrow() when pushToTomorrow != null:
+return completeTask(_that);case ReopenTask() when reopenTask != null:
+return reopenTask(_that);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that);case DeleteTask() when deleteTask != null:
 return deleteTask(_that);case _:
   return orElse();
@@ -81,13 +82,14 @@ return deleteTask(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadTasksForDate value)  loadTasksForDate,required TResult Function( LoadBacklog value)  loadBacklog,required TResult Function( CompleteTask value)  completeTask,required TResult Function( PushToTomorrow value)  pushToTomorrow,required TResult Function( DeleteTask value)  deleteTask,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadTasksForDate value)  loadTasksForDate,required TResult Function( LoadBacklog value)  loadBacklog,required TResult Function( CompleteTask value)  completeTask,required TResult Function( ReopenTask value)  reopenTask,required TResult Function( PushToTomorrow value)  pushToTomorrow,required TResult Function( DeleteTask value)  deleteTask,}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate():
 return loadTasksForDate(_that);case LoadBacklog():
 return loadBacklog(_that);case CompleteTask():
-return completeTask(_that);case PushToTomorrow():
+return completeTask(_that);case ReopenTask():
+return reopenTask(_that);case PushToTomorrow():
 return pushToTomorrow(_that);case DeleteTask():
 return deleteTask(_that);case _:
   throw StateError('Unexpected subclass');
@@ -106,13 +108,14 @@ return deleteTask(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadTasksForDate value)?  loadTasksForDate,TResult? Function( LoadBacklog value)?  loadBacklog,TResult? Function( CompleteTask value)?  completeTask,TResult? Function( PushToTomorrow value)?  pushToTomorrow,TResult? Function( DeleteTask value)?  deleteTask,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadTasksForDate value)?  loadTasksForDate,TResult? Function( LoadBacklog value)?  loadBacklog,TResult? Function( CompleteTask value)?  completeTask,TResult? Function( ReopenTask value)?  reopenTask,TResult? Function( PushToTomorrow value)?  pushToTomorrow,TResult? Function( DeleteTask value)?  deleteTask,}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that);case LoadBacklog() when loadBacklog != null:
 return loadBacklog(_that);case CompleteTask() when completeTask != null:
-return completeTask(_that);case PushToTomorrow() when pushToTomorrow != null:
+return completeTask(_that);case ReopenTask() when reopenTask != null:
+return reopenTask(_that);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that);case DeleteTask() when deleteTask != null:
 return deleteTask(_that);case _:
   return null;
@@ -131,12 +134,13 @@ return deleteTask(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( DateTime date)?  loadTasksForDate,TResult Function()?  loadBacklog,TResult Function( String id)?  completeTask,TResult Function( String id)?  pushToTomorrow,TResult Function( String id)?  deleteTask,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( DateTime date)?  loadTasksForDate,TResult Function()?  loadBacklog,TResult Function( String id)?  completeTask,TResult Function( String id)?  reopenTask,TResult Function( String id)?  pushToTomorrow,TResult Function( String id)?  deleteTask,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that.date);case LoadBacklog() when loadBacklog != null:
 return loadBacklog();case CompleteTask() when completeTask != null:
-return completeTask(_that.id);case PushToTomorrow() when pushToTomorrow != null:
+return completeTask(_that.id);case ReopenTask() when reopenTask != null:
+return reopenTask(_that.id);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that.id);case DeleteTask() when deleteTask != null:
 return deleteTask(_that.id);case _:
   return orElse();
@@ -156,12 +160,13 @@ return deleteTask(_that.id);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( DateTime date)  loadTasksForDate,required TResult Function()  loadBacklog,required TResult Function( String id)  completeTask,required TResult Function( String id)  pushToTomorrow,required TResult Function( String id)  deleteTask,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( DateTime date)  loadTasksForDate,required TResult Function()  loadBacklog,required TResult Function( String id)  completeTask,required TResult Function( String id)  reopenTask,required TResult Function( String id)  pushToTomorrow,required TResult Function( String id)  deleteTask,}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate():
 return loadTasksForDate(_that.date);case LoadBacklog():
 return loadBacklog();case CompleteTask():
-return completeTask(_that.id);case PushToTomorrow():
+return completeTask(_that.id);case ReopenTask():
+return reopenTask(_that.id);case PushToTomorrow():
 return pushToTomorrow(_that.id);case DeleteTask():
 return deleteTask(_that.id);case _:
   throw StateError('Unexpected subclass');
@@ -180,12 +185,13 @@ return deleteTask(_that.id);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( DateTime date)?  loadTasksForDate,TResult? Function()?  loadBacklog,TResult? Function( String id)?  completeTask,TResult? Function( String id)?  pushToTomorrow,TResult? Function( String id)?  deleteTask,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( DateTime date)?  loadTasksForDate,TResult? Function()?  loadBacklog,TResult? Function( String id)?  completeTask,TResult? Function( String id)?  reopenTask,TResult? Function( String id)?  pushToTomorrow,TResult? Function( String id)?  deleteTask,}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that.date);case LoadBacklog() when loadBacklog != null:
 return loadBacklog();case CompleteTask() when completeTask != null:
-return completeTask(_that.id);case PushToTomorrow() when pushToTomorrow != null:
+return completeTask(_that.id);case ReopenTask() when reopenTask != null:
+return reopenTask(_that.id);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that.id);case DeleteTask() when deleteTask != null:
 return deleteTask(_that.id);case _:
   return null;
@@ -351,6 +357,72 @@ class _$CompleteTaskCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? id = null,}) {
   return _then(CompleteTask(
+null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ReopenTask implements TaskListEvent {
+  const ReopenTask(this.id);
+  
+
+ final  String id;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ReopenTaskCopyWith<ReopenTask> get copyWith => _$ReopenTaskCopyWithImpl<ReopenTask>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ReopenTask&&(identical(other.id, id) || other.id == id));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id);
+
+@override
+String toString() {
+  return 'TaskListEvent.reopenTask(id: $id)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ReopenTaskCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $ReopenTaskCopyWith(ReopenTask value, $Res Function(ReopenTask) _then) = _$ReopenTaskCopyWithImpl;
+@useResult
+$Res call({
+ String id
+});
+
+
+
+
+}
+/// @nodoc
+class _$ReopenTaskCopyWithImpl<$Res>
+    implements $ReopenTaskCopyWith<$Res> {
+  _$ReopenTaskCopyWithImpl(this._self, this._then);
+
+  final ReopenTask _self;
+  final $Res Function(ReopenTask) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? id = null,}) {
+  return _then(ReopenTask(
 null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,
   ));

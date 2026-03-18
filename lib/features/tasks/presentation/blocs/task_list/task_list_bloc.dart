@@ -16,6 +16,7 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     on<LoadTasksForDate>(_onLoadTasksForDate);
     on<LoadBacklog>(_onLoadBacklog);
     on<CompleteTask>(_onCompleteTask);
+    on<ReopenTask>(_onReopenTask);
     on<PushToTomorrow>(_onPushToTomorrow);
     on<DeleteTask>(_onDeleteTask);
   }
@@ -70,6 +71,17 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     Emitter<TaskListState> emit,
   ) async {
     final result = await _taskRepository.completeTask(event.id);
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null, // State will update via broadcast stream
+    );
+  }
+
+  Future<void> _onReopenTask(
+    ReopenTask event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final result = await _taskRepository.reopenTask(event.id);
     result.fold(
       (failure) => emit(TaskListState.error(failure.errorMessage)),
       (_) => null, // State will update via broadcast stream

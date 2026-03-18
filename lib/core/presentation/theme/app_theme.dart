@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const _seedColor = Color(0xFF5F8D4E); // Sage Green for wellness and productivity
+  static const _seedColor = Color(0xFF0052CC); // Jira-like blue
 
   static TextTheme _buildTextTheme(TextTheme base, ColorScheme colorScheme) {
     final inter = GoogleFonts.interTextTheme(base);

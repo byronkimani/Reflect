@@ -12,5 +12,6 @@ abstract class ITaskRepository {
   Future<Either<Failure, Task>> createTask(Task task);
   Future<Either<Failure, Task>> updateTask(Task task);
   Future<Either<Failure, Task>> completeTask(String id);
+  Future<Either<Failure, Task>> reopenTask(String id);
   Future<Either<Failure, Unit>> deleteTask(String id);
 }

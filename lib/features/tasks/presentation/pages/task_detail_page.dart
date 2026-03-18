@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_form/subtask_form_item.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_state.dart';
+import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/main.dart';
 
 class TaskDetailPage extends StatelessWidget {
@@ -20,9 +23,6 @@ class TaskDetailPage extends StatelessWidget {
         final cubit = TaskFormCubit(getIt<ITaskRepository>(), null);
         if (taskId != 'new') {
           // In a real app, we'd fetch the task here.
-          // For simplicity in this demo, we'll assume it's a new task if we don't have a fetch method readily available in the UI layer yet.
-          // However, the repo has getTasksForDate, but not getTaskById yet.
-          // I'll stick to 'new' logic or assume it's just a placeholder for editing.
         }
         return cubit;
       },
@@ -31,8 +31,29 @@ class TaskDetailPage extends StatelessWidget {
   }
 }
 
-class TaskFormView extends StatelessWidget {
+class TaskFormView extends StatefulWidget {
   const TaskFormView({super.key});
+
+  @override
+  State<TaskFormView> createState() => _TaskFormViewState();
+}
+
+class _TaskFormViewState extends State<TaskFormView> {
+  final FocusNode _titleFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _titleFocusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +76,7 @@ class TaskFormView extends StatelessWidget {
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
         final textTheme = theme.textTheme;
+        final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
         return Scaffold(
           appBar: AppBar(
@@ -89,18 +111,33 @@ class TaskFormView extends StatelessWidget {
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Title – no border when focused
                 TextFormField(
+                  focusNode: _titleFocusNode,
                   initialValue: state.title,
                   style: textTheme.headlineSmall,
-                  decoration: InputDecoration.collapsed(
+                  autocorrect: true,
+                  enableSuggestions: true,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
                     hintText: 'Task Title',
                     hintStyle: textTheme.headlineSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.6,
+                      ),
                     ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    contentPadding: EdgeInsets.zero,
                   ),
                   onChanged: (value) =>
                       context.read<TaskFormCubit>().titleChanged(value),
@@ -114,35 +151,58 @@ class TaskFormView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SegmentedButton<TaskPriority>(
-                  segments: const [
-                    ButtonSegment(value: TaskPriority.p1, label: Text('P1')),
-                    ButtonSegment(value: TaskPriority.p2, label: Text('P2')),
-                    ButtonSegment(value: TaskPriority.p3, label: Text('P3')),
-                    ButtonSegment(value: TaskPriority.p4, label: Text('P4')),
-                  ],
-                  selected: {state.priority},
-                  onSelectionChanged: (value) => context
-                      .read<TaskFormCubit>()
-                      .priorityChanged(value.first),
+                Row(
+                  children: TaskPriority.values.map((priority) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: PriorityChip(
+                        priority: priority,
+                        isSelected: state.priority == priority,
+                        onTap: () => context
+                            .read<TaskFormCubit>()
+                            .priorityChanged(priority),
+                      ),
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Details',
+                  'Sub Tasks',
                   style: textTheme.titleMedium?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  initialValue: state.notes,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    hintText: 'Add details or context...',
+                ...state.subtaskItems.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  return _SubtaskFormTile(
+                    key: ValueKey(item.id),
+                    item: item,
+                    index: index,
+                    onToggle: () => context
+                        .read<TaskFormCubit>()
+                        .toggleSubtaskCompletedAt(index),
+                    onTitleChanged: (value) => context
+                        .read<TaskFormCubit>()
+                        .updateSubtaskAt(index, value),
+                    onDelete: () =>
+                        context.read<TaskFormCubit>().removeSubtaskAt(index),
+                  );
+                }),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    context.read<TaskFormCubit>().addSubtask('');
+                  },
+                  icon: const Icon(Icons.add, size: 20),
+                  label: const Text('Add Sub Task'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
-                  onChanged: (value) =>
-                      context.read<TaskFormCubit>().notesChanged(value),
                 ),
                 const SizedBox(height: 24),
                 InkWell(
@@ -204,6 +264,42 @@ class TaskFormView extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 24),
+                Text(
+                  'Details',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Details – no border when focused
+                TextFormField(
+                  initialValue: state.notes,
+                  maxLines: 5,
+                  autocorrect: true,
+                  enableSuggestions: true,
+                  textInputAction: TextInputAction.newline,
+                  decoration: InputDecoration(
+                    hintText: 'Add details or context...',
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                  ),
+                  onChanged: (value) =>
+                      context.read<TaskFormCubit>().notesChanged(value),
+                ),
                 const Divider(height: 32),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -223,6 +319,99 @@ class TaskFormView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// One subtask row: checkbox, title (editable), swipe to delete. No due date (inherits from parent).
+class _SubtaskFormTile extends StatelessWidget {
+  final SubtaskFormItem item;
+  final int index;
+  final VoidCallback onToggle;
+  final ValueChanged<String> onTitleChanged;
+  final VoidCallback onDelete;
+
+  const _SubtaskFormTile({
+    super.key,
+    required this.item,
+    required this.index,
+    required this.onToggle,
+    required this.onTitleChanged,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Slidable(
+        key: ValueKey(item.id),
+        endActionPane: ActionPane(
+          motion: const DrawerMotion(),
+          extentRatio: 0.25,
+          children: [
+            SlidableAction(
+              onPressed: (_) => onDelete(),
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+              icon: Icons.delete_outline,
+            ),
+          ],
+        ),
+        child: Card(
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          color: item.isCompleted
+              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+              : colorScheme.surfaceContainerLow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 4,
+            ),
+            leading: Checkbox(
+              value: item.isCompleted,
+              onChanged: (_) => onToggle(),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            title: TextFormField(
+              initialValue: item.title,
+              style: textTheme.titleMedium?.copyWith(
+                decoration: item.isCompleted
+                    ? TextDecoration.lineThrough
+                    : null,
+                color: item.isCompleted
+                    ? colorScheme.outline
+                    : colorScheme.onSurface,
+              ),
+              autocorrect: true,
+              enableSuggestions: true,
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                hintText: 'Step ${index + 1}',
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 0,
+                ),
+              ),
+              onChanged: onTitleChanged,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

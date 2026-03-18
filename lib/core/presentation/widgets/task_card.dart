@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reflect/core/presentation/widgets/priority_badge.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
@@ -17,32 +18,51 @@ class TaskCard extends StatelessWidget {
     final isCompleted = task.status == TaskStatus.completed;
     final isOverdue = task.isOverdue && !isCompleted;
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: isOverdue
-          ? colorScheme.errorContainer.withValues(alpha: 0.2)
-          : isCompleted
-              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
-              : colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: isOverdue ? BorderSide(color: colorScheme.error, width: 1.5) : BorderSide.none,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Transform.scale(
-          scale: 1.2,
-          child: Checkbox(
-            value: isCompleted,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            onChanged: (value) {
-              if (value != null && value) {
-                context.read<TaskListBloc>().add(CompleteTask(task.id));
-              }
+    return Slidable(
+      key: ValueKey(task.id),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.25,
+        children: [
+          SlidableAction(
+            onPressed: (_) {
+              context.read<TaskListBloc>().add(TaskListEvent.deleteTask(task.id));
             },
+            backgroundColor: colorScheme.error,
+            foregroundColor: colorScheme.onError,
+            icon: Icons.delete_outline,
           ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        color: isOverdue
+            ? colorScheme.errorContainer.withValues(alpha: 0.2)
+            : isCompleted
+                ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+                : colorScheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isOverdue ? BorderSide(color: colorScheme.error, width: 1.5) : BorderSide.none,
         ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Transform.scale(
+            scale: 1.2,
+            child: Checkbox(
+              value: isCompleted,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+              onChanged: (value) {
+                if (value == null) return;
+                if (value) {
+                  context.read<TaskListBloc>().add(TaskListEvent.completeTask(task.id));
+                } else {
+                  context.read<TaskListBloc>().add(TaskListEvent.reopenTask(task.id));
+                }
+              },
+            ),
+          ),
         title: Text(
           task.title,
           style: textTheme.titleMedium?.copyWith(
@@ -55,7 +75,10 @@ class TaskCard extends StatelessWidget {
           padding: const EdgeInsets.only(top: 4),
           child: Row(
             children: [
-              PriorityBadge(priority: task.priority),
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: PriorityChip(priority: task.priority),
+              ),
               if (task.subtasks.isNotEmpty) ...[
                 const SizedBox(width: 12),
                 Icon(Icons.checklist_outlined, size: 16, color: colorScheme.onSurfaceVariant),
@@ -90,6 +113,7 @@ class TaskCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

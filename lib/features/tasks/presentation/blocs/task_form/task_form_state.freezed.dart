@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TaskFormState {
 
- String get title; String get notes; TaskPriority get priority; DateTime? get dueDate; bool get syncToGcal; bool get isSubmitting; bool get isSuccess; String? get error; Task? get initialTask;
+ String get title; String get notes; TaskPriority get priority; DateTime? get dueDate; List<SubtaskFormItem> get subtaskItems; bool get syncToGcal; bool get isSubmitting; bool get isSuccess; String? get error; Task? get initialTask;
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TaskFormStateCopyWith<TaskFormState> get copyWith => _$TaskFormStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&const DeepCollectionEquality().equals(other.subtaskItems, subtaskItems)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,syncToGcal,isSubmitting,isSuccess,error,initialTask);
+int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,const DeepCollectionEquality().hash(subtaskItems),syncToGcal,isSubmitting,isSuccess,error,initialTask);
 
 @override
 String toString() {
-  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask)';
+  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, subtaskItems: $subtaskItems, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TaskFormStateCopyWith<$Res>  {
   factory $TaskFormStateCopyWith(TaskFormState value, $Res Function(TaskFormState) _then) = _$TaskFormStateCopyWithImpl;
 @useResult
 $Res call({
- String title, String notes, TaskPriority priority, DateTime? dueDate, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask
+ String title, String notes, TaskPriority priority, DateTime? dueDate, List<SubtaskFormItem> subtaskItems, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask
 });
 
 
@@ -62,13 +62,14 @@ class _$TaskFormStateCopyWithImpl<$Res>
 
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? subtaskItems = null,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String,priority: null == priority ? _self.priority : priority // ignore: cast_nullable_to_non_nullable
 as TaskPriority,dueDate: freezed == dueDate ? _self.dueDate : dueDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,syncToGcal: null == syncToGcal ? _self.syncToGcal : syncToGcal // ignore: cast_nullable_to_non_nullable
+as DateTime?,subtaskItems: null == subtaskItems ? _self.subtaskItems : subtaskItems // ignore: cast_nullable_to_non_nullable
+as List<SubtaskFormItem>,syncToGcal: null == syncToGcal ? _self.syncToGcal : syncToGcal // ignore: cast_nullable_to_non_nullable
 as bool,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
 as bool,isSuccess: null == isSuccess ? _self.isSuccess : isSuccess // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
@@ -170,10 +171,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  List<SubtaskFormItem> subtaskItems,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TaskFormState() when $default != null:
-return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask);case _:
+return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.subtaskItems,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask);case _:
   return orElse();
 
 }
@@ -191,10 +192,10 @@ return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.syncT
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  List<SubtaskFormItem> subtaskItems,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask)  $default,) {final _that = this;
 switch (_that) {
 case _TaskFormState():
-return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask);case _:
+return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.subtaskItems,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -211,10 +212,10 @@ return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.syncT
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  List<SubtaskFormItem> subtaskItems,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask)?  $default,) {final _that = this;
 switch (_that) {
 case _TaskFormState() when $default != null:
-return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask);case _:
+return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.subtaskItems,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask);case _:
   return null;
 
 }
@@ -226,13 +227,20 @@ return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.syncT
 
 
 class _TaskFormState implements TaskFormState {
-  const _TaskFormState({this.title = '', this.notes = '', this.priority = TaskPriority.p4, this.dueDate, this.syncToGcal = false, this.isSubmitting = false, this.isSuccess = false, this.error, this.initialTask});
+  const _TaskFormState({this.title = '', this.notes = '', this.priority = TaskPriority.p4, this.dueDate, final  List<SubtaskFormItem> subtaskItems = const [], this.syncToGcal = false, this.isSubmitting = false, this.isSuccess = false, this.error, this.initialTask}): _subtaskItems = subtaskItems;
   
 
 @override@JsonKey() final  String title;
 @override@JsonKey() final  String notes;
 @override@JsonKey() final  TaskPriority priority;
 @override final  DateTime? dueDate;
+ final  List<SubtaskFormItem> _subtaskItems;
+@override@JsonKey() List<SubtaskFormItem> get subtaskItems {
+  if (_subtaskItems is EqualUnmodifiableListView) return _subtaskItems;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_subtaskItems);
+}
+
 @override@JsonKey() final  bool syncToGcal;
 @override@JsonKey() final  bool isSubmitting;
 @override@JsonKey() final  bool isSuccess;
@@ -249,16 +257,16 @@ _$TaskFormStateCopyWith<_TaskFormState> get copyWith => __$TaskFormStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&const DeepCollectionEquality().equals(other._subtaskItems, _subtaskItems)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,syncToGcal,isSubmitting,isSuccess,error,initialTask);
+int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,const DeepCollectionEquality().hash(_subtaskItems),syncToGcal,isSubmitting,isSuccess,error,initialTask);
 
 @override
 String toString() {
-  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask)';
+  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, subtaskItems: $subtaskItems, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask)';
 }
 
 
@@ -269,7 +277,7 @@ abstract mixin class _$TaskFormStateCopyWith<$Res> implements $TaskFormStateCopy
   factory _$TaskFormStateCopyWith(_TaskFormState value, $Res Function(_TaskFormState) _then) = __$TaskFormStateCopyWithImpl;
 @override @useResult
 $Res call({
- String title, String notes, TaskPriority priority, DateTime? dueDate, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask
+ String title, String notes, TaskPriority priority, DateTime? dueDate, List<SubtaskFormItem> subtaskItems, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask
 });
 
 
@@ -286,13 +294,14 @@ class __$TaskFormStateCopyWithImpl<$Res>
 
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? subtaskItems = null,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,}) {
   return _then(_TaskFormState(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String,priority: null == priority ? _self.priority : priority // ignore: cast_nullable_to_non_nullable
 as TaskPriority,dueDate: freezed == dueDate ? _self.dueDate : dueDate // ignore: cast_nullable_to_non_nullable
-as DateTime?,syncToGcal: null == syncToGcal ? _self.syncToGcal : syncToGcal // ignore: cast_nullable_to_non_nullable
+as DateTime?,subtaskItems: null == subtaskItems ? _self._subtaskItems : subtaskItems // ignore: cast_nullable_to_non_nullable
+as List<SubtaskFormItem>,syncToGcal: null == syncToGcal ? _self.syncToGcal : syncToGcal // ignore: cast_nullable_to_non_nullable
 as bool,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
 as bool,isSuccess: null == isSuccess ? _self.isSuccess : isSuccess // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable

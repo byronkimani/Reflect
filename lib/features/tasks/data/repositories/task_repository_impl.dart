@@ -9,6 +9,7 @@ import 'package:reflect/core/network/network_info.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
 import 'package:reflect/features/tasks/data/models/mappers.dart';
+import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
@@ -26,6 +27,21 @@ class TaskRepositoryImpl implements ITaskRepository {
     this._recurrenceEngine,
   );
 
+  Future<List<Task>> _loadTasksWithSubtasks(List<TaskData> rows) async {
+    if (rows.isEmpty) return [];
+    final taskIds = rows.map((r) => r.id).toList();
+    final subtaskRows = await (_db.select(_db.subtasks)
+          ..where((s) => s.taskId.isIn(taskIds)))
+        .get();
+    final subtasksByTask = <String, List<Subtask>>{};
+    for (final s in subtaskRows) {
+      subtasksByTask.putIfAbsent(s.taskId, () => []).add(s.toDomain());
+    }
+    return rows
+        .map((r) => r.toDomain(subtasks: subtasksByTask[r.id] ?? []))
+        .toList();
+  }
+
   @override
   Stream<Either<Failure, List<Task>>> watchTasksForDate(DateTime date) {
     final startOfDay = DateTime(date.year, date.month, date.day);
@@ -39,9 +55,9 @@ class TaskRepositoryImpl implements ITaskRepository {
               ) |
               t.dueDate.isNull()))
         .watch()
-        .map((rows) {
+        .asyncMap((rows) async {
       try {
-        final tasks = rows.map((row) => row.toDomain()).toList();
+        final tasks = await _loadTasksWithSubtasks(rows);
         return Right(tasks);
       } catch (e) {
         return Left(CacheFailure(errorMessage: e.toString()));
@@ -53,9 +69,9 @@ class TaskRepositoryImpl implements ITaskRepository {
   Stream<Either<Failure, List<Task>>> watchBacklogTasks() {
     return (_db.select(_db.tasks)..where((t) => t.dueDate.isNull()))
         .watch()
-        .map((rows) {
+        .asyncMap((rows) async {
       try {
-        final tasks = rows.map((row) => row.toDomain()).toList();
+        final tasks = await _loadTasksWithSubtasks(rows);
         return Right(tasks);
       } catch (e) {
         return Left(CacheFailure(errorMessage: e.toString()));
@@ -77,7 +93,7 @@ class TaskRepositoryImpl implements ITaskRepository {
                 ) |
                 t.dueDate.isNull()))
           .get();
-      final tasks = rows.map((row) => row.toDomain()).toList();
+      final tasks = await _loadTasksWithSubtasks(rows);
       return Right(tasks);
     } catch (e) {
       return Left(CacheFailure(errorMessage: e.toString()));
@@ -88,7 +104,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<Either<Failure, List<Task>>> getBacklogTasks() async {
     try {
       final rows = await (_db.select(_db.tasks)..where((t) => t.dueDate.isNull())).get();
-      final tasks = rows.map((row) => row.toDomain()).toList();
+      final tasks = await _loadTasksWithSubtasks(rows);
       return Right(tasks);
     } catch (e) {
       return Left(CacheFailure(errorMessage: e.toString()));
@@ -100,11 +116,12 @@ class TaskRepositoryImpl implements ITaskRepository {
     try {
       final companion = task.toCompanion();
       await _db.into(_db.tasks).insert(companion);
-      
+      for (final subtask in task.subtasks) {
+        await _db.into(_db.subtasks).insert(subtask.toCompanion());
+      }
       if (task.syncToGcal) {
         _handleGCalSync(task, 'CREATE');
       }
-      
       return Right(task);
     } catch (e) {
       return Left(CacheFailure(errorMessage: e.toString()));
@@ -115,11 +132,13 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<Either<Failure, Task>> updateTask(Task task) async {
     try {
       await _db.update(_db.tasks).replace(task.toCompanion());
-      
+      await (_db.delete(_db.subtasks)..where((s) => s.taskId.equals(task.id))).go();
+      for (final subtask in task.subtasks) {
+        await _db.into(_db.subtasks).insert(subtask.toCompanion());
+      }
       if (task.syncToGcal) {
         _handleGCalSync(task, 'UPDATE');
       }
-      
       return Right(task);
     } catch (e) {
       return Left(CacheFailure(errorMessage: e.toString()));
@@ -156,6 +175,29 @@ class TaskRepositoryImpl implements ITaskRepository {
       }
 
       // 3. GCal Sync
+      if (task.syncToGcal) {
+        _handleGCalSync(updatedTask, 'UPDATE');
+      }
+
+      return Right(updatedTask);
+    } catch (e) {
+      return Left(CacheFailure(errorMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Task>> reopenTask(String id) async {
+    try {
+      final query = _db.select(_db.tasks)..where((t) => t.id.equals(id));
+      final taskData = await query.getSingle();
+      final task = taskData.toDomain();
+
+      final updatedTask = task.copyWith(
+        status: TaskStatus.pending,
+        updatedAt: DateTime.now(),
+      );
+      await _db.update(_db.tasks).replace(updatedTask.toCompanion());
+
       if (task.syncToGcal) {
         _handleGCalSync(updatedTask, 'UPDATE');
       }
