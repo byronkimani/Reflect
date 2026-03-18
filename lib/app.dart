@@ -5,7 +5,7 @@ import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
 import 'package:reflect/core/network/presentation/connectivity_event.dart';
 import 'package:reflect/core/presentation/connectivity_wrapper.dart';
 import 'package:reflect/core/router/app_router.dart';
-import 'package:reflect/core/theme/app_theme.dart';
+import 'package:reflect/core/presentation/theme/app_theme.dart';
 import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';

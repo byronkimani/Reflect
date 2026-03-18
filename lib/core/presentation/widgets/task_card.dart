@@ -12,65 +12,82 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final isCompleted = task.status == TaskStatus.completed;
     final isOverdue = task.isOverdue && !isCompleted;
 
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: isOverdue 
-          ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.5)
-          : isCompleted 
-              ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
-              : Theme.of(context).colorScheme.surfaceContainerHighest,
+      color: isOverdue
+          ? colorScheme.errorContainer.withValues(alpha: 0.2)
+          : isCompleted
+              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
+              : colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: isOverdue 
-            ? BorderSide(color: Theme.of(context).colorScheme.error, width: 1)
-            : BorderSide.none,
+        borderRadius: BorderRadius.circular(16),
+        side: isOverdue ? BorderSide(color: colorScheme.error, width: 1.5) : BorderSide.none,
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        leading: Checkbox(
-          value: isCompleted,
-          onChanged: (value) {
-            if (value != null && value) {
-              context.read<TaskListBloc>().add(CompleteTask(task.id));
-            }
-          },
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Transform.scale(
+          scale: 1.2,
+          child: Checkbox(
+            value: isCompleted,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            onChanged: (value) {
+              if (value != null && value) {
+                context.read<TaskListBloc>().add(CompleteTask(task.id));
+              }
+            },
+          ),
         ),
         title: Text(
           task.title,
-          style: TextStyle(
+          style: textTheme.titleMedium?.copyWith(
             decoration: isCompleted ? TextDecoration.lineThrough : null,
-            color: isCompleted ? Colors.grey : null,
-            fontWeight: FontWeight.w500,
+            color: isCompleted ? colorScheme.outline : colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Row(
-          children: [
-            PriorityBadge(priority: task.priority),
-            if (task.subtasks.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              Icon(Icons.list, size: 14, color: Colors.grey[600]),
-              const SizedBox(width: 2),
-              Text(
-                '${task.subtasks.where((s) => s.isCompleted).length}/${task.subtasks.length}',
-                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-              ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            children: [
+              PriorityBadge(priority: task.priority),
+              if (task.subtasks.isNotEmpty) ...[
+                const SizedBox(width: 12),
+                Icon(Icons.checklist_outlined, size: 16, color: colorScheme.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text(
+                  '${task.subtasks.where((s) => s.isCompleted).length}/${task.subtasks.length}',
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+              ],
+              if (task.syncToGcal) ...[
+                const SizedBox(width: 12),
+                Icon(Icons.sync, size: 16, color: colorScheme.onSurfaceVariant),
+              ],
+              if (isOverdue) ...[
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colorScheme.error,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'OVERDUE',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onError,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ],
-            if (task.syncToGcal) ...[
-              const SizedBox(width: 8),
-              Icon(Icons.sync, size: 14, color: Colors.grey[600]),
-            ],
-            if (isOverdue) ...[
-              const Spacer(),
-              const Text(
-                'Overdue',
-                style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );

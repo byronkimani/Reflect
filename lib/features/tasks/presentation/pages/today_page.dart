@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:reflect/core/presentation/widgets/section_header.dart';
 import 'package:reflect/core/presentation/widgets/task_card.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
@@ -11,6 +12,9 @@ class TodayPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: BlocBuilder<TaskListBloc, TaskListState>(
         builder: (context, state) {
@@ -19,17 +23,39 @@ class TodayPage extends StatelessWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (message) => Center(child: Text('Error: $message')),
             loaded: (pending, completed, overdue, sortMode) {
+              final now = DateTime.now();
+              final hour = now.hour;
+              String greeting = 'Good morning';
+              if (hour >= 12 && hour < 17) {
+                greeting = 'Good afternoon';
+              } else if (hour >= 17) {
+                greeting = 'Good evening';
+              }
+
               return CustomScrollView(
                 slivers: [
-                  SliverAppBar(
-                    floating: true,
-                    expandedHeight: 120.0,
+                  SliverAppBar.large(
+                    expandedHeight: 180.0,
                     flexibleSpace: FlexibleSpaceBar(
-                      title: Text(
-                        DateFormat('EEEE, MMM d').format(DateTime.now()),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
+                      title: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            greeting,
+                            style: textTheme.titleSmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          Text(
+                            DateFormat('EEEE, MMM d').format(now),
+                            style: textTheme.headlineMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       centerTitle: false,
                       titlePadding: const EdgeInsetsDirectional.only(
@@ -39,17 +65,10 @@ class TodayPage extends StatelessWidget {
                     ),
                   ),
                   if (overdue.isNotEmpty) ...[
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        child: Text(
-                          'Overdue',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
+                    SliverToBoxAdapter(
+                      child: SectionHeader(
+                        title: 'OVERDUE',
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                       ),
                     ),
                     SliverList(
@@ -60,25 +79,22 @@ class TodayPage extends StatelessWidget {
                     ),
                   ],
                   const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                      child: Text(
-                        'Tasks',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    child: SectionHeader(title: 'TASKS'),
                   ),
                   if (pending.isEmpty)
-                    const SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(32.0),
+                        padding: const EdgeInsets.all(32.0),
                         child: Center(
-                          child: Text(
-                            'No tasks for today. Plus some rest?',
-                            style: TextStyle(color: Colors.grey),
+                          child: Column(
+                            children: [
+                              Icon(Icons.done_all, size: 48, color: colorScheme.outlineVariant),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No tasks for today. Plus some rest?',
+                                style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -87,7 +103,6 @@ class TodayPage extends StatelessWidget {
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          // Already sorted by priority in Bloc ideally, but we'll ensure here if needed
                           final sortedPending = List.from(pending)
                             ..sort((a, b) => a.priority.index.compareTo(b.priority.index));
                           return TaskCard(task: sortedPending[index]);
@@ -97,17 +112,7 @@ class TodayPage extends StatelessWidget {
                     ),
                   if (completed.isNotEmpty) ...[
                     const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
-                        child: Text(
-                          'Completed',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
+                      child: SectionHeader(title: 'COMPLETED'),
                     ),
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
@@ -116,16 +121,16 @@ class TodayPage extends StatelessWidget {
                       ),
                     ),
                   ],
-                  // Extra space at bottom for FAB
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+                  const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
                 ],
               );
             },
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.large(
         onPressed: () => context.go('/today/task/new'),
+        elevation: 2,
         child: const Icon(Icons.add),
       ),
     );
