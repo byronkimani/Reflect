@@ -5724,6 +5724,1297 @@ class MonthlyGoalsCompanion extends UpdateCompanion<MonthlyGoalData> {
   }
 }
 
+class $GoalCategoriesTable extends GoalCategories
+    with TableInfo<$GoalCategoriesTable, GoalCategoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GoalCategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => const Uuid().v4(),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    sortOrder,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'goal_categories';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<GoalCategoryData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GoalCategoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GoalCategoryData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $GoalCategoriesTable createAlias(String alias) {
+    return $GoalCategoriesTable(attachedDatabase, alias);
+  }
+}
+
+class GoalCategoryData extends DataClass
+    implements Insertable<GoalCategoryData> {
+  final String id;
+  final String name;
+  final int sortOrder;
+  final int createdAt;
+  final int updatedAt;
+  const GoalCategoryData({
+    required this.id,
+    required this.name,
+    required this.sortOrder,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  GoalCategoriesCompanion toCompanion(bool nullToAbsent) {
+    return GoalCategoriesCompanion(
+      id: Value(id),
+      name: Value(name),
+      sortOrder: Value(sortOrder),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory GoalCategoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GoalCategoryData(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  GoalCategoryData copyWith({
+    String? id,
+    String? name,
+    int? sortOrder,
+    int? createdAt,
+    int? updatedAt,
+  }) => GoalCategoryData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    sortOrder: sortOrder ?? this.sortOrder,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  GoalCategoryData copyWithCompanion(GoalCategoriesCompanion data) {
+    return GoalCategoryData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalCategoryData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, sortOrder, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GoalCategoryData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.sortOrder == this.sortOrder &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class GoalCategoriesCompanion extends UpdateCompanion<GoalCategoryData> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<int> sortOrder;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const GoalCategoriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GoalCategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.sortOrder = const Value.absent(),
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : name = Value(name),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<GoalCategoryData> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<int>? sortOrder,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GoalCategoriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<int>? sortOrder,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return GoalCategoriesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      sortOrder: sortOrder ?? this.sortOrder,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalCategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GoalsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => const Uuid().v4(),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'REFERENCES goal_categories(id) ON DELETE SET NULL',
+  );
+  static const VerificationMeta _kpiDescriptionMeta = const VerificationMeta(
+    'kpiDescription',
+  );
+  @override
+  late final GeneratedColumn<String> kpiDescription = GeneratedColumn<String>(
+    'kpi_description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startValueMeta = const VerificationMeta(
+    'startValue',
+  );
+  @override
+  late final GeneratedColumn<String> startValue = GeneratedColumn<String>(
+    'start_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetValueMeta = const VerificationMeta(
+    'targetValue',
+  );
+  @override
+  late final GeneratedColumn<String> targetValue = GeneratedColumn<String>(
+    'target_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _urgencyMeta = const VerificationMeta(
+    'urgency',
+  );
+  @override
+  late final GeneratedColumn<String> urgency = GeneratedColumn<String>(
+    'urgency',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _whyMeta = const VerificationMeta('why');
+  @override
+  late final GeneratedColumn<String> why = GeneratedColumn<String>(
+    'why',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<int> startDate = GeneratedColumn<int>(
+    'start_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetDateMeta = const VerificationMeta(
+    'targetDate',
+  );
+  @override
+  late final GeneratedColumn<int> targetDate = GeneratedColumn<int>(
+    'target_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _checkInFrequencyMeta = const VerificationMeta(
+    'checkInFrequency',
+  );
+  @override
+  late final GeneratedColumn<String> checkInFrequency = GeneratedColumn<String>(
+    'check_in_frequency',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timeHorizonMeta = const VerificationMeta(
+    'timeHorizon',
+  );
+  @override
+  late final GeneratedColumn<String> timeHorizon = GeneratedColumn<String>(
+    'time_horizon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    description,
+    categoryId,
+    kpiDescription,
+    startValue,
+    targetValue,
+    priority,
+    urgency,
+    why,
+    startDate,
+    targetDate,
+    checkInFrequency,
+    timeHorizon,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'goals';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<GoalData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('kpi_description')) {
+      context.handle(
+        _kpiDescriptionMeta,
+        kpiDescription.isAcceptableOrUnknown(
+          data['kpi_description']!,
+          _kpiDescriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('start_value')) {
+      context.handle(
+        _startValueMeta,
+        startValue.isAcceptableOrUnknown(data['start_value']!, _startValueMeta),
+      );
+    }
+    if (data.containsKey('target_value')) {
+      context.handle(
+        _targetValueMeta,
+        targetValue.isAcceptableOrUnknown(
+          data['target_value']!,
+          _targetValueMeta,
+        ),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('urgency')) {
+      context.handle(
+        _urgencyMeta,
+        urgency.isAcceptableOrUnknown(data['urgency']!, _urgencyMeta),
+      );
+    }
+    if (data.containsKey('why')) {
+      context.handle(
+        _whyMeta,
+        why.isAcceptableOrUnknown(data['why']!, _whyMeta),
+      );
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    }
+    if (data.containsKey('target_date')) {
+      context.handle(
+        _targetDateMeta,
+        targetDate.isAcceptableOrUnknown(data['target_date']!, _targetDateMeta),
+      );
+    }
+    if (data.containsKey('check_in_frequency')) {
+      context.handle(
+        _checkInFrequencyMeta,
+        checkInFrequency.isAcceptableOrUnknown(
+          data['check_in_frequency']!,
+          _checkInFrequencyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('time_horizon')) {
+      context.handle(
+        _timeHorizonMeta,
+        timeHorizon.isAcceptableOrUnknown(
+          data['time_horizon']!,
+          _timeHorizonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_timeHorizonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GoalData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GoalData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      kpiDescription: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kpi_description'],
+      ),
+      startValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}start_value'],
+      ),
+      targetValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_value'],
+      ),
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      ),
+      urgency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}urgency'],
+      ),
+      why: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}why'],
+      ),
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_date'],
+      ),
+      targetDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_date'],
+      ),
+      checkInFrequency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}check_in_frequency'],
+      ),
+      timeHorizon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}time_horizon'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $GoalsTable createAlias(String alias) {
+    return $GoalsTable(attachedDatabase, alias);
+  }
+}
+
+class GoalData extends DataClass implements Insertable<GoalData> {
+  final String id;
+  final String title;
+  final String? description;
+  final String? categoryId;
+  final String? kpiDescription;
+  final String? startValue;
+  final String? targetValue;
+  final String? priority;
+  final String? urgency;
+  final String? why;
+  final int? startDate;
+  final int? targetDate;
+  final String? checkInFrequency;
+  final String timeHorizon;
+  final int createdAt;
+  final int updatedAt;
+  const GoalData({
+    required this.id,
+    required this.title,
+    this.description,
+    this.categoryId,
+    this.kpiDescription,
+    this.startValue,
+    this.targetValue,
+    this.priority,
+    this.urgency,
+    this.why,
+    this.startDate,
+    this.targetDate,
+    this.checkInFrequency,
+    required this.timeHorizon,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    if (!nullToAbsent || kpiDescription != null) {
+      map['kpi_description'] = Variable<String>(kpiDescription);
+    }
+    if (!nullToAbsent || startValue != null) {
+      map['start_value'] = Variable<String>(startValue);
+    }
+    if (!nullToAbsent || targetValue != null) {
+      map['target_value'] = Variable<String>(targetValue);
+    }
+    if (!nullToAbsent || priority != null) {
+      map['priority'] = Variable<String>(priority);
+    }
+    if (!nullToAbsent || urgency != null) {
+      map['urgency'] = Variable<String>(urgency);
+    }
+    if (!nullToAbsent || why != null) {
+      map['why'] = Variable<String>(why);
+    }
+    if (!nullToAbsent || startDate != null) {
+      map['start_date'] = Variable<int>(startDate);
+    }
+    if (!nullToAbsent || targetDate != null) {
+      map['target_date'] = Variable<int>(targetDate);
+    }
+    if (!nullToAbsent || checkInFrequency != null) {
+      map['check_in_frequency'] = Variable<String>(checkInFrequency);
+    }
+    map['time_horizon'] = Variable<String>(timeHorizon);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  GoalsCompanion toCompanion(bool nullToAbsent) {
+    return GoalsCompanion(
+      id: Value(id),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      kpiDescription: kpiDescription == null && nullToAbsent
+          ? const Value.absent()
+          : Value(kpiDescription),
+      startValue: startValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startValue),
+      targetValue: targetValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetValue),
+      priority: priority == null && nullToAbsent
+          ? const Value.absent()
+          : Value(priority),
+      urgency: urgency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(urgency),
+      why: why == null && nullToAbsent ? const Value.absent() : Value(why),
+      startDate: startDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startDate),
+      targetDate: targetDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetDate),
+      checkInFrequency: checkInFrequency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(checkInFrequency),
+      timeHorizon: Value(timeHorizon),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory GoalData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GoalData(
+      id: serializer.fromJson<String>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      kpiDescription: serializer.fromJson<String?>(json['kpiDescription']),
+      startValue: serializer.fromJson<String?>(json['startValue']),
+      targetValue: serializer.fromJson<String?>(json['targetValue']),
+      priority: serializer.fromJson<String?>(json['priority']),
+      urgency: serializer.fromJson<String?>(json['urgency']),
+      why: serializer.fromJson<String?>(json['why']),
+      startDate: serializer.fromJson<int?>(json['startDate']),
+      targetDate: serializer.fromJson<int?>(json['targetDate']),
+      checkInFrequency: serializer.fromJson<String?>(json['checkInFrequency']),
+      timeHorizon: serializer.fromJson<String>(json['timeHorizon']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'kpiDescription': serializer.toJson<String?>(kpiDescription),
+      'startValue': serializer.toJson<String?>(startValue),
+      'targetValue': serializer.toJson<String?>(targetValue),
+      'priority': serializer.toJson<String?>(priority),
+      'urgency': serializer.toJson<String?>(urgency),
+      'why': serializer.toJson<String?>(why),
+      'startDate': serializer.toJson<int?>(startDate),
+      'targetDate': serializer.toJson<int?>(targetDate),
+      'checkInFrequency': serializer.toJson<String?>(checkInFrequency),
+      'timeHorizon': serializer.toJson<String>(timeHorizon),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  GoalData copyWith({
+    String? id,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    Value<String?> categoryId = const Value.absent(),
+    Value<String?> kpiDescription = const Value.absent(),
+    Value<String?> startValue = const Value.absent(),
+    Value<String?> targetValue = const Value.absent(),
+    Value<String?> priority = const Value.absent(),
+    Value<String?> urgency = const Value.absent(),
+    Value<String?> why = const Value.absent(),
+    Value<int?> startDate = const Value.absent(),
+    Value<int?> targetDate = const Value.absent(),
+    Value<String?> checkInFrequency = const Value.absent(),
+    String? timeHorizon,
+    int? createdAt,
+    int? updatedAt,
+  }) => GoalData(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    kpiDescription: kpiDescription.present
+        ? kpiDescription.value
+        : this.kpiDescription,
+    startValue: startValue.present ? startValue.value : this.startValue,
+    targetValue: targetValue.present ? targetValue.value : this.targetValue,
+    priority: priority.present ? priority.value : this.priority,
+    urgency: urgency.present ? urgency.value : this.urgency,
+    why: why.present ? why.value : this.why,
+    startDate: startDate.present ? startDate.value : this.startDate,
+    targetDate: targetDate.present ? targetDate.value : this.targetDate,
+    checkInFrequency: checkInFrequency.present
+        ? checkInFrequency.value
+        : this.checkInFrequency,
+    timeHorizon: timeHorizon ?? this.timeHorizon,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  GoalData copyWithCompanion(GoalsCompanion data) {
+    return GoalData(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      kpiDescription: data.kpiDescription.present
+          ? data.kpiDescription.value
+          : this.kpiDescription,
+      startValue: data.startValue.present
+          ? data.startValue.value
+          : this.startValue,
+      targetValue: data.targetValue.present
+          ? data.targetValue.value
+          : this.targetValue,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      urgency: data.urgency.present ? data.urgency.value : this.urgency,
+      why: data.why.present ? data.why.value : this.why,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      targetDate: data.targetDate.present
+          ? data.targetDate.value
+          : this.targetDate,
+      checkInFrequency: data.checkInFrequency.present
+          ? data.checkInFrequency.value
+          : this.checkInFrequency,
+      timeHorizon: data.timeHorizon.present
+          ? data.timeHorizon.value
+          : this.timeHorizon,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalData(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('kpiDescription: $kpiDescription, ')
+          ..write('startValue: $startValue, ')
+          ..write('targetValue: $targetValue, ')
+          ..write('priority: $priority, ')
+          ..write('urgency: $urgency, ')
+          ..write('why: $why, ')
+          ..write('startDate: $startDate, ')
+          ..write('targetDate: $targetDate, ')
+          ..write('checkInFrequency: $checkInFrequency, ')
+          ..write('timeHorizon: $timeHorizon, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    title,
+    description,
+    categoryId,
+    kpiDescription,
+    startValue,
+    targetValue,
+    priority,
+    urgency,
+    why,
+    startDate,
+    targetDate,
+    checkInFrequency,
+    timeHorizon,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GoalData &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.categoryId == this.categoryId &&
+          other.kpiDescription == this.kpiDescription &&
+          other.startValue == this.startValue &&
+          other.targetValue == this.targetValue &&
+          other.priority == this.priority &&
+          other.urgency == this.urgency &&
+          other.why == this.why &&
+          other.startDate == this.startDate &&
+          other.targetDate == this.targetDate &&
+          other.checkInFrequency == this.checkInFrequency &&
+          other.timeHorizon == this.timeHorizon &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class GoalsCompanion extends UpdateCompanion<GoalData> {
+  final Value<String> id;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<String?> categoryId;
+  final Value<String?> kpiDescription;
+  final Value<String?> startValue;
+  final Value<String?> targetValue;
+  final Value<String?> priority;
+  final Value<String?> urgency;
+  final Value<String?> why;
+  final Value<int?> startDate;
+  final Value<int?> targetDate;
+  final Value<String?> checkInFrequency;
+  final Value<String> timeHorizon;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const GoalsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.kpiDescription = const Value.absent(),
+    this.startValue = const Value.absent(),
+    this.targetValue = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.urgency = const Value.absent(),
+    this.why = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.targetDate = const Value.absent(),
+    this.checkInFrequency = const Value.absent(),
+    this.timeHorizon = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GoalsCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    this.description = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.kpiDescription = const Value.absent(),
+    this.startValue = const Value.absent(),
+    this.targetValue = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.urgency = const Value.absent(),
+    this.why = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.targetDate = const Value.absent(),
+    this.checkInFrequency = const Value.absent(),
+    required String timeHorizon,
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : title = Value(title),
+       timeHorizon = Value(timeHorizon),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<GoalData> custom({
+    Expression<String>? id,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<String>? categoryId,
+    Expression<String>? kpiDescription,
+    Expression<String>? startValue,
+    Expression<String>? targetValue,
+    Expression<String>? priority,
+    Expression<String>? urgency,
+    Expression<String>? why,
+    Expression<int>? startDate,
+    Expression<int>? targetDate,
+    Expression<String>? checkInFrequency,
+    Expression<String>? timeHorizon,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (categoryId != null) 'category_id': categoryId,
+      if (kpiDescription != null) 'kpi_description': kpiDescription,
+      if (startValue != null) 'start_value': startValue,
+      if (targetValue != null) 'target_value': targetValue,
+      if (priority != null) 'priority': priority,
+      if (urgency != null) 'urgency': urgency,
+      if (why != null) 'why': why,
+      if (startDate != null) 'start_date': startDate,
+      if (targetDate != null) 'target_date': targetDate,
+      if (checkInFrequency != null) 'check_in_frequency': checkInFrequency,
+      if (timeHorizon != null) 'time_horizon': timeHorizon,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GoalsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<String?>? categoryId,
+    Value<String?>? kpiDescription,
+    Value<String?>? startValue,
+    Value<String?>? targetValue,
+    Value<String?>? priority,
+    Value<String?>? urgency,
+    Value<String?>? why,
+    Value<int?>? startDate,
+    Value<int?>? targetDate,
+    Value<String?>? checkInFrequency,
+    Value<String>? timeHorizon,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return GoalsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      categoryId: categoryId ?? this.categoryId,
+      kpiDescription: kpiDescription ?? this.kpiDescription,
+      startValue: startValue ?? this.startValue,
+      targetValue: targetValue ?? this.targetValue,
+      priority: priority ?? this.priority,
+      urgency: urgency ?? this.urgency,
+      why: why ?? this.why,
+      startDate: startDate ?? this.startDate,
+      targetDate: targetDate ?? this.targetDate,
+      checkInFrequency: checkInFrequency ?? this.checkInFrequency,
+      timeHorizon: timeHorizon ?? this.timeHorizon,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (kpiDescription.present) {
+      map['kpi_description'] = Variable<String>(kpiDescription.value);
+    }
+    if (startValue.present) {
+      map['start_value'] = Variable<String>(startValue.value);
+    }
+    if (targetValue.present) {
+      map['target_value'] = Variable<String>(targetValue.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
+    if (urgency.present) {
+      map['urgency'] = Variable<String>(urgency.value);
+    }
+    if (why.present) {
+      map['why'] = Variable<String>(why.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<int>(startDate.value);
+    }
+    if (targetDate.present) {
+      map['target_date'] = Variable<int>(targetDate.value);
+    }
+    if (checkInFrequency.present) {
+      map['check_in_frequency'] = Variable<String>(checkInFrequency.value);
+    }
+    if (timeHorizon.present) {
+      map['time_horizon'] = Variable<String>(timeHorizon.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalsCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('kpiDescription: $kpiDescription, ')
+          ..write('startValue: $startValue, ')
+          ..write('targetValue: $targetValue, ')
+          ..write('priority: $priority, ')
+          ..write('urgency: $urgency, ')
+          ..write('why: $why, ')
+          ..write('startDate: $startDate, ')
+          ..write('targetDate: $targetDate, ')
+          ..write('checkInFrequency: $checkInFrequency, ')
+          ..write('timeHorizon: $timeHorizon, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $GCalSyncQueueTable extends GCalSyncQueue
     with TableInfo<$GCalSyncQueueTable, GCalSyncQueueData> {
   @override
@@ -6149,6 +7440,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MonthlyPlansTable monthlyPlans = $MonthlyPlansTable(this);
   late final $MonthlyReviewsTable monthlyReviews = $MonthlyReviewsTable(this);
   late final $MonthlyGoalsTable monthlyGoals = $MonthlyGoalsTable(this);
+  late final $GoalCategoriesTable goalCategories = $GoalCategoriesTable(this);
+  late final $GoalsTable goals = $GoalsTable(this);
   late final $GCalSyncQueueTable gCalSyncQueue = $GCalSyncQueueTable(this);
   late final AnalyticsDao analyticsDao = AnalyticsDao(this as AppDatabase);
   @override
@@ -6168,6 +7461,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     monthlyPlans,
     monthlyReviews,
     monthlyGoals,
+    goalCategories,
+    goals,
     gCalSyncQueue,
   ];
   @override
@@ -6199,6 +7494,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('task_tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'goal_categories',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('goals', kind: UpdateKind.update)],
     ),
   ]);
 }
@@ -10914,6 +12216,854 @@ typedef $$MonthlyGoalsTableProcessedTableManager =
       MonthlyGoalData,
       PrefetchHooks Function({bool monthYear})
     >;
+typedef $$GoalCategoriesTableCreateCompanionBuilder =
+    GoalCategoriesCompanion Function({
+      Value<String> id,
+      required String name,
+      Value<int> sortOrder,
+      required int createdAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$GoalCategoriesTableUpdateCompanionBuilder =
+    GoalCategoriesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<int> sortOrder,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$GoalCategoriesTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $GoalCategoriesTable, GoalCategoryData> {
+  $$GoalCategoriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$GoalsTable, List<GoalData>> _goalsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.goals,
+    aliasName: $_aliasNameGenerator(db.goalCategories.id, db.goals.categoryId),
+  );
+
+  $$GoalsTableProcessedTableManager get goalsRefs {
+    final manager = $$GoalsTableTableManager(
+      $_db,
+      $_db.goals,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_goalsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$GoalCategoriesTableFilterComposer
+    extends Composer<_$AppDatabase, $GoalCategoriesTable> {
+  $$GoalCategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> goalsRefs(
+    Expression<bool> Function($$GoalsTableFilterComposer f) f,
+  ) {
+    final $$GoalsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.goals,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GoalsTableFilterComposer(
+            $db: $db,
+            $table: $db.goals,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$GoalCategoriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $GoalCategoriesTable> {
+  $$GoalCategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GoalCategoriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GoalCategoriesTable> {
+  $$GoalCategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> goalsRefs<T extends Object>(
+    Expression<T> Function($$GoalsTableAnnotationComposer a) f,
+  ) {
+    final $$GoalsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.goals,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GoalsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.goals,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$GoalCategoriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GoalCategoriesTable,
+          GoalCategoryData,
+          $$GoalCategoriesTableFilterComposer,
+          $$GoalCategoriesTableOrderingComposer,
+          $$GoalCategoriesTableAnnotationComposer,
+          $$GoalCategoriesTableCreateCompanionBuilder,
+          $$GoalCategoriesTableUpdateCompanionBuilder,
+          (GoalCategoryData, $$GoalCategoriesTableReferences),
+          GoalCategoryData,
+          PrefetchHooks Function({bool goalsRefs})
+        > {
+  $$GoalCategoriesTableTableManager(
+    _$AppDatabase db,
+    $GoalCategoriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GoalCategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalCategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalCategoriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GoalCategoriesCompanion(
+                id: id,
+                name: name,
+                sortOrder: sortOrder,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                required String name,
+                Value<int> sortOrder = const Value.absent(),
+                required int createdAt,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => GoalCategoriesCompanion.insert(
+                id: id,
+                name: name,
+                sortOrder: sortOrder,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$GoalCategoriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({goalsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (goalsRefs) db.goals],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (goalsRefs)
+                    await $_getPrefetchedData<
+                      GoalCategoryData,
+                      $GoalCategoriesTable,
+                      GoalData
+                    >(
+                      currentTable: table,
+                      referencedTable: $$GoalCategoriesTableReferences
+                          ._goalsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$GoalCategoriesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).goalsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.categoryId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$GoalCategoriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GoalCategoriesTable,
+      GoalCategoryData,
+      $$GoalCategoriesTableFilterComposer,
+      $$GoalCategoriesTableOrderingComposer,
+      $$GoalCategoriesTableAnnotationComposer,
+      $$GoalCategoriesTableCreateCompanionBuilder,
+      $$GoalCategoriesTableUpdateCompanionBuilder,
+      (GoalCategoryData, $$GoalCategoriesTableReferences),
+      GoalCategoryData,
+      PrefetchHooks Function({bool goalsRefs})
+    >;
+typedef $$GoalsTableCreateCompanionBuilder =
+    GoalsCompanion Function({
+      Value<String> id,
+      required String title,
+      Value<String?> description,
+      Value<String?> categoryId,
+      Value<String?> kpiDescription,
+      Value<String?> startValue,
+      Value<String?> targetValue,
+      Value<String?> priority,
+      Value<String?> urgency,
+      Value<String?> why,
+      Value<int?> startDate,
+      Value<int?> targetDate,
+      Value<String?> checkInFrequency,
+      required String timeHorizon,
+      required int createdAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$GoalsTableUpdateCompanionBuilder =
+    GoalsCompanion Function({
+      Value<String> id,
+      Value<String> title,
+      Value<String?> description,
+      Value<String?> categoryId,
+      Value<String?> kpiDescription,
+      Value<String?> startValue,
+      Value<String?> targetValue,
+      Value<String?> priority,
+      Value<String?> urgency,
+      Value<String?> why,
+      Value<int?> startDate,
+      Value<int?> targetDate,
+      Value<String?> checkInFrequency,
+      Value<String> timeHorizon,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$GoalsTableReferences
+    extends BaseReferences<_$AppDatabase, $GoalsTable, GoalData> {
+  $$GoalsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $GoalCategoriesTable _categoryIdTable(_$AppDatabase db) =>
+      db.goalCategories.createAlias(
+        $_aliasNameGenerator(db.goals.categoryId, db.goalCategories.id),
+      );
+
+  $$GoalCategoriesTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<String>('category_id');
+    if ($_column == null) return null;
+    final manager = $$GoalCategoriesTableTableManager(
+      $_db,
+      $_db.goalCategories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$GoalsTableFilterComposer extends Composer<_$AppDatabase, $GoalsTable> {
+  $$GoalsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kpiDescription => $composableBuilder(
+    column: $table.kpiDescription,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startValue => $composableBuilder(
+    column: $table.startValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetValue => $composableBuilder(
+    column: $table.targetValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get urgency => $composableBuilder(
+    column: $table.urgency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get why => $composableBuilder(
+    column: $table.why,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetDate => $composableBuilder(
+    column: $table.targetDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get checkInFrequency => $composableBuilder(
+    column: $table.checkInFrequency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get timeHorizon => $composableBuilder(
+    column: $table.timeHorizon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$GoalCategoriesTableFilterComposer get categoryId {
+    final $$GoalCategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.goalCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GoalCategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.goalCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$GoalsTableOrderingComposer
+    extends Composer<_$AppDatabase, $GoalsTable> {
+  $$GoalsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kpiDescription => $composableBuilder(
+    column: $table.kpiDescription,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startValue => $composableBuilder(
+    column: $table.startValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetValue => $composableBuilder(
+    column: $table.targetValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get urgency => $composableBuilder(
+    column: $table.urgency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get why => $composableBuilder(
+    column: $table.why,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetDate => $composableBuilder(
+    column: $table.targetDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get checkInFrequency => $composableBuilder(
+    column: $table.checkInFrequency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get timeHorizon => $composableBuilder(
+    column: $table.timeHorizon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GoalCategoriesTableOrderingComposer get categoryId {
+    final $$GoalCategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.goalCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GoalCategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.goalCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$GoalsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GoalsTable> {
+  $$GoalsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get kpiDescription => $composableBuilder(
+    column: $table.kpiDescription,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get startValue => $composableBuilder(
+    column: $table.startValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetValue => $composableBuilder(
+    column: $table.targetValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get urgency =>
+      $composableBuilder(column: $table.urgency, builder: (column) => column);
+
+  GeneratedColumn<String> get why =>
+      $composableBuilder(column: $table.why, builder: (column) => column);
+
+  GeneratedColumn<int> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<int> get targetDate => $composableBuilder(
+    column: $table.targetDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get checkInFrequency => $composableBuilder(
+    column: $table.checkInFrequency,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get timeHorizon => $composableBuilder(
+    column: $table.timeHorizon,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$GoalCategoriesTableAnnotationComposer get categoryId {
+    final $$GoalCategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.goalCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GoalCategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.goalCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$GoalsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GoalsTable,
+          GoalData,
+          $$GoalsTableFilterComposer,
+          $$GoalsTableOrderingComposer,
+          $$GoalsTableAnnotationComposer,
+          $$GoalsTableCreateCompanionBuilder,
+          $$GoalsTableUpdateCompanionBuilder,
+          (GoalData, $$GoalsTableReferences),
+          GoalData,
+          PrefetchHooks Function({bool categoryId})
+        > {
+  $$GoalsTableTableManager(_$AppDatabase db, $GoalsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GoalsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> kpiDescription = const Value.absent(),
+                Value<String?> startValue = const Value.absent(),
+                Value<String?> targetValue = const Value.absent(),
+                Value<String?> priority = const Value.absent(),
+                Value<String?> urgency = const Value.absent(),
+                Value<String?> why = const Value.absent(),
+                Value<int?> startDate = const Value.absent(),
+                Value<int?> targetDate = const Value.absent(),
+                Value<String?> checkInFrequency = const Value.absent(),
+                Value<String> timeHorizon = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GoalsCompanion(
+                id: id,
+                title: title,
+                description: description,
+                categoryId: categoryId,
+                kpiDescription: kpiDescription,
+                startValue: startValue,
+                targetValue: targetValue,
+                priority: priority,
+                urgency: urgency,
+                why: why,
+                startDate: startDate,
+                targetDate: targetDate,
+                checkInFrequency: checkInFrequency,
+                timeHorizon: timeHorizon,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                required String title,
+                Value<String?> description = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> kpiDescription = const Value.absent(),
+                Value<String?> startValue = const Value.absent(),
+                Value<String?> targetValue = const Value.absent(),
+                Value<String?> priority = const Value.absent(),
+                Value<String?> urgency = const Value.absent(),
+                Value<String?> why = const Value.absent(),
+                Value<int?> startDate = const Value.absent(),
+                Value<int?> targetDate = const Value.absent(),
+                Value<String?> checkInFrequency = const Value.absent(),
+                required String timeHorizon,
+                required int createdAt,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => GoalsCompanion.insert(
+                id: id,
+                title: title,
+                description: description,
+                categoryId: categoryId,
+                kpiDescription: kpiDescription,
+                startValue: startValue,
+                targetValue: targetValue,
+                priority: priority,
+                urgency: urgency,
+                why: why,
+                startDate: startDate,
+                targetDate: targetDate,
+                checkInFrequency: checkInFrequency,
+                timeHorizon: timeHorizon,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$GoalsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({categoryId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (categoryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.categoryId,
+                                referencedTable: $$GoalsTableReferences
+                                    ._categoryIdTable(db),
+                                referencedColumn: $$GoalsTableReferences
+                                    ._categoryIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$GoalsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GoalsTable,
+      GoalData,
+      $$GoalsTableFilterComposer,
+      $$GoalsTableOrderingComposer,
+      $$GoalsTableAnnotationComposer,
+      $$GoalsTableCreateCompanionBuilder,
+      $$GoalsTableUpdateCompanionBuilder,
+      (GoalData, $$GoalsTableReferences),
+      GoalData,
+      PrefetchHooks Function({bool categoryId})
+    >;
 typedef $$GCalSyncQueueTableCreateCompanionBuilder =
     GCalSyncQueueCompanion Function({
       Value<String> id,
@@ -11166,6 +13316,10 @@ class $AppDatabaseManager {
       $$MonthlyReviewsTableTableManager(_db, _db.monthlyReviews);
   $$MonthlyGoalsTableTableManager get monthlyGoals =>
       $$MonthlyGoalsTableTableManager(_db, _db.monthlyGoals);
+  $$GoalCategoriesTableTableManager get goalCategories =>
+      $$GoalCategoriesTableTableManager(_db, _db.goalCategories);
+  $$GoalsTableTableManager get goals =>
+      $$GoalsTableTableManager(_db, _db.goals);
   $$GCalSyncQueueTableTableManager get gCalSyncQueue =>
       $$GCalSyncQueueTableTableManager(_db, _db.gCalSyncQueue);
 }

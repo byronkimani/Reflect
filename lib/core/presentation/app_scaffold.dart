@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
   /// The navigation shell and container for the branch Navigators.
@@ -48,6 +51,12 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
   /// Navigate to the current location of the branch at the provided index.
   void _onTap(BuildContext context, int index) {
+    final bloc = context.read<TaskListBloc>();
+    if (index == 0) {
+      bloc.add(TaskListEvent.loadTasksForDate(DateTime.now()));
+    } else if (index == 1) {
+      bloc.add(const TaskListEvent.loadBacklog());
+    }
     navigationShell.goBranch(
       index,
       // A common pattern when clicking the bottom bar:

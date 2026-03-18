@@ -11,8 +11,11 @@ import 'subtask_form_item.dart';
 class TaskFormCubit extends Cubit<TaskFormState> {
   final ITaskRepository _taskRepository;
 
-  TaskFormCubit(this._taskRepository, Task? initialTask)
-      : super(TaskFormState.initial(initialTask));
+  TaskFormCubit(this._taskRepository, Task? initialTask,
+      {bool isBacklogContext = false})
+      : super(TaskFormState.initial(
+            initialTask,
+            createAsBacklog: isBacklogContext && initialTask == null));
 
   void titleChanged(String value) => emit(state.copyWith(title: value));
   void notesChanged(String value) => emit(state.copyWith(notes: value));
@@ -183,6 +186,26 @@ class TaskFormCubit extends Cubit<TaskFormState> {
 
     result.fold(
       (failure) => emit(state.copyWith(isSubmitting: false, error: failure.errorMessage)),
+      (_) => emit(state.copyWith(isSubmitting: false, isSuccess: true)),
+    );
+  }
+
+  /// Moves the current task to backlog by clearing due date/time and saving.
+  /// No-op if no initial task or task has no due date.
+  Future<void> moveToBacklog() async {
+    final t = state.initialTask;
+    if (t == null || (t.dueDate == null && t.dueTime == null)) return;
+    emit(state.copyWith(isSubmitting: true, error: null));
+    final now = DateTime.now();
+    final updated = t.copyWith(
+      dueDate: null,
+      dueTime: null,
+      updatedAt: now,
+    );
+    final result = await _taskRepository.updateTask(updated);
+    result.fold(
+      (failure) => emit(state.copyWith(
+          isSubmitting: false, error: failure.errorMessage)),
       (_) => emit(state.copyWith(isSubmitting: false, isSuccess: true)),
     );
   }

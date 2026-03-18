@@ -15,14 +15,23 @@ import 'package:reflect/main.dart';
 class TaskDetailPage extends StatelessWidget {
   final String taskId;
   final Task? initialTask;
+  final bool isBacklogContext;
 
-  const TaskDetailPage({super.key, required this.taskId, this.initialTask});
+  const TaskDetailPage({
+    super.key,
+    required this.taskId,
+    this.initialTask,
+    this.isBacklogContext = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          TaskFormCubit(getIt<ITaskRepository>(), initialTask),
+      create: (context) => TaskFormCubit(
+        getIt<ITaskRepository>(),
+        initialTask,
+        isBacklogContext: isBacklogContext,
+      ),
       child: const TaskFormView(),
     );
   }
@@ -85,6 +94,16 @@ class _TaskFormViewState extends State<TaskFormView> {
             ),
             title: Text(state.initialTask == null ? 'New Task' : 'Edit Task'),
             actions: [
+              if (state.initialTask != null &&
+                  (state.dueDate != null || (state.dueTime != null && state.dueTime!.isNotEmpty)) &&
+                  !state.isSubmitting)
+                TextButton.icon(
+                  onPressed: () async {
+                    await context.read<TaskFormCubit>().moveToBacklog();
+                  },
+                  icon: const Icon(Icons.inventory_2_outlined, size: 20),
+                  label: const Text('Add to backlog'),
+                ),
               if (state.isSubmitting)
                 Center(
                   child: Padding(

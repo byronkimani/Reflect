@@ -9,8 +9,10 @@ import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_ev
 
 class TaskCard extends StatelessWidget {
   final Task task;
+  /// Route prefix for task detail (e.g. '/today' or '/backlog'). Defaults to '/today'.
+  final String taskRoutePrefix;
 
-  const TaskCard({super.key, required this.task});
+  const TaskCard({super.key, required this.task, this.taskRoutePrefix = '/today'});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +51,7 @@ class TaskCard extends StatelessWidget {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          onTap: () => context.push('/today/task/${task.id}', extra: task),
+          onTap: () => context.push('$taskRoutePrefix/task/${task.id}', extra: task),
           leading: Transform.scale(
             scale: 1.2,
             child: Checkbox(

@@ -31,7 +31,7 @@ abstract class TaskFormState with _$TaskFormState {
     Task? initialTask,
   }) = _TaskFormState;
 
-  factory TaskFormState.initial(Task? task) {
+  factory TaskFormState.initial(Task? task, {bool createAsBacklog = false}) {
     RecurrenceFrequency? freq;
     List<int> days = [];
     if (task?.recurrenceRule != null) {
@@ -39,11 +39,13 @@ abstract class TaskFormState with _$TaskFormState {
       freq = r.frequency;
       days = r.daysOfWeek ?? [];
     }
+    final initialDueDate = task?.dueDate ??
+        (task == null && !createAsBacklog ? DateTime.now() : null);
     return TaskFormState(
       title: task?.title ?? '',
       notes: task?.notes ?? '',
       priority: task?.priority ?? TaskPriority.p4,
-      dueDate: task?.dueDate ?? (task == null ? DateTime.now() : null),
+      dueDate: initialDueDate,
       dueTime: task?.dueTime,
       subtaskItems: (task?.subtasks ?? const [])
           .map((s) => SubtaskFormItem(

@@ -22,6 +22,9 @@ import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bl
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
+import 'package:reflect/features/goals/data/repositories/goal_repository_impl.dart';
+import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
+import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/main.dart';
 
 void setupDependencies() {
@@ -70,6 +73,9 @@ void setupDependencies() {
   getIt.registerLazySingleton<IReviewRepository>(
     () => ReviewRepositoryImpl(getIt<AppDatabase>()),
   );
+  getIt.registerLazySingleton<IGoalRepository>(
+    () => GoalRepositoryImpl(getIt<AppDatabase>()),
+  );
 
   // 8. BLoCs / Cubits
   getIt.registerFactory<ConnectivityBloc>(
@@ -89,6 +95,9 @@ void setupDependencies() {
   );
   getIt.registerFactory<AnalyticsBloc>(
     () => AnalyticsBloc(getIt<AppDatabase>().analyticsDao),
+  );
+  getIt.registerFactory<GoalsCubit>(
+    () => GoalsCubit(getIt<IGoalRepository>()),
   );
 
   // 9. Notifications
