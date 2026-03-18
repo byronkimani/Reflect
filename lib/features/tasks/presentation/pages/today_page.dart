@@ -36,6 +36,10 @@ class TodayPage extends StatelessWidget {
                 slivers: [
                   SliverAppBar.large(
                     expandedHeight: 180.0,
+                    backgroundColor: colorScheme.surface,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    surfaceTintColor: Colors.transparent,
                     flexibleSpace: FlexibleSpaceBar(
                       title: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -43,17 +47,13 @@ class TodayPage extends StatelessWidget {
                         children: [
                           Text(
                             greeting,
-                            style: textTheme.titleSmall?.copyWith(
+                            style: textTheme.titleMedium?.copyWith(
                               color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.normal,
                             ),
                           ),
                           Text(
                             DateFormat('EEEE, MMM d').format(now),
-                            style: textTheme.headlineMedium?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: textTheme.headlineMedium,
                           ),
                         ],
                       ),
@@ -130,7 +130,6 @@ class TodayPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.large(
         onPressed: () => context.go('/today/task/new'),
-        elevation: 2,
         child: const Icon(Icons.add),
       ),
     );

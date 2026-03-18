@@ -7,6 +7,7 @@ part 'task_form_state.freezed.dart';
 abstract class TaskFormState with _$TaskFormState {
   const factory TaskFormState({
     @Default('') String title,
+    @Default('') String notes,
     @Default(TaskPriority.p4) TaskPriority priority,
     DateTime? dueDate,
     @Default(false) bool syncToGcal,
@@ -18,6 +19,7 @@ abstract class TaskFormState with _$TaskFormState {
 
   factory TaskFormState.initial(Task? task) => TaskFormState(
     title: task?.title ?? '',
+    notes: task?.notes ?? '',
     priority: task?.priority ?? TaskPriority.p4,
     dueDate: task?.dueDate,
     syncToGcal: task?.syncToGcal ?? false,

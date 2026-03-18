@@ -19,9 +19,9 @@ class TaskDetailPage extends StatelessWidget {
       create: (context) {
         final cubit = TaskFormCubit(getIt<ITaskRepository>(), null);
         if (taskId != 'new') {
-          // In a real app, we'd fetch the task here. 
+          // In a real app, we'd fetch the task here.
           // For simplicity in this demo, we'll assume it's a new task if we don't have a fetch method readily available in the UI layer yet.
-          // However, the repo has getTasksForDate, but not getTaskById yet. 
+          // However, the repo has getTasksForDate, but not getTaskById yet.
           // I'll stick to 'new' logic or assume it's just a placeholder for editing.
         }
         return cubit;
@@ -52,8 +52,9 @@ class TaskFormView extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        final colorScheme = Theme.of(context).colorScheme;
-        final textTheme = Theme.of(context).textTheme;
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final textTheme = theme.textTheme;
 
         return Scaffold(
           appBar: AppBar(
@@ -64,13 +65,16 @@ class TaskFormView extends StatelessWidget {
             title: Text(state.initialTask == null ? 'New Task' : 'Edit Task'),
             actions: [
               if (state.isSubmitting)
-                const Center(
+                Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.primary,
+                      ),
                     ),
                   ),
                 )
@@ -79,38 +83,32 @@ class TaskFormView extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: TextButton(
                     onPressed: () => context.read<TaskFormCubit>().submit(),
-                    style: TextButton.styleFrom(
-                      foregroundColor: colorScheme.primary,
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
                     child: const Text('Save'),
                   ),
                 ),
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
                   initialValue: state.title,
-                  style: textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: textTheme.headlineSmall,
                   decoration: InputDecoration.collapsed(
                     hintText: 'Task Title',
                     hintStyle: textTheme.headlineSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                     ),
                   ),
-                  onChanged: (value) => context.read<TaskFormCubit>().titleChanged(value),
+                  onChanged: (value) =>
+                      context.read<TaskFormCubit>().titleChanged(value),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   'Priority',
-                  style: textTheme.labelLarge?.copyWith(
+                  style: textTheme.titleMedium?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
@@ -124,28 +122,27 @@ class TaskFormView extends StatelessWidget {
                     ButtonSegment(value: TaskPriority.p4, label: Text('P4')),
                   ],
                   selected: {state.priority},
-                  onSelectionChanged: (value) => context.read<TaskFormCubit>().priorityChanged(value.first),
+                  onSelectionChanged: (value) => context
+                      .read<TaskFormCubit>()
+                      .priorityChanged(value.first),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
                 Text(
                   'Details',
-                  style: textTheme.labelLarge?.copyWith(
+                  style: textTheme.titleMedium?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
-                  initialValue: '', // Add notes field logic if present in state, assuming it might be added or using a placeholder
+                  initialValue: state.notes,
                   maxLines: 5,
                   decoration: const InputDecoration(
                     hintText: 'Add details or context...',
-                    alignLabelWithHint: true,
                   ),
-                  onChanged: (value) {
-                    // Assuming a notesChanged method exists or should be added
-                    // context.read<TaskFormCubit>().notesChanged(value);
-                  },
+                  onChanged: (value) =>
+                      context.read<TaskFormCubit>().notesChanged(value),
                 ),
                 const SizedBox(height: 24),
                 InkWell(
@@ -153,8 +150,12 @@ class TaskFormView extends StatelessWidget {
                     final date = await showDatePicker(
                       context: context,
                       initialDate: state.dueDate ?? DateTime.now(),
-                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                      firstDate: DateTime.now().subtract(
+                        const Duration(days: 365),
+                      ),
+                      lastDate: DateTime.now().add(
+                        const Duration(days: 365 * 5),
+                      ),
                     );
                     if (date != null) {
                       if (!context.mounted) return;
@@ -166,21 +167,39 @@ class TaskFormView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Row(
                       children: [
-                        Icon(Icons.calendar_today_outlined, color: colorScheme.primary, size: 20),
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          color: colorScheme.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Due Date', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
                               Text(
-                                state.dueDate != null ? DateFormat('EEEE, MMM d, yyyy').format(state.dueDate!) : 'No date set',
-                                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                                'Due Date',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                state.dueDate != null
+                                    ? DateFormat(
+                                        'EEEE, MMM d, yyyy',
+                                      ).format(state.dueDate!)
+                                    : 'No date set',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+                        Icon(
+                          Icons.chevron_right,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ],
                     ),
                   ),
@@ -188,10 +207,16 @@ class TaskFormView extends StatelessWidget {
                 const Divider(height: 32),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Sync to Google Calendar', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+                  title: Text(
+                    'Sync to Google Calendar',
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   value: state.syncToGcal,
-                  onChanged: (value) => context.read<TaskFormCubit>().syncToGcalChanged(value),
-                  activeColor: colorScheme.primary,
+                  onChanged: (value) =>
+                      context.read<TaskFormCubit>().syncToGcalChanged(value),
+                  activeThumbColor: colorScheme.primary,
                 ),
               ],
             ),

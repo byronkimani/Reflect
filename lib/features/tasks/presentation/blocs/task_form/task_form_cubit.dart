@@ -12,6 +12,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
       : super(TaskFormState.initial(initialTask));
 
   void titleChanged(String value) => emit(state.copyWith(title: value));
+  void notesChanged(String value) => emit(state.copyWith(notes: value));
   void priorityChanged(TaskPriority value) => emit(state.copyWith(priority: value));
   void dueDateChanged(DateTime? value) => emit(state.copyWith(dueDate: value));
   void syncToGcalChanged(bool value) => emit(state.copyWith(syncToGcal: value));
@@ -24,8 +25,10 @@ class TaskFormCubit extends Cubit<TaskFormState> {
 
     emit(state.copyWith(isSubmitting: true, error: null));
 
+    final notes = state.notes.isEmpty ? null : state.notes;
     final task = state.initialTask?.copyWith(
           title: state.title,
+          notes: notes,
           priority: state.priority,
           dueDate: state.dueDate,
           syncToGcal: state.syncToGcal,
@@ -37,6 +40,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           priority: state.priority,
           status: TaskStatus.pending,
           dueDate: state.dueDate,
+          notes: notes,
           syncToGcal: state.syncToGcal,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
