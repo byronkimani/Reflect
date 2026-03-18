@@ -71,6 +71,8 @@ dev_dependencies:
   freezed: ^3.2.3
   json_serializable: ^6.11.2
   drift_dev: ^2.20.2
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.3
 
 flutter:
   uses-material-design: true
@@ -80,6 +82,7 @@ flutter:
   assets:
     - .env.testing
     - .env.production
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -106,3 +109,27 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# App icon (Android, iOS, Windows, macOS) – run: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  windows:
+    generate: true
+    image_path: assets/icons/app_icon.png
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: assets/icons/app_icon.png
+  image_path: assets/icons/app_icon.png
+  min_sdk_android: 21
+
+# Splash screen (Android + iOS) – run: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#0052CC"
+  image: assets/icons/app_icon.png
+  android: true
+  ios: true
+  android_12:
+    color: "#0052CC"
+    image: assets/icons/app_icon.png
