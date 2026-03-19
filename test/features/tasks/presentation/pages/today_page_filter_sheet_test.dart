@@ -2,31 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_state.dart';
 import 'package:reflect/features/tasks/presentation/pages/today_page.dart';
+
+class MockTaskListBloc extends Mock implements TaskListBloc {}
+
+class MockTaskSelectionCubit extends Mock implements TaskSelectionCubit {}
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
 
 void main() {
   late TaskListBloc taskListBloc;
+  late MockTaskSelectionCubit taskSelectionCubit;
   late MockITaskRepository mockRepo;
 
   setUp(() {
     mockRepo = MockITaskRepository();
     taskListBloc = TaskListBloc(mockRepo);
+    taskSelectionCubit = MockTaskSelectionCubit();
+
+    when(() => taskSelectionCubit.state).thenReturn(const TaskSelectionState());
+    when(() => taskSelectionCubit.stream).thenAnswer((_) => const Stream.empty());
+    when(() => taskSelectionCubit.close()).thenAnswer((_) async => Future<void>.value());
+
+    // Stub repo for TaskListBloc
+    when(() => mockRepo.watchTasksForDate(any())).thenAnswer((_) => const Stream.empty());
+    when(() => mockRepo.getTasksForDate(any())).thenAnswer((_) async => const Right([]));
   });
 
   tearDown(() {
     taskListBloc.close();
+    taskSelectionCubit.close();
   });
 
   Widget buildTestWidget() {
     return MaterialApp(
-      home: BlocProvider<TaskListBloc>.value(
-        value: taskListBloc,
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider<TaskListBloc>.value(value: taskListBloc),
+          BlocProvider<TaskSelectionCubit>.value(value: taskSelectionCubit),
+        ],
         child: const TodayPage(),
       ),
     );

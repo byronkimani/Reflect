@@ -119,7 +119,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       expect(find.text('Title cannot be empty'), findsOneWidget);
@@ -147,7 +147,7 @@ void main() {
         await tester.enterText(textFields.at(2), 'New step');
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Save'));
+        await tester.tap(find.byType(FloatingActionButton));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -175,7 +175,7 @@ void main() {
         await tester.enterText(find.byType(TextField).first, 'Updated title');
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Save'));
+        await tester.tap(find.byType(FloatingActionButton));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -198,7 +198,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'New task title');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -227,7 +227,7 @@ void main() {
         await tester.enterText(find.byType(TextField).at(2), 'Step two');
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Save'));
+        await tester.tap(find.byType(FloatingActionButton));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -270,7 +270,7 @@ void main() {
       await tester.enterText(textFields.at(1), 'New notes');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 

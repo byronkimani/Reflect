@@ -14,4 +14,9 @@ abstract class ITaskRepository {
   Future<Either<Failure, Task>> completeTask(String id);
   Future<Either<Failure, Task>> reopenTask(String id);
   Future<Either<Failure, Unit>> deleteTask(String id);
+
+  Future<Either<Failure, Unit>> completeTasks(List<String> ids);
+  Future<Either<Failure, Unit>> reopenTasks(List<String> ids);
+  Future<Either<Failure, Unit>> moveTasksToBacklog(List<String> ids);
+  Future<Either<Failure, Unit>> deleteTasks(List<String> ids);
 }

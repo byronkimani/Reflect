@@ -89,7 +89,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('New Goal'), findsOneWidget);
-      expect(find.text('Save'), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsOneWidget);
       expect(find.text('Title *'), findsOneWidget);
     });
 
@@ -124,7 +124,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       expect(find.text('Title is required'), findsOneWidget);
@@ -140,7 +140,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'My new goal');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
@@ -158,7 +158,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'Updated title');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
@@ -217,7 +217,7 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, 'Goal title');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Save'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 

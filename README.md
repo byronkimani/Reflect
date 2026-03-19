@@ -1,4 +1,4 @@
-# Reflect 🏮
+# Reflect
 
 Reflect is a powerful, offline-first personal task manager and wellness tool designed for high-agency individuals who value privacy and focus. It combines daily planning, deep reflection, and advanced task recurrence into a single, cohesive experience.
 

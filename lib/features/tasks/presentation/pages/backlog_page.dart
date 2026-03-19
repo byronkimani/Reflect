@@ -129,6 +129,7 @@ class BacklogPage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'backlog_fab',
         onPressed: () => context.go('/backlog/task/new'),
         child: const Icon(Icons.add),
       ),

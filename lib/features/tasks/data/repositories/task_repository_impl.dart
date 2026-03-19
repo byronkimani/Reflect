@@ -73,10 +73,9 @@ class TaskRepositoryImpl implements ITaskRepository {
     return (_db.select(_db.tasks)
           ..where((t) =>
               t.dueDate.isBetweenValues(
-                startOfDay.millisecondsSinceEpoch,
-                endOfDay.millisecondsSinceEpoch,
-              ) |
-              t.dueDate.isNull()))
+                0,
+                endOfDay.millisecondsSinceEpoch - 1,
+              )))
         .watch()
         .asyncMap((rows) async {
       try {
@@ -90,7 +89,16 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   @override
   Stream<Either<Failure, List<Task>>> watchBacklogTasks() {
-    return (_db.select(_db.tasks)..where((t) => t.dueDate.isNull()))
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    final endOfToday = startOfToday.add(const Duration(days: 1));
+    return (_db.select(_db.tasks)
+          ..where((t) =>
+              t.dueDate.isNull() |
+              t.dueDate.isBetweenValues(
+                endOfToday.millisecondsSinceEpoch,
+                9223372036854775807,
+              )))
         .watch()
         .asyncMap((rows) async {
       try {
@@ -111,10 +119,9 @@ class TaskRepositoryImpl implements ITaskRepository {
       final rows = await (_db.select(_db.tasks)
             ..where((t) =>
                 t.dueDate.isBetweenValues(
-                  startOfDay.millisecondsSinceEpoch,
-                  endOfDay.millisecondsSinceEpoch,
-                ) |
-                t.dueDate.isNull()))
+                  0,
+                  endOfDay.millisecondsSinceEpoch - 1,
+                )))
           .get();
       final tasks = await _loadTasksWithSubtasks(rows);
       return Right(tasks);
@@ -125,8 +132,18 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   @override
   Future<Either<Failure, List<Task>>> getBacklogTasks() async {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day);
+    final endOfToday = startOfToday.add(const Duration(days: 1));
     try {
-      final rows = await (_db.select(_db.tasks)..where((t) => t.dueDate.isNull())).get();
+      final rows = await (_db.select(_db.tasks)
+            ..where((t) =>
+                t.dueDate.isNull() |
+                t.dueDate.isBetweenValues(
+                  endOfToday.millisecondsSinceEpoch,
+                  9223372036854775807,
+                )))
+          .get();
       final tasks = await _loadTasksWithSubtasks(rows);
       return Right(tasks);
     } catch (e) {
@@ -270,6 +287,78 @@ class TaskRepositoryImpl implements ITaskRepository {
         }
       }
       
+      return const Right(unit);
+    } catch (e) {
+      return Left(CacheFailure(errorMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> completeTasks(List<String> ids) async {
+    try {
+      await _db.transaction(() async {
+        for (final id in ids) {
+          await completeTask(id);
+        }
+      });
+      return const Right(unit);
+    } catch (e) {
+      return Left(CacheFailure(errorMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> reopenTasks(List<String> ids) async {
+    try {
+      await _db.transaction(() async {
+        for (final id in ids) {
+          await reopenTask(id);
+        }
+      });
+      return const Right(unit);
+    } catch (e) {
+      return Left(CacheFailure(errorMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> moveTasksToBacklog(List<String> ids) async {
+    try {
+      await _db.transaction(() async {
+        final now = DateTime.now();
+        for (final id in ids) {
+          final query = _db.select(_db.tasks)..where((t) => t.id.equals(id));
+          final taskData = await query.getSingle();
+          final task = taskData.toDomain();
+          
+          final updatedTask = task.copyWith(
+            dueDate: null,
+            dueTime: null,
+            updatedAt: now,
+          );
+          
+          await _db.update(_db.tasks).replace(updatedTask.toCompanion());
+          await _notificationScheduler.cancelTaskReminder(id);
+          
+          if (task.syncToGcal) {
+            _handleGCalSync(updatedTask, 'UPDATE');
+          }
+        }
+      });
+      return const Right(unit);
+    } catch (e) {
+      return Left(CacheFailure(errorMessage: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> deleteTasks(List<String> ids) async {
+    try {
+      await _db.transaction(() async {
+        for (final id in ids) {
+          await deleteTask(id);
+        }
+      });
       return const Right(unit);
     } catch (e) {
       return Left(CacheFailure(errorMessage: e.toString()));

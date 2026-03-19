@@ -19,6 +19,7 @@ import 'package:reflect/features/tasks/data/repositories/task_repository_impl.da
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
@@ -98,6 +99,9 @@ void setupDependencies() {
   );
   getIt.registerFactory<GoalsCubit>(
     () => GoalsCubit(getIt<IGoalRepository>()),
+  );
+  getIt.registerFactory<TaskSelectionCubit>(
+    () => TaskSelectionCubit(),
   );
 
   // 9. Notifications

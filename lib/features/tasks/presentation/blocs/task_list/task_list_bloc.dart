@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:fpdart/fpdart.dart' as fpdart;
 import 'package:reflect/core/errors/failure.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
@@ -13,12 +14,32 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
   final ITaskRepository _taskRepository;
 
   TaskListBloc(this._taskRepository) : super(const TaskListState.initial()) {
-    on<LoadTasksForDate>(_onLoadTasksForDate);
-    on<LoadBacklog>(_onLoadBacklog);
+    // 1. Loading events (Today tasks or Backlog tasks)
+    // Use a single on<TaskListEvent> for these to ensure they are mutually exclusive via restartable().
+    on<TaskListEvent>(
+      (event, emit) async {
+        await event.maybeMap(
+          loadTasksForDate: (e) => _onLoadTasksForDate(e, emit),
+          loadBacklog: (e) => _onLoadBacklog(e, emit),
+          orElse: () {},
+        );
+      },
+      transformer: (events, mapper) {
+        final loadEvents = events.where((e) => e is LoadTasksForDate || e is LoadBacklog);
+        return restartable<TaskListEvent>().call(loadEvents, mapper);
+      },
+    );
+
+    // 2. Action events (complete, delete, etc.)
+    // Use default concurrent() to allow multiple independent operations.
     on<CompleteTask>(_onCompleteTask);
     on<ReopenTask>(_onReopenTask);
     on<PushToTomorrow>(_onPushToTomorrow);
     on<DeleteTask>(_onDeleteTask);
+    on<BulkCompleteTasks>(_onBulkCompleteTasks);
+    on<BulkReopenTasks>(_onBulkReopenTasks);
+    on<BulkMoveToBacklog>(_onBulkMoveToBacklog);
+    on<BulkDeleteTasks>(_onBulkDeleteTasks);
     on<SortChanged>(_onSortChanged);
     on<FilterChanged>(_onFilterChanged);
   }
@@ -84,7 +105,7 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     );
   }
 
-  void _onSortChanged(SortChanged event, Emitter<TaskListState> emit) {
+  Future<void> _onSortChanged(SortChanged event, Emitter<TaskListState> emit) async {
     state.maybeWhen(
       loaded: (p, c, o, _, filter) => emit(TaskListState.loaded(
         pending: p,
@@ -97,7 +118,7 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     );
   }
 
-  void _onFilterChanged(FilterChanged event, Emitter<TaskListState> emit) {
+  Future<void> _onFilterChanged(FilterChanged event, Emitter<TaskListState> emit) async {
     state.maybeWhen(
       loaded: (p, c, o, sortMode, _) => emit(TaskListState.loaded(
         pending: p,
@@ -144,6 +165,50 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     Emitter<TaskListState> emit,
   ) async {
     final result = await _taskRepository.deleteTask(event.id);
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null,
+    );
+  }
+
+  Future<void> _onBulkCompleteTasks(
+    BulkCompleteTasks event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final result = await _taskRepository.completeTasks(event.ids);
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null,
+    );
+  }
+
+  Future<void> _onBulkReopenTasks(
+    BulkReopenTasks event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final result = await _taskRepository.reopenTasks(event.ids);
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null,
+    );
+  }
+
+  Future<void> _onBulkMoveToBacklog(
+    BulkMoveToBacklog event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final result = await _taskRepository.moveTasksToBacklog(event.ids);
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null,
+    );
+  }
+
+  Future<void> _onBulkDeleteTasks(
+    BulkDeleteTasks event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final result = await _taskRepository.deleteTasks(event.ids);
     result.fold(
       (failure) => emit(TaskListState.error(failure.errorMessage)),
       (_) => null,

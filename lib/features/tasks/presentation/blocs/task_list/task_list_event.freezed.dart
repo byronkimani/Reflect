@@ -55,7 +55,7 @@ extension TaskListEventPatterns on TaskListEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadTasksForDate value)?  loadTasksForDate,TResult Function( LoadBacklog value)?  loadBacklog,TResult Function( CompleteTask value)?  completeTask,TResult Function( ReopenTask value)?  reopenTask,TResult Function( PushToTomorrow value)?  pushToTomorrow,TResult Function( DeleteTask value)?  deleteTask,TResult Function( SortChanged value)?  sortChanged,TResult Function( FilterChanged value)?  filterChanged,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadTasksForDate value)?  loadTasksForDate,TResult Function( LoadBacklog value)?  loadBacklog,TResult Function( CompleteTask value)?  completeTask,TResult Function( ReopenTask value)?  reopenTask,TResult Function( PushToTomorrow value)?  pushToTomorrow,TResult Function( DeleteTask value)?  deleteTask,TResult Function( BulkCompleteTasks value)?  bulkCompleteTasks,TResult Function( BulkReopenTasks value)?  bulkReopenTasks,TResult Function( BulkMoveToBacklog value)?  bulkMoveToBacklog,TResult Function( BulkDeleteTasks value)?  bulkDeleteTasks,TResult Function( SortChanged value)?  sortChanged,TResult Function( FilterChanged value)?  filterChanged,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
@@ -64,7 +64,11 @@ return loadBacklog(_that);case CompleteTask() when completeTask != null:
 return completeTask(_that);case ReopenTask() when reopenTask != null:
 return reopenTask(_that);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that);case DeleteTask() when deleteTask != null:
-return deleteTask(_that);case SortChanged() when sortChanged != null:
+return deleteTask(_that);case BulkCompleteTasks() when bulkCompleteTasks != null:
+return bulkCompleteTasks(_that);case BulkReopenTasks() when bulkReopenTasks != null:
+return bulkReopenTasks(_that);case BulkMoveToBacklog() when bulkMoveToBacklog != null:
+return bulkMoveToBacklog(_that);case BulkDeleteTasks() when bulkDeleteTasks != null:
+return bulkDeleteTasks(_that);case SortChanged() when sortChanged != null:
 return sortChanged(_that);case FilterChanged() when filterChanged != null:
 return filterChanged(_that);case _:
   return orElse();
@@ -84,7 +88,7 @@ return filterChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadTasksForDate value)  loadTasksForDate,required TResult Function( LoadBacklog value)  loadBacklog,required TResult Function( CompleteTask value)  completeTask,required TResult Function( ReopenTask value)  reopenTask,required TResult Function( PushToTomorrow value)  pushToTomorrow,required TResult Function( DeleteTask value)  deleteTask,required TResult Function( SortChanged value)  sortChanged,required TResult Function( FilterChanged value)  filterChanged,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadTasksForDate value)  loadTasksForDate,required TResult Function( LoadBacklog value)  loadBacklog,required TResult Function( CompleteTask value)  completeTask,required TResult Function( ReopenTask value)  reopenTask,required TResult Function( PushToTomorrow value)  pushToTomorrow,required TResult Function( DeleteTask value)  deleteTask,required TResult Function( BulkCompleteTasks value)  bulkCompleteTasks,required TResult Function( BulkReopenTasks value)  bulkReopenTasks,required TResult Function( BulkMoveToBacklog value)  bulkMoveToBacklog,required TResult Function( BulkDeleteTasks value)  bulkDeleteTasks,required TResult Function( SortChanged value)  sortChanged,required TResult Function( FilterChanged value)  filterChanged,}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate():
@@ -93,7 +97,11 @@ return loadBacklog(_that);case CompleteTask():
 return completeTask(_that);case ReopenTask():
 return reopenTask(_that);case PushToTomorrow():
 return pushToTomorrow(_that);case DeleteTask():
-return deleteTask(_that);case SortChanged():
+return deleteTask(_that);case BulkCompleteTasks():
+return bulkCompleteTasks(_that);case BulkReopenTasks():
+return bulkReopenTasks(_that);case BulkMoveToBacklog():
+return bulkMoveToBacklog(_that);case BulkDeleteTasks():
+return bulkDeleteTasks(_that);case SortChanged():
 return sortChanged(_that);case FilterChanged():
 return filterChanged(_that);case _:
   throw StateError('Unexpected subclass');
@@ -112,7 +120,7 @@ return filterChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadTasksForDate value)?  loadTasksForDate,TResult? Function( LoadBacklog value)?  loadBacklog,TResult? Function( CompleteTask value)?  completeTask,TResult? Function( ReopenTask value)?  reopenTask,TResult? Function( PushToTomorrow value)?  pushToTomorrow,TResult? Function( DeleteTask value)?  deleteTask,TResult? Function( SortChanged value)?  sortChanged,TResult? Function( FilterChanged value)?  filterChanged,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadTasksForDate value)?  loadTasksForDate,TResult? Function( LoadBacklog value)?  loadBacklog,TResult? Function( CompleteTask value)?  completeTask,TResult? Function( ReopenTask value)?  reopenTask,TResult? Function( PushToTomorrow value)?  pushToTomorrow,TResult? Function( DeleteTask value)?  deleteTask,TResult? Function( BulkCompleteTasks value)?  bulkCompleteTasks,TResult? Function( BulkReopenTasks value)?  bulkReopenTasks,TResult? Function( BulkMoveToBacklog value)?  bulkMoveToBacklog,TResult? Function( BulkDeleteTasks value)?  bulkDeleteTasks,TResult? Function( SortChanged value)?  sortChanged,TResult? Function( FilterChanged value)?  filterChanged,}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
@@ -121,7 +129,11 @@ return loadBacklog(_that);case CompleteTask() when completeTask != null:
 return completeTask(_that);case ReopenTask() when reopenTask != null:
 return reopenTask(_that);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that);case DeleteTask() when deleteTask != null:
-return deleteTask(_that);case SortChanged() when sortChanged != null:
+return deleteTask(_that);case BulkCompleteTasks() when bulkCompleteTasks != null:
+return bulkCompleteTasks(_that);case BulkReopenTasks() when bulkReopenTasks != null:
+return bulkReopenTasks(_that);case BulkMoveToBacklog() when bulkMoveToBacklog != null:
+return bulkMoveToBacklog(_that);case BulkDeleteTasks() when bulkDeleteTasks != null:
+return bulkDeleteTasks(_that);case SortChanged() when sortChanged != null:
 return sortChanged(_that);case FilterChanged() when filterChanged != null:
 return filterChanged(_that);case _:
   return null;
@@ -140,7 +152,7 @@ return filterChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( DateTime date)?  loadTasksForDate,TResult Function()?  loadBacklog,TResult Function( String id)?  completeTask,TResult Function( String id)?  reopenTask,TResult Function( String id)?  pushToTomorrow,TResult Function( String id)?  deleteTask,TResult Function( SortMode sortMode)?  sortChanged,TResult Function( TaskListFilter filter)?  filterChanged,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( DateTime date)?  loadTasksForDate,TResult Function()?  loadBacklog,TResult Function( String id)?  completeTask,TResult Function( String id)?  reopenTask,TResult Function( String id)?  pushToTomorrow,TResult Function( String id)?  deleteTask,TResult Function( List<String> ids)?  bulkCompleteTasks,TResult Function( List<String> ids)?  bulkReopenTasks,TResult Function( List<String> ids)?  bulkMoveToBacklog,TResult Function( List<String> ids)?  bulkDeleteTasks,TResult Function( SortMode sortMode)?  sortChanged,TResult Function( TaskListFilter filter)?  filterChanged,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that.date);case LoadBacklog() when loadBacklog != null:
@@ -148,7 +160,11 @@ return loadBacklog();case CompleteTask() when completeTask != null:
 return completeTask(_that.id);case ReopenTask() when reopenTask != null:
 return reopenTask(_that.id);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that.id);case DeleteTask() when deleteTask != null:
-return deleteTask(_that.id);case SortChanged() when sortChanged != null:
+return deleteTask(_that.id);case BulkCompleteTasks() when bulkCompleteTasks != null:
+return bulkCompleteTasks(_that.ids);case BulkReopenTasks() when bulkReopenTasks != null:
+return bulkReopenTasks(_that.ids);case BulkMoveToBacklog() when bulkMoveToBacklog != null:
+return bulkMoveToBacklog(_that.ids);case BulkDeleteTasks() when bulkDeleteTasks != null:
+return bulkDeleteTasks(_that.ids);case SortChanged() when sortChanged != null:
 return sortChanged(_that.sortMode);case FilterChanged() when filterChanged != null:
 return filterChanged(_that.filter);case _:
   return orElse();
@@ -168,7 +184,7 @@ return filterChanged(_that.filter);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( DateTime date)  loadTasksForDate,required TResult Function()  loadBacklog,required TResult Function( String id)  completeTask,required TResult Function( String id)  reopenTask,required TResult Function( String id)  pushToTomorrow,required TResult Function( String id)  deleteTask,required TResult Function( SortMode sortMode)  sortChanged,required TResult Function( TaskListFilter filter)  filterChanged,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( DateTime date)  loadTasksForDate,required TResult Function()  loadBacklog,required TResult Function( String id)  completeTask,required TResult Function( String id)  reopenTask,required TResult Function( String id)  pushToTomorrow,required TResult Function( String id)  deleteTask,required TResult Function( List<String> ids)  bulkCompleteTasks,required TResult Function( List<String> ids)  bulkReopenTasks,required TResult Function( List<String> ids)  bulkMoveToBacklog,required TResult Function( List<String> ids)  bulkDeleteTasks,required TResult Function( SortMode sortMode)  sortChanged,required TResult Function( TaskListFilter filter)  filterChanged,}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate():
 return loadTasksForDate(_that.date);case LoadBacklog():
@@ -176,7 +192,11 @@ return loadBacklog();case CompleteTask():
 return completeTask(_that.id);case ReopenTask():
 return reopenTask(_that.id);case PushToTomorrow():
 return pushToTomorrow(_that.id);case DeleteTask():
-return deleteTask(_that.id);case SortChanged():
+return deleteTask(_that.id);case BulkCompleteTasks():
+return bulkCompleteTasks(_that.ids);case BulkReopenTasks():
+return bulkReopenTasks(_that.ids);case BulkMoveToBacklog():
+return bulkMoveToBacklog(_that.ids);case BulkDeleteTasks():
+return bulkDeleteTasks(_that.ids);case SortChanged():
 return sortChanged(_that.sortMode);case FilterChanged():
 return filterChanged(_that.filter);case _:
   throw StateError('Unexpected subclass');
@@ -195,7 +215,7 @@ return filterChanged(_that.filter);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( DateTime date)?  loadTasksForDate,TResult? Function()?  loadBacklog,TResult? Function( String id)?  completeTask,TResult? Function( String id)?  reopenTask,TResult? Function( String id)?  pushToTomorrow,TResult? Function( String id)?  deleteTask,TResult? Function( SortMode sortMode)?  sortChanged,TResult? Function( TaskListFilter filter)?  filterChanged,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( DateTime date)?  loadTasksForDate,TResult? Function()?  loadBacklog,TResult? Function( String id)?  completeTask,TResult? Function( String id)?  reopenTask,TResult? Function( String id)?  pushToTomorrow,TResult? Function( String id)?  deleteTask,TResult? Function( List<String> ids)?  bulkCompleteTasks,TResult? Function( List<String> ids)?  bulkReopenTasks,TResult? Function( List<String> ids)?  bulkMoveToBacklog,TResult? Function( List<String> ids)?  bulkDeleteTasks,TResult? Function( SortMode sortMode)?  sortChanged,TResult? Function( TaskListFilter filter)?  filterChanged,}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that.date);case LoadBacklog() when loadBacklog != null:
@@ -203,7 +223,11 @@ return loadBacklog();case CompleteTask() when completeTask != null:
 return completeTask(_that.id);case ReopenTask() when reopenTask != null:
 return reopenTask(_that.id);case PushToTomorrow() when pushToTomorrow != null:
 return pushToTomorrow(_that.id);case DeleteTask() when deleteTask != null:
-return deleteTask(_that.id);case SortChanged() when sortChanged != null:
+return deleteTask(_that.id);case BulkCompleteTasks() when bulkCompleteTasks != null:
+return bulkCompleteTasks(_that.ids);case BulkReopenTasks() when bulkReopenTasks != null:
+return bulkReopenTasks(_that.ids);case BulkMoveToBacklog() when bulkMoveToBacklog != null:
+return bulkMoveToBacklog(_that.ids);case BulkDeleteTasks() when bulkDeleteTasks != null:
+return bulkDeleteTasks(_that.ids);case SortChanged() when sortChanged != null:
 return sortChanged(_that.sortMode);case FilterChanged() when filterChanged != null:
 return filterChanged(_that.filter);case _:
   return null;
@@ -569,6 +593,294 @@ class _$DeleteTaskCopyWithImpl<$Res>
   return _then(DeleteTask(
 null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class BulkCompleteTasks implements TaskListEvent {
+  const BulkCompleteTasks(final  List<String> ids): _ids = ids;
+  
+
+ final  List<String> _ids;
+ List<String> get ids {
+  if (_ids is EqualUnmodifiableListView) return _ids;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_ids);
+}
+
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BulkCompleteTasksCopyWith<BulkCompleteTasks> get copyWith => _$BulkCompleteTasksCopyWithImpl<BulkCompleteTasks>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BulkCompleteTasks&&const DeepCollectionEquality().equals(other._ids, _ids));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_ids));
+
+@override
+String toString() {
+  return 'TaskListEvent.bulkCompleteTasks(ids: $ids)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BulkCompleteTasksCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $BulkCompleteTasksCopyWith(BulkCompleteTasks value, $Res Function(BulkCompleteTasks) _then) = _$BulkCompleteTasksCopyWithImpl;
+@useResult
+$Res call({
+ List<String> ids
+});
+
+
+
+
+}
+/// @nodoc
+class _$BulkCompleteTasksCopyWithImpl<$Res>
+    implements $BulkCompleteTasksCopyWith<$Res> {
+  _$BulkCompleteTasksCopyWithImpl(this._self, this._then);
+
+  final BulkCompleteTasks _self;
+  final $Res Function(BulkCompleteTasks) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? ids = null,}) {
+  return _then(BulkCompleteTasks(
+null == ids ? _self._ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class BulkReopenTasks implements TaskListEvent {
+  const BulkReopenTasks(final  List<String> ids): _ids = ids;
+  
+
+ final  List<String> _ids;
+ List<String> get ids {
+  if (_ids is EqualUnmodifiableListView) return _ids;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_ids);
+}
+
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BulkReopenTasksCopyWith<BulkReopenTasks> get copyWith => _$BulkReopenTasksCopyWithImpl<BulkReopenTasks>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BulkReopenTasks&&const DeepCollectionEquality().equals(other._ids, _ids));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_ids));
+
+@override
+String toString() {
+  return 'TaskListEvent.bulkReopenTasks(ids: $ids)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BulkReopenTasksCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $BulkReopenTasksCopyWith(BulkReopenTasks value, $Res Function(BulkReopenTasks) _then) = _$BulkReopenTasksCopyWithImpl;
+@useResult
+$Res call({
+ List<String> ids
+});
+
+
+
+
+}
+/// @nodoc
+class _$BulkReopenTasksCopyWithImpl<$Res>
+    implements $BulkReopenTasksCopyWith<$Res> {
+  _$BulkReopenTasksCopyWithImpl(this._self, this._then);
+
+  final BulkReopenTasks _self;
+  final $Res Function(BulkReopenTasks) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? ids = null,}) {
+  return _then(BulkReopenTasks(
+null == ids ? _self._ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class BulkMoveToBacklog implements TaskListEvent {
+  const BulkMoveToBacklog(final  List<String> ids): _ids = ids;
+  
+
+ final  List<String> _ids;
+ List<String> get ids {
+  if (_ids is EqualUnmodifiableListView) return _ids;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_ids);
+}
+
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BulkMoveToBacklogCopyWith<BulkMoveToBacklog> get copyWith => _$BulkMoveToBacklogCopyWithImpl<BulkMoveToBacklog>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BulkMoveToBacklog&&const DeepCollectionEquality().equals(other._ids, _ids));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_ids));
+
+@override
+String toString() {
+  return 'TaskListEvent.bulkMoveToBacklog(ids: $ids)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BulkMoveToBacklogCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $BulkMoveToBacklogCopyWith(BulkMoveToBacklog value, $Res Function(BulkMoveToBacklog) _then) = _$BulkMoveToBacklogCopyWithImpl;
+@useResult
+$Res call({
+ List<String> ids
+});
+
+
+
+
+}
+/// @nodoc
+class _$BulkMoveToBacklogCopyWithImpl<$Res>
+    implements $BulkMoveToBacklogCopyWith<$Res> {
+  _$BulkMoveToBacklogCopyWithImpl(this._self, this._then);
+
+  final BulkMoveToBacklog _self;
+  final $Res Function(BulkMoveToBacklog) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? ids = null,}) {
+  return _then(BulkMoveToBacklog(
+null == ids ? _self._ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class BulkDeleteTasks implements TaskListEvent {
+  const BulkDeleteTasks(final  List<String> ids): _ids = ids;
+  
+
+ final  List<String> _ids;
+ List<String> get ids {
+  if (_ids is EqualUnmodifiableListView) return _ids;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_ids);
+}
+
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BulkDeleteTasksCopyWith<BulkDeleteTasks> get copyWith => _$BulkDeleteTasksCopyWithImpl<BulkDeleteTasks>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BulkDeleteTasks&&const DeepCollectionEquality().equals(other._ids, _ids));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_ids));
+
+@override
+String toString() {
+  return 'TaskListEvent.bulkDeleteTasks(ids: $ids)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BulkDeleteTasksCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $BulkDeleteTasksCopyWith(BulkDeleteTasks value, $Res Function(BulkDeleteTasks) _then) = _$BulkDeleteTasksCopyWithImpl;
+@useResult
+$Res call({
+ List<String> ids
+});
+
+
+
+
+}
+/// @nodoc
+class _$BulkDeleteTasksCopyWithImpl<$Res>
+    implements $BulkDeleteTasksCopyWith<$Res> {
+  _$BulkDeleteTasksCopyWithImpl(this._self, this._then);
+
+  final BulkDeleteTasks _self;
+  final $Res Function(BulkDeleteTasks) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? ids = null,}) {
+  return _then(BulkDeleteTasks(
+null == ids ? _self._ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

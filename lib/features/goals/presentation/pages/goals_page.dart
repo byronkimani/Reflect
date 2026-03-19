@@ -49,6 +49,7 @@ class GoalsPage extends StatelessWidget {
                     ],
                   ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'goals_fab',
               onPressed: () {
                 final horizon = context.read<GoalsCubit>().state.selectedHorizon;
                 context.push('/goals/new', extra: horizon);

@@ -18,8 +18,8 @@ class GoalFormPage extends StatelessWidget {
     this.timeHorizon,
     IGoalRepository? goalRepo,
     Stream<dynamic>? categoriesStream,
-  })  : _goalRepo = goalRepo,
-        _categoriesStream = categoriesStream;
+  }) : _goalRepo = goalRepo,
+       _categoriesStream = categoriesStream;
 
   final Goal? initialGoal;
   final GoalTimeHorizon? timeHorizon;
@@ -27,7 +27,8 @@ class GoalFormPage extends StatelessWidget {
   final Stream<dynamic>? _categoriesStream;
 
   IGoalRepository get _repo => _goalRepo ?? getIt<IGoalRepository>();
-  Stream<dynamic> get _categories => _categoriesStream ?? getIt<IGoalRepository>().watchCategories();
+  Stream<dynamic> get _categories =>
+      _categoriesStream ?? getIt<IGoalRepository>().watchCategories();
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +38,13 @@ class GoalFormPage extends StatelessWidget {
         initialGoal: initialGoal,
         timeHorizon: timeHorizon,
       ),
-      child: _GoalFormView(
-        categoriesStream: _categories,
-        goalRepo: _repo,
-      ),
+      child: _GoalFormView(categoriesStream: _categories, goalRepo: _repo),
     );
   }
 }
 
 class _GoalFormView extends StatelessWidget {
-  const _GoalFormView({
-    required this.categoriesStream,
-    required this.goalRepo,
-  });
+  const _GoalFormView({required this.categoriesStream, required this.goalRepo});
 
   final Stream<dynamic> categoriesStream;
   final IGoalRepository goalRepo;
@@ -88,12 +83,8 @@ class _GoalFormView extends StatelessWidget {
                     height: 24,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                )
-              else
-                TextButton(
-                  onPressed: () => context.read<GoalFormCubit>().submit(),
-                  child: const Text('Save'),
                 ),
+
             ],
           ),
           body: SingleChildScrollView(
@@ -111,7 +102,12 @@ class _GoalFormView extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Title *', style: textTheme.titleSmall?.copyWith(color: colorScheme.primary)),
+                    Text(
+                      'Title *',
+                      style: textTheme.titleSmall?.copyWith(
+                        color: colorScheme.primary,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     TextFormField(
                       initialValue: state.title,
@@ -122,7 +118,11 @@ class _GoalFormView extends StatelessWidget {
                       onChanged: context.read<GoalFormCubit>().titleChanged,
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'Description (optional, max $_maxWordsDescription words)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Description (optional, max $_maxWordsDescription words)',
+                    ),
                     TextFormField(
                       initialValue: state.description ?? '',
                       maxLines: 3,
@@ -131,25 +131,39 @@ class _GoalFormView extends StatelessWidget {
                         border: OutlineInputBorder(),
                         alignLabelWithHint: true,
                       ),
-                      onChanged: (v) => context.read<GoalFormCubit>().descriptionChanged(v.isEmpty ? null : v),
+                      onChanged: (v) => context
+                          .read<GoalFormCubit>()
+                          .descriptionChanged(v.isEmpty ? null : v),
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'Category (optional)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Category (optional)',
+                    ),
                     _CategorySelector(
                       categories: categories,
                       selectedId: state.categoryId,
-                      onSelected: (id) => context.read<GoalFormCubit>().categoryIdChanged(id),
-                      onManageCategories: () => _openManageCategories(context, categories, goalRepo),
+                      onSelected: (id) =>
+                          context.read<GoalFormCubit>().categoryIdChanged(id),
+                      onManageCategories: () =>
+                          _openManageCategories(context, categories, goalRepo),
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'KPI being tracked (optional)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'KPI being tracked (optional)',
+                    ),
                     TextFormField(
                       initialValue: state.kpiDescription ?? '',
                       decoration: const InputDecoration(
                         hintText: 'What KPI measures progress?',
                         border: OutlineInputBorder(),
                       ),
-                      onChanged: (v) => context.read<GoalFormCubit>().kpiDescriptionChanged(v.isEmpty ? null : v),
+                      onChanged: (v) => context
+                          .read<GoalFormCubit>()
+                          .kpiDescriptionChanged(v.isEmpty ? null : v),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -167,7 +181,9 @@ class _GoalFormView extends StatelessWidget {
                                   border: OutlineInputBorder(),
                                   isDense: true,
                                 ),
-                                onChanged: (v) => context.read<GoalFormCubit>().startValueChanged(v.isEmpty ? null : v),
+                                onChanged: (v) => context
+                                    .read<GoalFormCubit>()
+                                    .startValueChanged(v.isEmpty ? null : v),
                               ),
                             ],
                           ),
@@ -177,7 +193,10 @@ class _GoalFormView extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Target value', style: textTheme.labelMedium),
+                              Text(
+                                'Target value',
+                                style: textTheme.labelMedium,
+                              ),
                               const SizedBox(height: 4),
                               TextFormField(
                                 initialValue: state.targetValue ?? '',
@@ -186,7 +205,9 @@ class _GoalFormView extends StatelessWidget {
                                   border: OutlineInputBorder(),
                                   isDense: true,
                                 ),
-                                onChanged: (v) => context.read<GoalFormCubit>().targetValueChanged(v.isEmpty ? null : v),
+                                onChanged: (v) => context
+                                    .read<GoalFormCubit>()
+                                    .targetValueChanged(v.isEmpty ? null : v),
                               ),
                             ],
                           ),
@@ -194,7 +215,11 @@ class _GoalFormView extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'Priority (optional)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Priority (optional)',
+                    ),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -202,9 +227,9 @@ class _GoalFormView extends StatelessWidget {
                         return PriorityChip(
                           priority: p,
                           isSelected: state.priority == p,
-                          onTap: () => context.read<GoalFormCubit>().priorityChanged(
-                                state.priority == p ? null : p,
-                              ),
+                          onTap: () => context
+                              .read<GoalFormCubit>()
+                              .priorityChanged(state.priority == p ? null : p),
                         );
                       }).toList(),
                     ),
@@ -217,14 +242,18 @@ class _GoalFormView extends StatelessWidget {
                         return PriorityChip(
                           priority: p,
                           isSelected: state.urgency == p,
-                          onTap: () => context.read<GoalFormCubit>().urgencyChanged(
-                                state.urgency == p ? null : p,
-                              ),
+                          onTap: () => context
+                              .read<GoalFormCubit>()
+                              .urgencyChanged(state.urgency == p ? null : p),
                         );
                       }).toList(),
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'Why this goal (optional, ~$_maxWordsWhy words)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Why this goal (optional, ~$_maxWordsWhy words)',
+                    ),
                     TextFormField(
                       initialValue: state.why ?? '',
                       maxLines: 4,
@@ -233,10 +262,16 @@ class _GoalFormView extends StatelessWidget {
                         border: OutlineInputBorder(),
                         alignLabelWithHint: true,
                       ),
-                      onChanged: (v) => context.read<GoalFormCubit>().whyChanged(v.isEmpty ? null : v),
+                      onChanged: (v) => context
+                          .read<GoalFormCubit>()
+                          .whyChanged(v.isEmpty ? null : v),
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'Start date (optional)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Start date (optional)',
+                    ),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
@@ -259,7 +294,11 @@ class _GoalFormView extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 8),
-                    _sectionLabel(textTheme, colorScheme, 'Target date (optional)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Target date (optional)',
+                    ),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
@@ -272,7 +311,10 @@ class _GoalFormView extends StatelessWidget {
                       onTap: () async {
                         final date = await showDatePicker(
                           context: context,
-                          initialDate: state.targetDate ?? state.startDate ?? DateTime.now(),
+                          initialDate:
+                              state.targetDate ??
+                              state.startDate ??
+                              DateTime.now(),
                           firstDate: state.startDate ?? DateTime(2020),
                           lastDate: DateTime(2100),
                         );
@@ -282,7 +324,11 @@ class _GoalFormView extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(textTheme, colorScheme, 'Check-in frequency (optional)'),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Check-in frequency (optional)',
+                    ),
                     Wrap(
                       spacing: 8,
                       children: [
@@ -292,9 +338,9 @@ class _GoalFormView extends StatelessWidget {
                           return FilterChip(
                             label: Text(label),
                             selected: selected,
-                            onSelected: (_) => context.read<GoalFormCubit>().checkInFrequencyChanged(
-                                  selected ? null : f,
-                                ),
+                            onSelected: (_) => context
+                                .read<GoalFormCubit>()
+                                .checkInFrequencyChanged(selected ? null : f),
                           );
                         }),
                       ],
@@ -306,24 +352,54 @@ class _GoalFormView extends StatelessWidget {
                         scrollDirection: Axis.horizontal,
                         child: SegmentedButton<GoalTimeHorizon>(
                           segments: GoalTimeHorizon.values
-                              .map((h) => ButtonSegment<GoalTimeHorizon>(
-                                    value: h,
-                                    label: Text(h.name[0].toUpperCase() + h.name.substring(1)),
-                                  ))
+                              .map(
+                                (h) => ButtonSegment<GoalTimeHorizon>(
+                                  value: h,
+                                  label: Text(
+                                    h.name[0].toUpperCase() +
+                                        h.name.substring(1),
+                                  ),
+                                ),
+                              )
                               .toList(),
                           selected: {state.timeHorizon},
                           onSelectionChanged: (s) {
-                            if (s.isNotEmpty) context.read<GoalFormCubit>().timeHorizonChanged(s.first);
+                            if (s.isNotEmpty) {
+                              context.read<GoalFormCubit>().timeHorizonChanged(
+                                s.first,
+                              );
+                            }
                           },
                         ),
                       ),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 80),
                   ],
                 );
               },
             ),
           ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: state.isSubmitting
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: FloatingActionButton.extended(
+                      onPressed: () => context.read<GoalFormCubit>().submit(),
+                      label: Text(
+                        state.initialGoal == null ? 'Create Goal' : 'Save Changes',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      icon: const Icon(Icons.check_circle_outline),
+                    ),
+                  ),
+                ),
         );
       },
     );
@@ -375,7 +451,10 @@ class _GoalFormView extends StatelessWidget {
     );
   }
 
-  static void _showAddCategoryDialog(BuildContext context, IGoalRepository repo) {
+  static void _showAddCategoryDialog(
+    BuildContext context,
+    IGoalRepository repo,
+  ) {
     final controller = TextEditingController();
     showDialog<void>(
       context: context,
@@ -398,13 +477,15 @@ class _GoalFormView extends StatelessWidget {
             onPressed: () async {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
-                await repo.createCategory(GoalCategory(
-                  id: '',
-                  name: name,
-                  sortOrder: 0,
-                  createdAt: DateTime.now(),
-                  updatedAt: DateTime.now(),
-                ));
+                await repo.createCategory(
+                  GoalCategory(
+                    id: '',
+                    name: name,
+                    sortOrder: 0,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
                 if (!ctx.mounted) return;
                 Navigator.of(ctx).pop();
               }
@@ -506,7 +587,7 @@ class _CategorySelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         DropdownButtonFormField<String?>(
-          value: selectedId,
+          initialValue: selectedId,
           isExpanded: true,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
@@ -514,13 +595,12 @@ class _CategorySelector extends StatelessWidget {
           ),
           items: [
             const DropdownMenuItem(value: null, child: Text('None')),
-            ...categories.map((c) => DropdownMenuItem<String?>(
-                  value: c.id,
-                  child: Text(
-                    c.name,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )),
+            ...categories.map(
+              (c) => DropdownMenuItem<String?>(
+                value: c.id,
+                child: Text(c.name, overflow: TextOverflow.ellipsis),
+              ),
+            ),
           ],
           onChanged: (v) => onSelected(v),
         ),

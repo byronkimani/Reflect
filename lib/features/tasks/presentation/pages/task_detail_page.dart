@@ -117,19 +117,12 @@ class _TaskFormViewState extends State<TaskFormView> {
                       ),
                     ),
                   ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: TextButton(
-                    onPressed: () => context.read<TaskFormCubit>().submit(),
-                    child: const Text('Save'),
-                  ),
                 ),
+
             ],
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 80 + bottomPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -522,6 +515,27 @@ class _TaskFormViewState extends State<TaskFormView> {
               ],
             ),
           ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: state.isSubmitting
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: FloatingActionButton.extended(
+                      onPressed: () => context.read<TaskFormCubit>().submit(),
+                      label: Text(
+                        state.initialTask == null ? 'Create Task' : 'Save Changes',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      icon: const Icon(Icons.check_circle_outline),
+                    ),
+                  ),
+                ),
         );
       },
     );

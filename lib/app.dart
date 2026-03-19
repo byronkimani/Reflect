@@ -9,6 +9,7 @@ import 'package:reflect/core/presentation/theme/app_theme.dart';
 import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
 import 'package:reflect/features/planning/presentation/planning_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/l10n/app_localizations.dart';
@@ -35,6 +36,9 @@ class ReflectApp extends StatelessWidget {
         ),
         BlocProvider<DailyReviewCubit>(
           create: (_) => getIt<DailyReviewCubit>(),
+        ),
+        BlocProvider<TaskSelectionCubit>(
+          create: (_) => getIt<TaskSelectionCubit>(),
         ),
       ],
       child: Builder(
