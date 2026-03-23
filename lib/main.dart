@@ -3,7 +3,6 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:reflect/core/di/injectors.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
-import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/app.dart';
 import 'package:reflect/core/config/env_config.dart';
 import 'package:get_it/get_it.dart';
@@ -30,10 +29,8 @@ void main() async {
   final notificationService = getIt<NotificationService>();
   await notificationService.init();
   await notificationService.requestPermissions();
-  
-  // 5. Schedule initial heartbeats
-  final notificationScheduler = getIt<NotificationScheduler>();
-  await notificationScheduler.scheduleAllHeartbeats();
+
+  // Heartbeat schedules are applied when SettingsCubit is created (persisted prefs).
 
   runApp(const ReflectApp());
 }

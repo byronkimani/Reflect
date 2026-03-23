@@ -97,7 +97,8 @@ class _TaskFormViewState extends State<TaskFormView> {
             title: Text(state.initialTask == null ? 'New Task' : 'Edit Task'),
             actions: [
               if (state.initialTask != null &&
-                  (state.dueDate != null || (state.dueTime != null && state.dueTime!.isNotEmpty)) &&
+                  (state.dueDate != null ||
+                      (state.dueTime != null && state.dueTime!.isNotEmpty)) &&
                   !state.isSubmitting)
                 TextButton.icon(
                   onPressed: () async {
@@ -120,7 +121,6 @@ class _TaskFormViewState extends State<TaskFormView> {
                     ),
                   ),
                 ),
-
             ],
           ),
           body: SingleChildScrollView(
@@ -189,9 +189,11 @@ class _TaskFormViewState extends State<TaskFormView> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String?>(
-                    value: state.selectedGoalId != null &&
-                            state.availableGoals
-                                .any((g) => g.id == state.selectedGoalId)
+                    initialValue:
+                        state.selectedGoalId != null &&
+                            state.availableGoals.any(
+                              (g) => g.id == state.selectedGoalId,
+                            )
                         ? state.selectedGoalId
                         : null,
                     decoration: InputDecoration(
@@ -213,10 +215,7 @@ class _TaskFormViewState extends State<TaskFormView> {
                       ...state.availableGoals.map(
                         (g) => DropdownMenuItem<String?>(
                           value: g.id,
-                          child: Text(
-                            g.title,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          child: Text(g.title, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
@@ -346,8 +345,8 @@ class _TaskFormViewState extends State<TaskFormView> {
                     );
                     if (time != null && context.mounted) {
                       context.read<TaskFormCubit>().dueTimeChanged(
-                            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
-                          );
+                        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
+                      );
                     }
                   },
                   borderRadius: BorderRadius.circular(12),
@@ -372,7 +371,8 @@ class _TaskFormViewState extends State<TaskFormView> {
                                 ),
                               ),
                               Text(
-                                state.dueTime != null && state.dueTime!.isNotEmpty
+                                state.dueTime != null &&
+                                        state.dueTime!.isNotEmpty
                                     ? state.dueTime!
                                     : 'No time set',
                                 style: textTheme.bodySmall?.copyWith(
@@ -415,9 +415,8 @@ class _TaskFormViewState extends State<TaskFormView> {
                     ),
                   ),
                   value: state.isRepeating,
-                  onChanged: (value) => context
-                      .read<TaskFormCubit>()
-                      .isRepeatingChanged(value),
+                  onChanged: (value) =>
+                      context.read<TaskFormCubit>().isRepeatingChanged(value),
                   activeThumbColor: colorScheme.primary,
                 ),
                 if (state.isRepeating) ...[
@@ -435,14 +434,17 @@ class _TaskFormViewState extends State<TaskFormView> {
                         icon: Icon(Icons.date_range_outlined, size: 18),
                       ),
                     ],
-                    selected: {state.recurrenceFrequency ?? RecurrenceFrequency.DAILY},
+                    selected: {
+                      state.recurrenceFrequency ?? RecurrenceFrequency.DAILY,
+                    },
                     onSelectionChanged: (Set<RecurrenceFrequency> selected) {
                       context.read<TaskFormCubit>().recurrenceFrequencyChanged(
-                            selected.first,
-                          );
+                        selected.first,
+                      );
                     },
                   ),
-                  if (state.recurrenceFrequency == RecurrenceFrequency.WEEKLY) ...[
+                  if (state.recurrenceFrequency ==
+                      RecurrenceFrequency.WEEKLY) ...[
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -490,23 +492,31 @@ class _TaskFormViewState extends State<TaskFormView> {
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 4,
-                      children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                          .asMap()
-                          .entries
-                          .map((e) {
-                        final weekday = e.key + 1; // 1 = Mon .. 7 = Sun
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: FilterChip(
-                            label: Text(e.value),
-                            selected: state.recurrenceDaysOfWeek.contains(weekday),
-                            onSelected: (_) => context
-                                .read<TaskFormCubit>()
-                                .toggleRecurrenceDay(weekday),
-                            showCheckmark: true,
-                          ),
-                        );
-                      }).toList(),
+                      children:
+                          [
+                            'Mon',
+                            'Tue',
+                            'Wed',
+                            'Thu',
+                            'Fri',
+                            'Sat',
+                            'Sun',
+                          ].asMap().entries.map((e) {
+                            final weekday = e.key + 1; // 1 = Mon .. 7 = Sun
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: FilterChip(
+                                label: Text(e.value),
+                                selected: state.recurrenceDaysOfWeek.contains(
+                                  weekday,
+                                ),
+                                onSelected: (_) => context
+                                    .read<TaskFormCubit>()
+                                    .toggleRecurrenceDay(weekday),
+                                showCheckmark: true,
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ],
                 ],
@@ -563,7 +573,8 @@ class _TaskFormViewState extends State<TaskFormView> {
               ],
             ),
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           floatingActionButton: state.isSubmitting
               ? null
               : Padding(
@@ -574,7 +585,9 @@ class _TaskFormViewState extends State<TaskFormView> {
                     child: FloatingActionButton.extended(
                       onPressed: () => context.read<TaskFormCubit>().submit(),
                       label: Text(
-                        state.initialTask == null ? 'Create Task' : 'Save Changes',
+                        state.initialTask == null
+                            ? 'Create Task'
+                            : 'Save Changes',
                         style: textTheme.titleMedium?.copyWith(
                           color: colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.bold,

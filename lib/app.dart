@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
@@ -11,12 +12,17 @@ import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bl
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
 import 'package:reflect/features/planning/presentation/planning_cubit.dart';
+import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:reflect/features/settings/presentation/cubit/settings_state.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/l10n/app_localizations.dart';
 import 'package:reflect/main.dart';
 
 class ReflectApp extends StatelessWidget {
   const ReflectApp({super.key});
+
+  /// Single router instance so theme rebuilds do not reset navigation.
+  static final GoRouter _router = createAppRouter();
 
   @override
   Widget build(BuildContext context) {
@@ -40,25 +46,33 @@ class ReflectApp extends StatelessWidget {
         BlocProvider<TaskSelectionCubit>(
           create: (_) => getIt<TaskSelectionCubit>(),
         ),
+        BlocProvider<SettingsCubit>(
+          create: (_) => getIt<SettingsCubit>(),
+        ),
       ],
       child: Builder(
         builder: (context) {
-          return MaterialApp.router(
-            title: 'Reflect',
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: AppLocalizations.supportedLocales,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
-            routerConfig: createAppRouter(),
-            builder: (context, child) {
-              return ConnectivityWrapper(
-                child: child ?? const SizedBox.shrink(),
+          return BlocBuilder<SettingsCubit, SettingsState>(
+            buildWhen: (prev, next) => prev.themeMode != next.themeMode,
+            builder: (context, settingsState) {
+              return MaterialApp.router(
+                title: 'Reflect',
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: settingsState.themeMode,
+                routerConfig: _router,
+                builder: (context, child) {
+                  return ConnectivityWrapper(
+                    child: child ?? const SizedBox.shrink(),
+                  );
+                },
               );
             },
           );

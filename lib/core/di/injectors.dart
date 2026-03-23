@@ -23,6 +23,7 @@ import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_se
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
+import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/features/goals/data/repositories/goal_repository_impl.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
@@ -108,5 +109,8 @@ void setupDependencies() {
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
   getIt.registerLazySingleton<NotificationScheduler>(
     () => NotificationScheduler(getIt<NotificationService>()),
+  );
+  getIt.registerLazySingleton<SettingsCubit>(
+    () => SettingsCubit(getIt<NotificationScheduler>()),
   );
 }

@@ -24,7 +24,7 @@ class NotificationScheduler {
   /// ID: 1001
   Future<void> scheduleMorningPlanning() async {
     await _plugin.zonedSchedule(
-      id: 1001,
+      id: _morningPlanningId,
       title: 'Time to plan your day 🗓️',
       body: 'Open Reflect to set yourself up for a great day.',
       scheduledDate: _nextInstanceOfTime(8, 0),
@@ -49,7 +49,7 @@ class NotificationScheduler {
   /// [skipToday] can be used to explicitly schedule for tomorrow (e.g., after completion).
   Future<void> scheduleEveningReview({bool skipToday = false}) async {
     await _plugin.zonedSchedule(
-      id: 1002,
+      id: _eveningReviewId,
       title: 'Daily Reflection 🌙',
       body: 'Take a moment to review your day.',
       scheduledDate: _nextInstanceOfTime(21, 0, skipToday: skipToday),
@@ -73,7 +73,7 @@ class NotificationScheduler {
   /// ID: 1003
   Future<void> scheduleWeeklyPlanning() async {
     await _plugin.zonedSchedule(
-      id: 1003,
+      id: _weeklyPlanningId,
       title: 'Weekly Review & Plan 🧭',
       body: 'Set your direction for the week ahead.',
       scheduledDate: _nextInstanceOfDayOfWeekAndTime(DateTime.sunday, 18, 0),
@@ -96,7 +96,7 @@ class NotificationScheduler {
   /// Explicitly schedules the next 12 instances as day-of-month isn't built-in.
   /// Base ID: 1100
   Future<void> scheduleMonthlyPlanning() async {
-    const int idBase = 1100;
+    const int idBase = _monthlyPlanningIdBase;
     final now = tz.TZDateTime.now(tz.local);
 
     for (int i = 0; i < 12; i++) {
@@ -142,6 +142,30 @@ class NotificationScheduler {
   /// Cancels a specific notification by ID.
   Future<void> cancelNotification(int id) async {
     await _plugin.cancel(id: id);
+  }
+
+  static const int _morningPlanningId = 1001;
+  static const int _eveningReviewId = 1002;
+  static const int _weeklyPlanningId = 1003;
+  static const int _monthlyPlanningIdBase = 1100;
+  static const int _monthlyPlanningCount = 12;
+
+  Future<void> cancelMorningPlanning() async {
+    await _plugin.cancel(id: _morningPlanningId);
+  }
+
+  Future<void> cancelEveningReview() async {
+    await _plugin.cancel(id: _eveningReviewId);
+  }
+
+  Future<void> cancelWeeklyPlanning() async {
+    await _plugin.cancel(id: _weeklyPlanningId);
+  }
+
+  Future<void> cancelMonthlyPlanning() async {
+    for (var i = 0; i < _monthlyPlanningCount; i++) {
+      await _plugin.cancel(id: _monthlyPlanningIdBase + i);
+    }
   }
 
   /// Task reminder notification ID base (avoids collision with 1001, 1002, 1003, 1100+).

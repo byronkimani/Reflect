@@ -11,6 +11,7 @@ import 'tables/review_tables.dart';
 import 'tables/sync_tables.dart';
 import 'tables/goal_tables.dart';
 import 'package:reflect/features/analytics/data/daos/analytics_dao.dart';
+import 'package:reflect/core/storage/database/sqlite_migration.dart';
 
 part 'app_database.g.dart';
 
@@ -45,18 +46,35 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
-        await migrator.addColumn(tasks, tasks.hasEnabledReminder);
+        if (!await sqliteTableHasColumn(this, 'tasks', 'has_enabled_reminder')) {
+          await migrator.addColumn(tasks, tasks.hasEnabledReminder);
+        }
       }
       if (from < 3) {
-        await migrator.createTable(goalCategories);
-        await migrator.createTable(goals);
+        if (!await sqliteTableExists(this, 'goal_categories')) {
+          await migrator.createTable(goalCategories);
+        }
+        if (!await sqliteTableExists(this, 'goals')) {
+          await migrator.createTable(goals);
+        }
       }
       if (from < 4) {
-        await migrator.addColumn(tasks, tasks.dueDateLocalDayStart);
-        await migrator.addColumn(tasks, tasks.dueDateUtcMs);
+        if (!await sqliteTableHasColumn(
+          this,
+          'tasks',
+          'due_date_local_day_start',
+        )) {
+          await migrator.addColumn(tasks, tasks.dueDateLocalDayStart);
+        }
+        if (!await sqliteTableHasColumn(this, 'tasks', 'due_date_utc_ms')) {
+          await migrator.addColumn(tasks, tasks.dueDateUtcMs);
+        }
         final rows = await select(tasks).get();
         for (final t in rows) {
           if (t.dueDate == null) continue;
+          if (t.dueDateLocalDayStart != null && t.dueDateUtcMs != null) {
+            continue;
+          }
           final d = DateTime.fromMillisecondsSinceEpoch(t.dueDate!);
           final localStart =
               DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
@@ -77,7 +95,9 @@ class AppDatabase extends _$AppDatabase {
         }
       }
       if (from < 5) {
-        await migrator.addColumn(tasks, tasks.goalId);
+        if (!await sqliteTableHasColumn(this, 'tasks', 'goal_id')) {
+          await migrator.addColumn(tasks, tasks.goalId);
+        }
       }
     },
     beforeOpen: (details) async {

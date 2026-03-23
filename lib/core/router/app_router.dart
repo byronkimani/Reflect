@@ -11,6 +11,8 @@ import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
 import 'package:reflect/features/goals/presentation/pages/goal_form_page.dart';
 import 'package:reflect/features/review/presentation/pages/daily_review_page.dart';
 import 'package:reflect/features/analytics/presentation/pages/insights_page.dart';
+import 'package:reflect/features/more/presentation/pages/more_options_page.dart';
+import 'package:reflect/features/settings/presentation/pages/settings_page.dart';
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
 import 'package:reflect/features/planning/presentation/pages/planning_page.dart';
 import 'package:reflect/main.dart';
@@ -122,12 +124,24 @@ GoRouter createAppRouter() {
               ),
             ],
           ),
-          // Branch 5: Insights
+          // Branch 5: More (settings & analytics)
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/insights',
-                builder: (context, state) => const InsightsPage(),
+                path: '/more',
+                builder: (context, state) => const MoreOptionsPage(),
+                routes: [
+                  GoRoute(
+                    path: 'settings',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const SettingsPage(),
+                  ),
+                  GoRoute(
+                    path: 'analytics',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const InsightsPage(),
+                  ),
+                ],
               ),
             ],
           ),
