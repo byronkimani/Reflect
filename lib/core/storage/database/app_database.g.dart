@@ -626,6 +626,27 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _dueDateLocalDayStartMeta =
+      const VerificationMeta('dueDateLocalDayStart');
+  @override
+  late final GeneratedColumn<int> dueDateLocalDayStart = GeneratedColumn<int>(
+    'due_date_local_day_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueDateUtcMsMeta = const VerificationMeta(
+    'dueDateUtcMs',
+  );
+  @override
+  late final GeneratedColumn<int> dueDateUtcMs = GeneratedColumn<int>(
+    'due_date_utc_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _dueTimeMeta = const VerificationMeta(
     'dueTime',
   );
@@ -738,6 +759,16 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _goalIdMeta = const VerificationMeta('goalId');
+  @override
+  late final GeneratedColumn<String> goalId = GeneratedColumn<String>(
+    'goal_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'REFERENCES goals(id) ON DELETE SET NULL',
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -766,6 +797,8 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
     title,
     priority,
     dueDate,
+    dueDateLocalDayStart,
+    dueDateUtcMs,
     dueTime,
     notes,
     status,
@@ -776,6 +809,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
     hasEnabledReminder,
     gcalEventId,
     syncToGcal,
+    goalId,
     createdAt,
     updatedAt,
   ];
@@ -814,6 +848,24 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
       context.handle(
         _dueDateMeta,
         dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    }
+    if (data.containsKey('due_date_local_day_start')) {
+      context.handle(
+        _dueDateLocalDayStartMeta,
+        dueDateLocalDayStart.isAcceptableOrUnknown(
+          data['due_date_local_day_start']!,
+          _dueDateLocalDayStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('due_date_utc_ms')) {
+      context.handle(
+        _dueDateUtcMsMeta,
+        dueDateUtcMs.isAcceptableOrUnknown(
+          data['due_date_utc_ms']!,
+          _dueDateUtcMsMeta,
+        ),
       );
     }
     if (data.containsKey('due_time')) {
@@ -891,6 +943,12 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
         ),
       );
     }
+    if (data.containsKey('goal_id')) {
+      context.handle(
+        _goalIdMeta,
+        goalId.isAcceptableOrUnknown(data['goal_id']!, _goalIdMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -932,6 +990,14 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
         DriftSqlType.int,
         data['${effectivePrefix}due_date'],
       ),
+      dueDateLocalDayStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}due_date_local_day_start'],
+      ),
+      dueDateUtcMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}due_date_utc_ms'],
+      ),
       dueTime: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}due_time'],
@@ -972,6 +1038,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskData> {
         DriftSqlType.int,
         data['${effectivePrefix}sync_to_gcal'],
       )!,
+      goalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}goal_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -994,6 +1064,12 @@ class TaskData extends DataClass implements Insertable<TaskData> {
   final String title;
   final String priority;
   final int? dueDate;
+
+  /// Start of the due calendar day in the user's local timezone (epoch ms). Used for analytics and day bucketing.
+  final int? dueDateLocalDayStart;
+
+  /// Canonical due instant as epoch ms (same convention as [DateTime.millisecondsSinceEpoch]). Reserved for sync / server use.
+  final int? dueDateUtcMs;
   final int? dueTime;
   final String? notes;
   final String status;
@@ -1004,6 +1080,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
   final int hasEnabledReminder;
   final String? gcalEventId;
   final int syncToGcal;
+  final String? goalId;
   final int createdAt;
   final int updatedAt;
   const TaskData({
@@ -1011,6 +1088,8 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     required this.title,
     required this.priority,
     this.dueDate,
+    this.dueDateLocalDayStart,
+    this.dueDateUtcMs,
     this.dueTime,
     this.notes,
     required this.status,
@@ -1021,6 +1100,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     required this.hasEnabledReminder,
     this.gcalEventId,
     required this.syncToGcal,
+    this.goalId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1032,6 +1112,12 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     map['priority'] = Variable<String>(priority);
     if (!nullToAbsent || dueDate != null) {
       map['due_date'] = Variable<int>(dueDate);
+    }
+    if (!nullToAbsent || dueDateLocalDayStart != null) {
+      map['due_date_local_day_start'] = Variable<int>(dueDateLocalDayStart);
+    }
+    if (!nullToAbsent || dueDateUtcMs != null) {
+      map['due_date_utc_ms'] = Variable<int>(dueDateUtcMs);
     }
     if (!nullToAbsent || dueTime != null) {
       map['due_time'] = Variable<int>(dueTime);
@@ -1053,6 +1139,9 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       map['gcal_event_id'] = Variable<String>(gcalEventId);
     }
     map['sync_to_gcal'] = Variable<int>(syncToGcal);
+    if (!nullToAbsent || goalId != null) {
+      map['goal_id'] = Variable<String>(goalId);
+    }
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
     return map;
@@ -1066,6 +1155,12 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       dueDate: dueDate == null && nullToAbsent
           ? const Value.absent()
           : Value(dueDate),
+      dueDateLocalDayStart: dueDateLocalDayStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDateLocalDayStart),
+      dueDateUtcMs: dueDateUtcMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDateUtcMs),
       dueTime: dueTime == null && nullToAbsent
           ? const Value.absent()
           : Value(dueTime),
@@ -1086,6 +1181,9 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           ? const Value.absent()
           : Value(gcalEventId),
       syncToGcal: Value(syncToGcal),
+      goalId: goalId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1101,6 +1199,10 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       title: serializer.fromJson<String>(json['title']),
       priority: serializer.fromJson<String>(json['priority']),
       dueDate: serializer.fromJson<int?>(json['dueDate']),
+      dueDateLocalDayStart: serializer.fromJson<int?>(
+        json['dueDateLocalDayStart'],
+      ),
+      dueDateUtcMs: serializer.fromJson<int?>(json['dueDateUtcMs']),
       dueTime: serializer.fromJson<int?>(json['dueTime']),
       notes: serializer.fromJson<String?>(json['notes']),
       status: serializer.fromJson<String>(json['status']),
@@ -1113,6 +1215,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       hasEnabledReminder: serializer.fromJson<int>(json['hasEnabledReminder']),
       gcalEventId: serializer.fromJson<String?>(json['gcalEventId']),
       syncToGcal: serializer.fromJson<int>(json['syncToGcal']),
+      goalId: serializer.fromJson<String?>(json['goalId']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -1125,6 +1228,8 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       'title': serializer.toJson<String>(title),
       'priority': serializer.toJson<String>(priority),
       'dueDate': serializer.toJson<int?>(dueDate),
+      'dueDateLocalDayStart': serializer.toJson<int?>(dueDateLocalDayStart),
+      'dueDateUtcMs': serializer.toJson<int?>(dueDateUtcMs),
       'dueTime': serializer.toJson<int?>(dueTime),
       'notes': serializer.toJson<String?>(notes),
       'status': serializer.toJson<String>(status),
@@ -1135,6 +1240,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       'hasEnabledReminder': serializer.toJson<int>(hasEnabledReminder),
       'gcalEventId': serializer.toJson<String?>(gcalEventId),
       'syncToGcal': serializer.toJson<int>(syncToGcal),
+      'goalId': serializer.toJson<String?>(goalId),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
@@ -1145,6 +1251,8 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     String? title,
     String? priority,
     Value<int?> dueDate = const Value.absent(),
+    Value<int?> dueDateLocalDayStart = const Value.absent(),
+    Value<int?> dueDateUtcMs = const Value.absent(),
     Value<int?> dueTime = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     String? status,
@@ -1155,6 +1263,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     int? hasEnabledReminder,
     Value<String?> gcalEventId = const Value.absent(),
     int? syncToGcal,
+    Value<String?> goalId = const Value.absent(),
     int? createdAt,
     int? updatedAt,
   }) => TaskData(
@@ -1162,6 +1271,10 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     title: title ?? this.title,
     priority: priority ?? this.priority,
     dueDate: dueDate.present ? dueDate.value : this.dueDate,
+    dueDateLocalDayStart: dueDateLocalDayStart.present
+        ? dueDateLocalDayStart.value
+        : this.dueDateLocalDayStart,
+    dueDateUtcMs: dueDateUtcMs.present ? dueDateUtcMs.value : this.dueDateUtcMs,
     dueTime: dueTime.present ? dueTime.value : this.dueTime,
     notes: notes.present ? notes.value : this.notes,
     status: status ?? this.status,
@@ -1176,6 +1289,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     hasEnabledReminder: hasEnabledReminder ?? this.hasEnabledReminder,
     gcalEventId: gcalEventId.present ? gcalEventId.value : this.gcalEventId,
     syncToGcal: syncToGcal ?? this.syncToGcal,
+    goalId: goalId.present ? goalId.value : this.goalId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -1185,6 +1299,12 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       title: data.title.present ? data.title.value : this.title,
       priority: data.priority.present ? data.priority.value : this.priority,
       dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      dueDateLocalDayStart: data.dueDateLocalDayStart.present
+          ? data.dueDateLocalDayStart.value
+          : this.dueDateLocalDayStart,
+      dueDateUtcMs: data.dueDateUtcMs.present
+          ? data.dueDateUtcMs.value
+          : this.dueDateUtcMs,
       dueTime: data.dueTime.present ? data.dueTime.value : this.dueTime,
       notes: data.notes.present ? data.notes.value : this.notes,
       status: data.status.present ? data.status.value : this.status,
@@ -1207,6 +1327,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       syncToGcal: data.syncToGcal.present
           ? data.syncToGcal.value
           : this.syncToGcal,
+      goalId: data.goalId.present ? data.goalId.value : this.goalId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1219,6 +1340,8 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           ..write('title: $title, ')
           ..write('priority: $priority, ')
           ..write('dueDate: $dueDate, ')
+          ..write('dueDateLocalDayStart: $dueDateLocalDayStart, ')
+          ..write('dueDateUtcMs: $dueDateUtcMs, ')
           ..write('dueTime: $dueTime, ')
           ..write('notes: $notes, ')
           ..write('status: $status, ')
@@ -1229,6 +1352,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           ..write('hasEnabledReminder: $hasEnabledReminder, ')
           ..write('gcalEventId: $gcalEventId, ')
           ..write('syncToGcal: $syncToGcal, ')
+          ..write('goalId: $goalId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1241,6 +1365,8 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     title,
     priority,
     dueDate,
+    dueDateLocalDayStart,
+    dueDateUtcMs,
     dueTime,
     notes,
     status,
@@ -1251,6 +1377,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
     hasEnabledReminder,
     gcalEventId,
     syncToGcal,
+    goalId,
     createdAt,
     updatedAt,
   );
@@ -1262,6 +1389,8 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           other.title == this.title &&
           other.priority == this.priority &&
           other.dueDate == this.dueDate &&
+          other.dueDateLocalDayStart == this.dueDateLocalDayStart &&
+          other.dueDateUtcMs == this.dueDateUtcMs &&
           other.dueTime == this.dueTime &&
           other.notes == this.notes &&
           other.status == this.status &&
@@ -1272,6 +1401,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           other.hasEnabledReminder == this.hasEnabledReminder &&
           other.gcalEventId == this.gcalEventId &&
           other.syncToGcal == this.syncToGcal &&
+          other.goalId == this.goalId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1281,6 +1411,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
   final Value<String> title;
   final Value<String> priority;
   final Value<int?> dueDate;
+  final Value<int?> dueDateLocalDayStart;
+  final Value<int?> dueDateUtcMs;
   final Value<int?> dueTime;
   final Value<String?> notes;
   final Value<String> status;
@@ -1291,6 +1423,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
   final Value<int> hasEnabledReminder;
   final Value<String?> gcalEventId;
   final Value<int> syncToGcal;
+  final Value<String?> goalId;
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
@@ -1299,6 +1432,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     this.title = const Value.absent(),
     this.priority = const Value.absent(),
     this.dueDate = const Value.absent(),
+    this.dueDateLocalDayStart = const Value.absent(),
+    this.dueDateUtcMs = const Value.absent(),
     this.dueTime = const Value.absent(),
     this.notes = const Value.absent(),
     this.status = const Value.absent(),
@@ -1309,6 +1444,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     this.hasEnabledReminder = const Value.absent(),
     this.gcalEventId = const Value.absent(),
     this.syncToGcal = const Value.absent(),
+    this.goalId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1318,6 +1454,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     required String title,
     required String priority,
     this.dueDate = const Value.absent(),
+    this.dueDateLocalDayStart = const Value.absent(),
+    this.dueDateUtcMs = const Value.absent(),
     this.dueTime = const Value.absent(),
     this.notes = const Value.absent(),
     this.status = const Value.absent(),
@@ -1328,6 +1466,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     this.hasEnabledReminder = const Value.absent(),
     this.gcalEventId = const Value.absent(),
     this.syncToGcal = const Value.absent(),
+    this.goalId = const Value.absent(),
     required int createdAt,
     required int updatedAt,
     this.rowid = const Value.absent(),
@@ -1340,6 +1479,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     Expression<String>? title,
     Expression<String>? priority,
     Expression<int>? dueDate,
+    Expression<int>? dueDateLocalDayStart,
+    Expression<int>? dueDateUtcMs,
     Expression<int>? dueTime,
     Expression<String>? notes,
     Expression<String>? status,
@@ -1350,6 +1491,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     Expression<int>? hasEnabledReminder,
     Expression<String>? gcalEventId,
     Expression<int>? syncToGcal,
+    Expression<String>? goalId,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
@@ -1359,6 +1501,9 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
       if (title != null) 'title': title,
       if (priority != null) 'priority': priority,
       if (dueDate != null) 'due_date': dueDate,
+      if (dueDateLocalDayStart != null)
+        'due_date_local_day_start': dueDateLocalDayStart,
+      if (dueDateUtcMs != null) 'due_date_utc_ms': dueDateUtcMs,
       if (dueTime != null) 'due_time': dueTime,
       if (notes != null) 'notes': notes,
       if (status != null) 'status': status,
@@ -1371,6 +1516,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
         'has_enabled_reminder': hasEnabledReminder,
       if (gcalEventId != null) 'gcal_event_id': gcalEventId,
       if (syncToGcal != null) 'sync_to_gcal': syncToGcal,
+      if (goalId != null) 'goal_id': goalId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1382,6 +1528,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     Value<String>? title,
     Value<String>? priority,
     Value<int?>? dueDate,
+    Value<int?>? dueDateLocalDayStart,
+    Value<int?>? dueDateUtcMs,
     Value<int?>? dueTime,
     Value<String?>? notes,
     Value<String>? status,
@@ -1392,6 +1540,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     Value<int>? hasEnabledReminder,
     Value<String?>? gcalEventId,
     Value<int>? syncToGcal,
+    Value<String?>? goalId,
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int>? rowid,
@@ -1401,6 +1550,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
       title: title ?? this.title,
       priority: priority ?? this.priority,
       dueDate: dueDate ?? this.dueDate,
+      dueDateLocalDayStart: dueDateLocalDayStart ?? this.dueDateLocalDayStart,
+      dueDateUtcMs: dueDateUtcMs ?? this.dueDateUtcMs,
       dueTime: dueTime ?? this.dueTime,
       notes: notes ?? this.notes,
       status: status ?? this.status,
@@ -1411,6 +1562,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
       hasEnabledReminder: hasEnabledReminder ?? this.hasEnabledReminder,
       gcalEventId: gcalEventId ?? this.gcalEventId,
       syncToGcal: syncToGcal ?? this.syncToGcal,
+      goalId: goalId ?? this.goalId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1431,6 +1583,14 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     }
     if (dueDate.present) {
       map['due_date'] = Variable<int>(dueDate.value);
+    }
+    if (dueDateLocalDayStart.present) {
+      map['due_date_local_day_start'] = Variable<int>(
+        dueDateLocalDayStart.value,
+      );
+    }
+    if (dueDateUtcMs.present) {
+      map['due_date_utc_ms'] = Variable<int>(dueDateUtcMs.value);
     }
     if (dueTime.present) {
       map['due_time'] = Variable<int>(dueTime.value);
@@ -1462,6 +1622,9 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
     if (syncToGcal.present) {
       map['sync_to_gcal'] = Variable<int>(syncToGcal.value);
     }
+    if (goalId.present) {
+      map['goal_id'] = Variable<String>(goalId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -1481,6 +1644,8 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
           ..write('title: $title, ')
           ..write('priority: $priority, ')
           ..write('dueDate: $dueDate, ')
+          ..write('dueDateLocalDayStart: $dueDateLocalDayStart, ')
+          ..write('dueDateUtcMs: $dueDateUtcMs, ')
           ..write('dueTime: $dueTime, ')
           ..write('notes: $notes, ')
           ..write('status: $status, ')
@@ -1491,6 +1656,7 @@ class TasksCompanion extends UpdateCompanion<TaskData> {
           ..write('hasEnabledReminder: $hasEnabledReminder, ')
           ..write('gcalEventId: $gcalEventId, ')
           ..write('syncToGcal: $syncToGcal, ')
+          ..write('goalId: $goalId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -7912,6 +8078,8 @@ typedef $$TasksTableCreateCompanionBuilder =
       required String title,
       required String priority,
       Value<int?> dueDate,
+      Value<int?> dueDateLocalDayStart,
+      Value<int?> dueDateUtcMs,
       Value<int?> dueTime,
       Value<String?> notes,
       Value<String> status,
@@ -7922,6 +8090,7 @@ typedef $$TasksTableCreateCompanionBuilder =
       Value<int> hasEnabledReminder,
       Value<String?> gcalEventId,
       Value<int> syncToGcal,
+      Value<String?> goalId,
       required int createdAt,
       required int updatedAt,
       Value<int> rowid,
@@ -7932,6 +8101,8 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String> priority,
       Value<int?> dueDate,
+      Value<int?> dueDateLocalDayStart,
+      Value<int?> dueDateUtcMs,
       Value<int?> dueTime,
       Value<String?> notes,
       Value<String> status,
@@ -7942,6 +8113,7 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<int> hasEnabledReminder,
       Value<String?> gcalEventId,
       Value<int> syncToGcal,
+      Value<String?> goalId,
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int> rowid,
@@ -8035,6 +8207,16 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get dueDateLocalDayStart => $composableBuilder(
+    column: $table.dueDateLocalDayStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dueDateUtcMs => $composableBuilder(
+    column: $table.dueDateUtcMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get dueTime => $composableBuilder(
     column: $table.dueTime,
     builder: (column) => ColumnFilters(column),
@@ -8077,6 +8259,11 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
 
   ColumnFilters<int> get syncToGcal => $composableBuilder(
     column: $table.syncToGcal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get goalId => $composableBuilder(
+    column: $table.goalId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8193,6 +8380,16 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get dueDateLocalDayStart => $composableBuilder(
+    column: $table.dueDateLocalDayStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dueDateUtcMs => $composableBuilder(
+    column: $table.dueDateUtcMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get dueTime => $composableBuilder(
     column: $table.dueTime,
     builder: (column) => ColumnOrderings(column),
@@ -8235,6 +8432,11 @@ class $$TasksTableOrderingComposer
 
   ColumnOrderings<int> get syncToGcal => $composableBuilder(
     column: $table.syncToGcal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get goalId => $composableBuilder(
+    column: $table.goalId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8293,6 +8495,16 @@ class $$TasksTableAnnotationComposer
   GeneratedColumn<int> get dueDate =>
       $composableBuilder(column: $table.dueDate, builder: (column) => column);
 
+  GeneratedColumn<int> get dueDateLocalDayStart => $composableBuilder(
+    column: $table.dueDateLocalDayStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dueDateUtcMs => $composableBuilder(
+    column: $table.dueDateUtcMs,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get dueTime =>
       $composableBuilder(column: $table.dueTime, builder: (column) => column);
 
@@ -8329,6 +8541,9 @@ class $$TasksTableAnnotationComposer
     column: $table.syncToGcal,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get goalId =>
+      $composableBuilder(column: $table.goalId, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -8446,6 +8661,8 @@ class $$TasksTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String> priority = const Value.absent(),
                 Value<int?> dueDate = const Value.absent(),
+                Value<int?> dueDateLocalDayStart = const Value.absent(),
+                Value<int?> dueDateUtcMs = const Value.absent(),
                 Value<int?> dueTime = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String> status = const Value.absent(),
@@ -8456,6 +8673,7 @@ class $$TasksTableTableManager
                 Value<int> hasEnabledReminder = const Value.absent(),
                 Value<String?> gcalEventId = const Value.absent(),
                 Value<int> syncToGcal = const Value.absent(),
+                Value<String?> goalId = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -8464,6 +8682,8 @@ class $$TasksTableTableManager
                 title: title,
                 priority: priority,
                 dueDate: dueDate,
+                dueDateLocalDayStart: dueDateLocalDayStart,
+                dueDateUtcMs: dueDateUtcMs,
                 dueTime: dueTime,
                 notes: notes,
                 status: status,
@@ -8474,6 +8694,7 @@ class $$TasksTableTableManager
                 hasEnabledReminder: hasEnabledReminder,
                 gcalEventId: gcalEventId,
                 syncToGcal: syncToGcal,
+                goalId: goalId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -8484,6 +8705,8 @@ class $$TasksTableTableManager
                 required String title,
                 required String priority,
                 Value<int?> dueDate = const Value.absent(),
+                Value<int?> dueDateLocalDayStart = const Value.absent(),
+                Value<int?> dueDateUtcMs = const Value.absent(),
                 Value<int?> dueTime = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String> status = const Value.absent(),
@@ -8494,6 +8717,7 @@ class $$TasksTableTableManager
                 Value<int> hasEnabledReminder = const Value.absent(),
                 Value<String?> gcalEventId = const Value.absent(),
                 Value<int> syncToGcal = const Value.absent(),
+                Value<String?> goalId = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -8502,6 +8726,8 @@ class $$TasksTableTableManager
                 title: title,
                 priority: priority,
                 dueDate: dueDate,
+                dueDateLocalDayStart: dueDateLocalDayStart,
+                dueDateUtcMs: dueDateUtcMs,
                 dueTime: dueTime,
                 notes: notes,
                 status: status,
@@ -8512,6 +8738,7 @@ class $$TasksTableTableManager
                 hasEnabledReminder: hasEnabledReminder,
                 gcalEventId: gcalEventId,
                 syncToGcal: syncToGcal,
+                goalId: goalId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

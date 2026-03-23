@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/features/goals/domain/entities/goal.dart';
+import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
@@ -10,9 +12,12 @@ import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cu
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
 
+class MockIGoalRepository extends Mock implements IGoalRepository {}
+
 void main() {
   late TaskFormCubit cubit;
   late MockITaskRepository mockRepo;
+  late MockIGoalRepository mockGoalRepo;
 
   final now = DateTime(2025, 3, 18, 12, 0);
 
@@ -73,6 +78,10 @@ void main() {
 
   setUp(() {
     mockRepo = MockITaskRepository();
+    mockGoalRepo = MockIGoalRepository();
+    when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+      (_) => Stream.value(const Right(<Goal>[])),
+    );
   });
 
   tearDown(() {
@@ -81,7 +90,7 @@ void main() {
 
   group('TaskFormCubit initial state', () {
     test('initial state with null task has empty title and no subtasks', () {
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       expect(cubit.state.title, '');
       expect(cubit.state.subtaskItems, isEmpty);
       expect(cubit.state.initialTask, isNull);
@@ -96,7 +105,7 @@ void main() {
         dueDate: DateTime(2025, 4, 1),
         dueTime: '10:30',
       );
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       expect(cubit.state.title, 'Prefilled');
       expect(cubit.state.notes, 'Some notes');
       expect(cubit.state.priority, TaskPriority.p1);
@@ -109,7 +118,7 @@ void main() {
       final sub1 = subtask(id: 's1', title: 'First');
       final sub2 = subtask(id: 's2', title: 'Second', isCompleted: true);
       final t = task(subtasks: [sub1, sub2]);
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       expect(cubit.state.subtaskItems.length, 2);
       expect(cubit.state.subtaskItems[0].id, 's1');
       expect(cubit.state.subtaskItems[0].title, 'First');
@@ -120,15 +129,15 @@ void main() {
     });
 
     test('initial state with null task does not throw when building subtaskItems', () {
-      expect(() => TaskFormCubit(mockRepo, null), returnsNormally);
-      cubit = TaskFormCubit(mockRepo, null);
+      expect(() => TaskFormCubit(mockRepo, mockGoalRepo, null), returnsNormally);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       expect(cubit.state.subtaskItems, isEmpty);
     });
   });
 
   group('TaskFormCubit addSubtask', () {
     test('addSubtask appends a new item with empty title and not completed', () {
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       cubit.addSubtask();
       expect(cubit.state.subtaskItems.length, 1);
       expect(cubit.state.subtaskItems[0].title, '');
@@ -137,14 +146,14 @@ void main() {
     });
 
     test('addSubtask with title appends item with that title', () {
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       cubit.addSubtask(' New step ');
       expect(cubit.state.subtaskItems.length, 1);
       expect(cubit.state.subtaskItems[0].title, 'New step');
     });
 
     test('addSubtask multiple times grows list', () {
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       cubit.addSubtask();
       cubit.addSubtask();
       cubit.addSubtask('Third');
@@ -155,7 +164,7 @@ void main() {
     test('addSubtask when editing task with existing subtasks appends after them', () {
       final sub = subtask(id: 's1', title: 'Existing');
       final t = task(subtasks: [sub]);
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       cubit.addSubtask('New one');
       expect(cubit.state.subtaskItems.length, 2);
       expect(cubit.state.subtaskItems[0].title, 'Existing');
@@ -170,7 +179,7 @@ void main() {
         subtask(id: 's2', title: 'B'),
         subtask(id: 's3', title: 'C'),
       ]);
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       cubit.removeSubtaskAt(1);
       expect(cubit.state.subtaskItems.length, 2);
       expect(cubit.state.subtaskItems[0].title, 'A');
@@ -178,7 +187,7 @@ void main() {
     });
 
     test('removeSubtaskAt with invalid index does nothing', () {
-      cubit = TaskFormCubit(mockRepo, task(subtasks: [subtask(id: 's1', title: 'Only')]));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, task(subtasks: [subtask(id: 's1', title: 'Only')]));
       cubit.removeSubtaskAt(-1);
       expect(cubit.state.subtaskItems.length, 1);
       cubit.removeSubtaskAt(5);
@@ -188,13 +197,13 @@ void main() {
 
   group('TaskFormCubit updateSubtaskAt and toggleSubtaskCompletedAt', () {
     test('updateSubtaskAt updates title at index', () {
-      cubit = TaskFormCubit(mockRepo, task(subtasks: [subtask(id: 's1', title: 'Old')]));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, task(subtasks: [subtask(id: 's1', title: 'Old')]));
       cubit.updateSubtaskAt(0, ' Updated ');
       expect(cubit.state.subtaskItems[0].title, 'Updated');
     });
 
     test('toggleSubtaskCompletedAt flips isCompleted', () {
-      cubit = TaskFormCubit(mockRepo, task(subtasks: [subtask(id: 's1', title: 'S', isCompleted: false)]));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, task(subtasks: [subtask(id: 's1', title: 'S', isCompleted: false)]));
       expect(cubit.state.subtaskItems[0].isCompleted, false);
       cubit.toggleSubtaskCompletedAt(0);
       expect(cubit.state.subtaskItems[0].isCompleted, true);
@@ -205,7 +214,7 @@ void main() {
 
   group('TaskFormCubit submit', () {
     test('submit with empty title sets error and does not call repository', () async {
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       await cubit.submit();
       expect(cubit.state.error, 'Title cannot be empty');
       verifyNever(() => mockRepo.createTask(any()));
@@ -214,7 +223,7 @@ void main() {
 
     test('submit new task calls createTask with task including subtasks', () async {
       when(() => mockRepo.createTask(any())).thenAnswer((_) async => Right(task()));
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       cubit.titleChanged('New task');
       cubit.addSubtask('Step 1');
       cubit.addSubtask('Step 2');
@@ -234,7 +243,7 @@ void main() {
       final existingSub = subtask(id: 'existing-sub', taskId: 'task-1', title: 'Existing step');
       final t = task(id: 'task-1', title: 'Edit me', subtasks: [existingSub]);
       when(() => mockRepo.updateTask(any())).thenAnswer((_) async => Right(t));
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       cubit.addSubtask('New step');
       await cubit.submit();
 
@@ -254,7 +263,7 @@ void main() {
       final sub2 = subtask(id: 's2', title: 'Remove');
       final t = task(id: 'task-1', title: 'Edit', subtasks: [sub1, sub2]);
       when(() => mockRepo.updateTask(any())).thenAnswer((_) async => Right(t));
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       cubit.removeSubtaskAt(1);
       await cubit.submit();
 
@@ -274,7 +283,7 @@ void main() {
         priority: TaskPriority.p1,
       );
       when(() => mockRepo.updateTask(any())).thenAnswer((_) async => Right(t));
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       cubit.titleChanged('Updated title');
       await cubit.submit();
 
@@ -288,7 +297,7 @@ void main() {
 
     test('submit filters out empty-title subtasks', () async {
       when(() => mockRepo.createTask(any())).thenAnswer((_) async => Right(task()));
-      cubit = TaskFormCubit(mockRepo, null);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       cubit.titleChanged('Task');
       cubit.addSubtask('Valid');
       cubit.addSubtask('');
@@ -303,7 +312,7 @@ void main() {
 
     test('submit update failure sets error', () async {
       when(() => mockRepo.updateTask(any())).thenAnswer((_) async => Left(const CacheFailure(errorMessage: 'DB error')));
-      cubit = TaskFormCubit(mockRepo, task(id: 'task-1', title: 'T'));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, task(id: 'task-1', title: 'T'));
       await cubit.submit();
       expect(cubit.state.error, 'DB error');
       expect(cubit.state.isSubmitting, false);
@@ -313,7 +322,7 @@ void main() {
       final newDate = DateTime(2025, 4, 20);
       final t = task(id: 'task-1', title: 'T', notes: 'Old', dueDate: DateTime(2025, 3, 18));
       when(() => mockRepo.updateTask(any())).thenAnswer((invocation) async => Right(invocation.positionalArguments[0] as Task));
-      cubit = TaskFormCubit(mockRepo, t);
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
       cubit.notesChanged('New notes');
       cubit.dueDateChanged(newDate);
       await cubit.submit();

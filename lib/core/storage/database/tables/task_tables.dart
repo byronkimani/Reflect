@@ -6,8 +6,12 @@ class Tasks extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
   TextColumn get title => text()();
   TextColumn get priority => text()(); // p1, p2, p3, p4
-  IntColumn get dueDate => integer().nullable()(); // Unix epoch ms
-  IntColumn get dueTime => integer().nullable()(); // Unix epoch ms
+  IntColumn get dueDate => integer().nullable()(); // Unix epoch ms (local due date/time instant)
+  /// Start of the due calendar day in the user's local timezone (epoch ms). Used for analytics and day bucketing.
+  IntColumn get dueDateLocalDayStart => integer().nullable()();
+  /// Canonical due instant as epoch ms (same convention as [DateTime.millisecondsSinceEpoch]). Reserved for sync / server use.
+  IntColumn get dueDateUtcMs => integer().nullable()();
+  IntColumn get dueTime => integer().nullable()(); // minutes from midnight
   TextColumn get notes => text().nullable()();
   TextColumn get status => text().withDefault(const Constant('pending'))();
   IntColumn get isOverdue => integer().withDefault(const Constant(0))();
@@ -22,7 +26,10 @@ class Tasks extends Table {
 
   TextColumn get gcalEventId => text().nullable()();
   IntColumn get syncToGcal => integer().withDefault(const Constant(0))();
-  
+
+  TextColumn get goalId =>
+      text().nullable().customConstraint('REFERENCES goals(id) ON DELETE SET NULL')();
+
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 

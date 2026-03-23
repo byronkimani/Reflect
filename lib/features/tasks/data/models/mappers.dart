@@ -1,10 +1,32 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
-import 'package:reflect/features/tasks/domain/entities/task.dart';
+import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/tag.dart';
-import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
-import 'dart:convert';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
+
+int? _localDayStartMs(DateTime? dueDate) {
+  if (dueDate == null) return null;
+  return DateTime(dueDate.year, dueDate.month, dueDate.day)
+      .millisecondsSinceEpoch;
+}
+
+int? _dueInstantEpochMs(Task task) {
+  final d = task.dueDate;
+  if (d == null) return null;
+  final time = task.dueTime;
+  if (time != null && time.isNotEmpty) {
+    final parts = time.split(':');
+    if (parts.length >= 2) {
+      final h = int.tryParse(parts[0]) ?? 0;
+      final m = int.tryParse(parts[1]) ?? 0;
+      return DateTime(d.year, d.month, d.day, h, m).millisecondsSinceEpoch;
+    }
+  }
+  return DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
+}
 
 extension TaskDataX on TaskData {
   Task toDomain({
@@ -34,6 +56,7 @@ extension TaskDataX on TaskData {
       tags: tags,
       gcalEventId: gcalEventId,
       syncToGcal: syncToGcal == 1,
+      goalId: goalId,
       hasEnabledReminder: hasEnabledReminder == 1,
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAt),
@@ -48,6 +71,8 @@ extension TaskX on Task {
       title: Value(title),
       priority: Value(priority.name),
       dueDate: Value(dueDate?.millisecondsSinceEpoch),
+      dueDateLocalDayStart: Value(_localDayStartMs(dueDate)),
+      dueDateUtcMs: Value(_dueInstantEpochMs(this)),
       dueTime: Value(dueTime != null ? int.parse(dueTime!.split(':')[0]) * 60 + int.parse(dueTime!.split(':')[1]) : null),
       notes: Value(notes),
       status: Value(status.name),
@@ -57,6 +82,7 @@ extension TaskX on Task {
       recurrenceParentId: Value(recurrenceParentId),
       gcalEventId: Value(gcalEventId),
       syncToGcal: Value(syncToGcal ? 1 : 0),
+      goalId: Value(goalId),
       hasEnabledReminder: Value(hasEnabledReminder ? 1 : 0),
       createdAt: Value(createdAt.millisecondsSinceEpoch),
       updatedAt: Value(updatedAt.millisecondsSinceEpoch),

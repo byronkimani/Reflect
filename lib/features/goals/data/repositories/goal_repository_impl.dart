@@ -14,6 +14,16 @@ class GoalRepositoryImpl implements IGoalRepository {
   GoalRepositoryImpl(this._db);
 
   @override
+  Stream<Either<Failure, List<Goal>>> watchAllGoals() {
+    return (_db.select(_db.goals)
+          ..orderBy([
+            (g) => OrderingTerm(expression: g.updatedAt, mode: OrderingMode.desc),
+          ]))
+        .watch()
+        .map((rows) => Right(rows.map((r) => r.toDomain()).toList()));
+  }
+
+  @override
   Stream<Either<Failure, List<Goal>>> watchGoalsByHorizon(
     GoalTimeHorizon horizon,
   ) {

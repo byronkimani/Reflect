@@ -11,28 +11,41 @@ class AnalyticsDao extends DatabaseAccessor<AppDatabase>
     with _$AnalyticsDaoMixin {
   AnalyticsDao(super.db);
 
+  /// Inclusive range of local calendar days: `[firstDayStartMs, lastDayStartMs]`.
+  (int, int) _localInclusiveDayRangeMs(DateTime startDate, DateTime endDate) {
+    final start = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+    ).millisecondsSinceEpoch;
+    final lastDayStart = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+    ).millisecondsSinceEpoch;
+    return (start, lastDayStart);
+  }
+
   /// Calculates daily completion rates (completed / total) for tasks within a date range.
   Future<List<DailyCompletionPoint>> getDailyCompletionRates(
     DateTime startDate,
     DateTime endDate,
   ) async {
-    final start = startDate.millisecondsSinceEpoch;
-    final end = endDate.millisecondsSinceEpoch;
+    final (start, lastDayStart) = _localInclusiveDayRangeMs(startDate, endDate);
 
-    // We use a custom query to group by date (rounding due_date to start of day)
-    // Note: dueDate is stored as Unix epoch ms in the table.
     final query = customSelect(
       '''
       SELECT 
-        (due_date / 86400000) * 86400000 as day_start,
+        due_date_local_day_start as day_start,
         CAST(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) as rate
       FROM tasks
-      WHERE due_date >= ? AND due_date <= ?
-      GROUP BY day_start
+      WHERE due_date_local_day_start IS NOT NULL
+        AND due_date_local_day_start >= ? AND due_date_local_day_start <= ?
+      GROUP BY due_date_local_day_start
       ORDER BY day_start ASC
       ''',
       readsFrom: {tasks},
-      variables: [Variable.withInt(start), Variable.withInt(end)],
+      variables: [Variable.withInt(start), Variable.withInt(lastDayStart)],
     );
 
     final rows = await query.get();
@@ -117,20 +130,23 @@ class AnalyticsDao extends DatabaseAccessor<AppDatabase>
     DateTime startDate,
     DateTime endDate,
   ) async {
+    final (start, lastDayStart) = _localInclusiveDayRangeMs(startDate, endDate);
     final query = customSelect(
       '''
       SELECT t.name, t.colour, COUNT(*) as count
       FROM tasks tk
       JOIN task_tags tt ON tk.id = tt.task_id
       JOIN tags t ON tt.tag_id = t.id
-      WHERE tk.status = 'completed' AND tk.due_date >= ? AND tk.due_date <= ?
+      WHERE tk.status = 'completed'
+        AND tk.due_date_local_day_start IS NOT NULL
+        AND tk.due_date_local_day_start >= ? AND tk.due_date_local_day_start <= ?
       GROUP BY t.id
       ORDER BY count DESC
       ''',
       readsFrom: {tasks, taskTags, tags},
       variables: [
-        Variable.withInt(startDate.millisecondsSinceEpoch),
-        Variable.withInt(endDate.millisecondsSinceEpoch),
+        Variable.withInt(start),
+        Variable.withInt(lastDayStart),
       ],
     );
 
@@ -149,18 +165,21 @@ class AnalyticsDao extends DatabaseAccessor<AppDatabase>
     DateTime startDate,
     DateTime endDate,
   ) async {
+    final (start, lastDayStart) = _localInclusiveDayRangeMs(startDate, endDate);
     final query = customSelect(
       '''
       SELECT priority, COUNT(*) as count
       FROM tasks
-      WHERE status = 'completed' AND due_date >= ? AND due_date <= ?
+      WHERE status = 'completed'
+        AND due_date_local_day_start IS NOT NULL
+        AND due_date_local_day_start >= ? AND due_date_local_day_start <= ?
       GROUP BY priority
       ORDER BY priority ASC
       ''',
       readsFrom: {tasks},
       variables: [
-        Variable.withInt(startDate.millisecondsSinceEpoch),
-        Variable.withInt(endDate.millisecondsSinceEpoch),
+        Variable.withInt(start),
+        Variable.withInt(lastDayStart),
       ],
     );
 

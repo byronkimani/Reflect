@@ -13,20 +13,21 @@ class GoalsPage extends StatelessWidget {
     return BlocBuilder<GoalsCubit, GoalsState>(
       builder: (context, state) {
         return DefaultTabController(
-          length: 3,
+          length: 4,
           initialIndex: state.selectedHorizon.index,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Goals'),
+              title: const Text('My Goals'),
               bottom: TabBar(
                 onTap: (index) {
                   context.read<GoalsCubit>().setHorizon(
-                        GoalTimeHorizon.values[index],
-                      );
+                    GoalTimeHorizon.values[index],
+                  );
                 },
                 tabs: const [
                   Tab(text: 'Weekly'),
                   Tab(text: 'Monthly'),
+                  Tab(text: 'Quarterly'),
                   Tab(text: 'Yearly'),
                 ],
               ),
@@ -37,7 +38,9 @@ class GoalsPage extends StatelessWidget {
                       padding: const EdgeInsets.all(16),
                       child: Text(
                         state.error!,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                     ),
                   )
@@ -45,13 +48,17 @@ class GoalsPage extends StatelessWidget {
                     children: [
                       _GoalList(horizon: GoalTimeHorizon.weekly),
                       _GoalList(horizon: GoalTimeHorizon.monthly),
+                      _GoalList(horizon: GoalTimeHorizon.quarterly),
                       _GoalList(horizon: GoalTimeHorizon.yearly),
                     ],
                   ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'goals_fab',
               onPressed: () {
-                final horizon = context.read<GoalsCubit>().state.selectedHorizon;
+                final horizon = context
+                    .read<GoalsCubit>()
+                    .state
+                    .selectedHorizon;
                 context.push('/goals/new', extra: horizon);
               },
               child: const Icon(Icons.add),
@@ -78,8 +85,8 @@ class _GoalList extends StatelessWidget {
             child: Text(
               'No ${horizon.name} goals yet.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           );
         }
@@ -99,11 +106,15 @@ class _GoalList extends StatelessWidget {
                   : null,
               trailing: IconButton(
                 icon: const Icon(Icons.edit_outlined),
-                onPressed: () =>
-                    context.push('/goals/${goal.id}', extra: goal),
+                onPressed: () => context.push('/goals/${goal.id}', extra: goal),
               ),
               onLongPress: () {
-                _confirmDelete(context, goal.id, goal.title, context.read<GoalsCubit>());
+                _confirmDelete(
+                  context,
+                  goal.id,
+                  goal.title,
+                  context.read<GoalsCubit>(),
+                );
               },
             );
           },

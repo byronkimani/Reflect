@@ -1,4 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fpdart/fpdart.dart' hide Task;
+import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/features/goals/domain/entities/goal.dart';
+import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
@@ -10,12 +16,40 @@ import 'subtask_form_item.dart';
 
 class TaskFormCubit extends Cubit<TaskFormState> {
   final ITaskRepository _taskRepository;
+  final IGoalRepository _goalRepository;
+  StreamSubscription<Either<Failure, List<Goal>>>? _goalsSub;
 
-  TaskFormCubit(this._taskRepository, Task? initialTask,
-      {bool isBacklogContext = false})
-      : super(TaskFormState.initial(
-            initialTask,
-            createAsBacklog: isBacklogContext && initialTask == null));
+  TaskFormCubit(
+    this._taskRepository,
+    this._goalRepository,
+    Task? initialTask, {
+    bool isBacklogContext = false,
+  }) : super(TaskFormState.initial(
+          initialTask,
+          createAsBacklog: isBacklogContext && initialTask == null,
+        )) {
+    _goalsSub = _goalRepository.watchAllGoals().listen(_onGoalsEmitted);
+  }
+
+  void _onGoalsEmitted(Either<Failure, List<Goal>> either) {
+    if (isClosed) return;
+    either.fold(
+      (_) => emit(state.copyWith(availableGoals: [])),
+      (goals) {
+        var nextId = state.selectedGoalId;
+        if (nextId != null && !goals.any((g) => g.id == nextId)) {
+          nextId = null;
+        }
+        emit(state.copyWith(availableGoals: goals, selectedGoalId: nextId));
+      },
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _goalsSub?.cancel();
+    return super.close();
+  }
 
   void titleChanged(String value) => emit(state.copyWith(title: value));
   void notesChanged(String value) => emit(state.copyWith(notes: value));
@@ -24,6 +58,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
   void dueTimeChanged(String? value) => emit(state.copyWith(dueTime: value));
   void hasEnabledReminderChanged(bool value) => emit(state.copyWith(hasEnabledReminder: value));
   void syncToGcalChanged(bool value) => emit(state.copyWith(syncToGcal: value));
+  void goalIdChanged(String? goalId) => emit(state.copyWith(selectedGoalId: goalId));
 
   void isRepeatingChanged(bool value) {
     if (value) {
@@ -150,6 +185,8 @@ class TaskFormCubit extends Cubit<TaskFormState> {
       }
     }
 
+    final goalId = state.selectedGoalId;
+
     final task = state.initialTask?.copyWith(
           title: state.title,
           notes: notes,
@@ -161,6 +198,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           recurrenceParentId: null,
           subtasks: subtasks,
           syncToGcal: state.syncToGcal,
+          goalId: goalId,
           updatedAt: now,
         ) ??
         Task(
@@ -176,6 +214,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           notes: notes,
           subtasks: subtasks,
           syncToGcal: state.syncToGcal,
+          goalId: goalId,
           createdAt: now,
           updatedAt: now,
         );

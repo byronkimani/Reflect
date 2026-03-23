@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reflect/features/goals/domain/entities/goal.dart';
+import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
@@ -12,8 +14,11 @@ import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart'
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
 
+class MockIGoalRepository extends Mock implements IGoalRepository {}
+
 void main() {
   late MockITaskRepository mockRepo;
+  late MockIGoalRepository mockGoalRepo;
   final now = DateTime(2025, 3, 18, 12, 0);
 
   Task task({
@@ -59,7 +64,11 @@ void main() {
             GoRoute(
               path: 'edit',
               builder: (_, _) => BlocProvider<TaskFormCubit>(
-                create: (_) => TaskFormCubit(mockRepo, initialTask),
+                create: (_) => TaskFormCubit(
+                  mockRepo,
+                  mockGoalRepo,
+                  initialTask,
+                ),
                 child: const TaskFormView(),
               ),
             ),
@@ -72,6 +81,10 @@ void main() {
 
   setUp(() {
     mockRepo = MockITaskRepository();
+    mockGoalRepo = MockIGoalRepository();
+    when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+      (_) => Stream.value(const Right(<Goal>[])),
+    );
   });
 
   setUpAll(() {

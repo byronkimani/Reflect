@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
+import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/subtask_form_item.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
@@ -29,6 +30,7 @@ class TaskDetailPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => TaskFormCubit(
         getIt<ITaskRepository>(),
+        getIt<IGoalRepository>(),
         initialTask,
         isBacklogContext: isBacklogContext,
       ),
@@ -176,6 +178,52 @@ class _TaskFormViewState extends State<TaskFormView> {
                     );
                   }).toList(),
                 ),
+                if (state.availableGoals.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    'Goal (optional)',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    value: state.selectedGoalId != null &&
+                            state.availableGoals
+                                .any((g) => g.id == state.selectedGoalId)
+                        ? state.selectedGoalId
+                        : null,
+                    decoration: InputDecoration(
+                      hintText: 'Link to a goal',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    isExpanded: true,
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('None'),
+                      ),
+                      ...state.availableGoals.map(
+                        (g) => DropdownMenuItem<String?>(
+                          value: g.id,
+                          child: Text(
+                            g.title,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                    onChanged: (id) =>
+                        context.read<TaskFormCubit>().goalIdChanged(id),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Text(
                   'Sub Tasks',

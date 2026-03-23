@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
@@ -29,6 +30,8 @@ abstract class TaskFormState with _$TaskFormState {
     @Default(false) bool isSuccess,
     String? error,
     Task? initialTask,
+    @Default([]) List<Goal> availableGoals,
+    String? selectedGoalId,
   }) = _TaskFormState;
 
   factory TaskFormState.initial(Task? task, {bool createAsBacklog = false}) {
@@ -60,6 +63,7 @@ abstract class TaskFormState with _$TaskFormState {
       recurrenceDaysOfWeek: days.isNotEmpty ? days : weekdaysPreset,
       syncToGcal: task?.syncToGcal ?? false,
       initialTask: task,
+      selectedGoalId: task?.goalId,
     );
   }
 }

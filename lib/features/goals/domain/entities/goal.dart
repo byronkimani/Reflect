@@ -3,7 +3,7 @@ import 'package:reflect/features/tasks/domain/entities/task.dart';
 
 part 'goal.freezed.dart';
 
-enum GoalTimeHorizon { weekly, monthly, yearly }
+enum GoalTimeHorizon { weekly, monthly, quarterly, yearly }
 
 enum CheckInFrequency { none, daily, weekly, biWeekly, monthly }
 

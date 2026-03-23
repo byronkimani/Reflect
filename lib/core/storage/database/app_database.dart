@@ -39,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(DatabaseConnection super.connection);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -50,6 +50,34 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         await migrator.createTable(goalCategories);
         await migrator.createTable(goals);
+      }
+      if (from < 4) {
+        await migrator.addColumn(tasks, tasks.dueDateLocalDayStart);
+        await migrator.addColumn(tasks, tasks.dueDateUtcMs);
+        final rows = await select(tasks).get();
+        for (final t in rows) {
+          if (t.dueDate == null) continue;
+          final d = DateTime.fromMillisecondsSinceEpoch(t.dueDate!);
+          final localStart =
+              DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
+          var instant = localStart;
+          final timeMins = t.dueTime;
+          if (timeMins != null) {
+            final h = timeMins ~/ 60;
+            final m = timeMins % 60;
+            instant =
+                DateTime(d.year, d.month, d.day, h, m).millisecondsSinceEpoch;
+          }
+          await (update(tasks)..where((r) => r.id.equals(t.id))).write(
+            TasksCompanion(
+              dueDateLocalDayStart: Value(localStart),
+              dueDateUtcMs: Value(instant),
+            ),
+          );
+        }
+      }
+      if (from < 5) {
+        await migrator.addColumn(tasks, tasks.goalId);
       }
     },
     beforeOpen: (details) async {
