@@ -748,6 +748,8 @@ class _SubtaskFormTileState extends State<_SubtaskFormTile> {
               ),
               autocorrect: true,
               enableSuggestions: true,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                 hintText: 'Step ${index + 1}',
