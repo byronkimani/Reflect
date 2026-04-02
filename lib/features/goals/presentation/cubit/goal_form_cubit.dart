@@ -21,6 +21,7 @@ class GoalFormCubit extends Cubit<GoalFormState> {
           targetDate: initialGoal?.targetDate,
           checkInFrequency: initialGoal?.checkInFrequency,
           timeHorizon: timeHorizon ?? initialGoal?.timeHorizon ?? GoalTimeHorizon.weekly,
+          isMeasurable: initialGoal?.isMeasurable ?? true,
         ));
 
   final IGoalRepository _repo;
@@ -44,6 +45,7 @@ class GoalFormCubit extends Cubit<GoalFormState> {
       emit(state.copyWith(checkInFrequency: value));
   void timeHorizonChanged(GoalTimeHorizon value) =>
       emit(state.copyWith(timeHorizon: value));
+  void isMeasurableChanged(bool value) => emit(state.copyWith(isMeasurable: value));
 
   Future<void> submit() async {
     if (state.title.trim().isEmpty) {
@@ -59,13 +61,14 @@ class GoalFormCubit extends Cubit<GoalFormState> {
           ? null
           : state.description?.trim(),
       categoryId: state.categoryId,
-      kpiDescription: state.kpiDescription?.trim().isEmpty == true
+      isMeasurable: state.isMeasurable,
+      kpiDescription: (!state.isMeasurable || state.kpiDescription?.trim().isEmpty == true)
           ? null
           : state.kpiDescription?.trim(),
-      startValue: state.startValue?.trim().isEmpty == true
+      startValue: (!state.isMeasurable || state.startValue?.trim().isEmpty == true)
           ? null
           : state.startValue?.trim(),
-      targetValue: state.targetValue?.trim().isEmpty == true
+      targetValue: (!state.isMeasurable || state.targetValue?.trim().isEmpty == true)
           ? null
           : state.targetValue?.trim(),
       priority: state.priority,

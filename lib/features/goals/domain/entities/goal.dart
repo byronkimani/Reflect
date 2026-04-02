@@ -25,6 +25,7 @@ abstract class Goal with _$Goal {
     DateTime? startDate,
     DateTime? targetDate,
     CheckInFrequency? checkInFrequency,
+    bool? isMeasurable,
     required GoalTimeHorizon timeHorizon,
     required DateTime createdAt,
     required DateTime updatedAt,

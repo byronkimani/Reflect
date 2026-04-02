@@ -16,6 +16,7 @@ class GoalFormState {
     this.targetDate,
     this.checkInFrequency,
     this.timeHorizon = GoalTimeHorizon.weekly,
+    this.isMeasurable = true,
     this.isSubmitting = false,
     this.isSuccess = false,
     this.error,
@@ -35,6 +36,7 @@ class GoalFormState {
   final DateTime? targetDate;
   final CheckInFrequency? checkInFrequency;
   final GoalTimeHorizon timeHorizon;
+  final bool isMeasurable;
   final bool isSubmitting;
   final bool isSuccess;
   final String? error;
@@ -54,6 +56,7 @@ class GoalFormState {
     DateTime? targetDate,
     CheckInFrequency? checkInFrequency,
     GoalTimeHorizon? timeHorizon,
+    bool? isMeasurable,
     bool? isSubmitting,
     bool? isSuccess,
     String? error,
@@ -77,6 +80,7 @@ class GoalFormState {
       targetDate: targetDate ?? this.targetDate,
       checkInFrequency: checkInFrequency ?? this.checkInFrequency,
       timeHorizon: timeHorizon ?? this.timeHorizon,
+      isMeasurable: isMeasurable ?? this.isMeasurable,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isSuccess: isSuccess ?? this.isSuccess,
       error: error,

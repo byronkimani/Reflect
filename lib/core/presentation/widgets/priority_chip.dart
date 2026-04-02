@@ -23,7 +23,7 @@ class PriorityChip extends StatelessWidget {
     required this.priority,
     this.isSelected = false,
     this.onTap,
-    this.compact = false,
+    this.compact = true,
   });
 
   static Color colorFor(TaskPriority priority) =>
@@ -31,19 +31,17 @@ class PriorityChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = colorFor(priority);
-    final backgroundColor = isSelected ? color.withValues(alpha: 0.75) : color;
+    final color = colorFor(priority).withValues(alpha: 0.9);
+    final backgroundColor = isSelected ? color.withValues(alpha: 0.65) : color;
     final textTheme = Theme.of(context).textTheme;
 
     final height = compact ? 32.0 : 40.0;
     final child = Container(
-      width: 52,
+      width: 72,
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        border: isSelected
-            ? Border.all(color: Colors.white, width: 2)
-            : null,
+        border: isSelected ? Border.all(color: Colors.white, width: 2) : null,
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -53,7 +51,7 @@ class PriorityChip extends StatelessWidget {
               'P${priority.index + 1}',
               style: textTheme.labelLarge?.copyWith(
                 color: Colors.white,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -74,11 +72,7 @@ class PriorityChip extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.check,
-                  color: color,
-                  size: 14,
-                ),
+                child: Icon(Icons.check, color: color, size: 14),
               ),
             ),
         ],

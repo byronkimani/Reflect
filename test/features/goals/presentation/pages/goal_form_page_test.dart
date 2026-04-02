@@ -104,18 +104,40 @@ void main() {
       expect(find.text('My existing goal'), findsOneWidget);
     });
 
-    testWidgets('new goal shows time horizon section', (tester) async {
+    testWidgets('new goal shows time frame section', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Time horizon'), findsOneWidget);
+      expect(find.text('Time Frame'), findsOneWidget);
     });
 
-    testWidgets('edit goal does not show time horizon section', (tester) async {
+    testWidgets('edit goal does not show time frame section', (tester) async {
       await tester.pumpWidget(buildTestWidget(initialGoal: goal()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Time horizon'), findsNothing);
+      expect(find.text('Time Frame'), findsNothing);
+    });
+
+    testWidgets('shows KPI measurable section with Yes selected by default', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Is the KPI measurable?'), findsOneWidget);
+      expect(find.text('KPI being tracked (optional)'), findsOneWidget);
+      expect(find.text('Start value'), findsOneWidget);
+      expect(find.text('Target value'), findsOneWidget);
+    });
+
+    testWidgets('hides KPI fields when KPI measurable is set to No', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('No'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('KPI being tracked (optional)'), findsNothing);
+      expect(find.text('Start value'), findsNothing);
+      expect(find.text('Target value'), findsNothing);
     });
 
     testWidgets('tap Save with empty title shows error snackbar', (

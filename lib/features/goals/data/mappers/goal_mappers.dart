@@ -66,6 +66,7 @@ extension GoalDataX on GoalData {
           ? DateTime.fromMillisecondsSinceEpoch(targetDate!)
           : null,
       checkInFrequency: _checkInFrequencyFromString(checkInFrequency),
+      isMeasurable: isMeasurable,
       timeHorizon: GoalTimeHorizon.values.firstWhere(
         (e) => e.name == timeHorizon,
         orElse: () => GoalTimeHorizon.weekly,
@@ -92,6 +93,7 @@ extension GoalX on Goal {
       startDate: Value(startDate?.millisecondsSinceEpoch),
       targetDate: Value(targetDate?.millisecondsSinceEpoch),
       checkInFrequency: Value(checkInFrequency?.name),
+      isMeasurable: Value(isMeasurable ?? true),
       timeHorizon: Value(timeHorizon.name),
       createdAt: Value(createdAt.millisecondsSinceEpoch),
       updatedAt: Value(updatedAt.millisecondsSinceEpoch),

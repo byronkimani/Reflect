@@ -84,7 +84,6 @@ class _GoalFormView extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-
             ],
           ),
           body: SingleChildScrollView(
@@ -118,24 +117,34 @@ class _GoalFormView extends StatelessWidget {
                       onChanged: context.read<GoalFormCubit>().titleChanged,
                     ),
                     const SizedBox(height: 20),
-                    _sectionLabel(
-                      textTheme,
-                      colorScheme,
-                      'Description (optional, max $_maxWordsDescription words)',
-                    ),
-                    TextFormField(
-                      initialValue: state.description ?? '',
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        hintText: 'Brief description',
-                        border: OutlineInputBorder(),
-                        alignLabelWithHint: true,
+                    if (state.initialGoal == null) ...[
+                      _sectionLabel(textTheme, colorScheme, 'Time Frame'),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SegmentedButton<GoalTimeHorizon>(
+                          segments: GoalTimeHorizon.values
+                              .map(
+                                (h) => ButtonSegment<GoalTimeHorizon>(
+                                  value: h,
+                                  label: Text(
+                                    h.name[0].toUpperCase() +
+                                        h.name.substring(1),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          selected: {state.timeHorizon},
+                          onSelectionChanged: (s) {
+                            if (s.isNotEmpty) {
+                              context.read<GoalFormCubit>().timeHorizonChanged(
+                                s.first,
+                              );
+                            }
+                          },
+                        ),
                       ),
-                      onChanged: (v) => context
-                          .read<GoalFormCubit>()
-                          .descriptionChanged(v.isEmpty ? null : v),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 20),
+                    ],
                     _sectionLabel(
                       textTheme,
                       colorScheme,
@@ -149,72 +158,101 @@ class _GoalFormView extends StatelessWidget {
                       onManageCategories: () =>
                           _openManageCategories(context, categories, goalRepo),
                     ),
-                    const SizedBox(height: 20),
                     _sectionLabel(
                       textTheme,
                       colorScheme,
-                      'KPI being tracked (optional)',
+                      'Is the KPI measurable?',
                     ),
-                    TextFormField(
-                      initialValue: state.kpiDescription ?? '',
-                      decoration: const InputDecoration(
-                        hintText: 'What KPI measures progress?',
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (v) => context
-                          .read<GoalFormCubit>()
-                          .kpiDescriptionChanged(v.isEmpty ? null : v),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Start value', style: textTheme.labelMedium),
-                              const SizedBox(height: 4),
-                              TextFormField(
-                                initialValue: state.startValue ?? '',
-                                decoration: const InputDecoration(
-                                  hintText: 'Start',
-                                  border: OutlineInputBorder(),
-                                  isDense: true,
-                                ),
-                                onChanged: (v) => context
-                                    .read<GoalFormCubit>()
-                                    .startValueChanged(v.isEmpty ? null : v),
-                              ),
-                            ],
-                          ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<bool>(
+                      segments: const [
+                        ButtonSegment<bool>(
+                          value: true,
+                          label: Text('Yes'),
+                          icon: Icon(Icons.check_circle_outline),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Target value',
-                                style: textTheme.labelMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              TextFormField(
-                                initialValue: state.targetValue ?? '',
-                                decoration: const InputDecoration(
-                                  hintText: 'Target',
-                                  border: OutlineInputBorder(),
-                                  isDense: true,
-                                ),
-                                onChanged: (v) => context
-                                    .read<GoalFormCubit>()
-                                    .targetValueChanged(v.isEmpty ? null : v),
-                              ),
-                            ],
-                          ),
+                        ButtonSegment<bool>(
+                          value: false,
+                          label: Text('No'),
+                          icon: Icon(Icons.cancel_outlined),
                         ),
                       ],
+                      selected: {state.isMeasurable},
+                      onSelectionChanged: (s) {
+                        if (s.isNotEmpty) {
+                          context.read<GoalFormCubit>().isMeasurableChanged(s.first);
+                        }
+                      },
                     ),
                     const SizedBox(height: 20),
+                    if (state.isMeasurable) ...[
+                      _sectionLabel(
+                        textTheme,
+                        colorScheme,
+                        'KPI being tracked (optional)',
+                      ),
+                      TextFormField(
+                        initialValue: state.kpiDescription ?? '',
+                        decoration: const InputDecoration(
+                          hintText: 'What KPI measures progress?',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (v) => context
+                            .read<GoalFormCubit>()
+                            .kpiDescriptionChanged(v.isEmpty ? null : v),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Start value',
+                                    style: textTheme.labelMedium),
+                                const SizedBox(height: 4),
+                                TextFormField(
+                                  initialValue: state.startValue ?? '',
+                                  decoration: const InputDecoration(
+                                    hintText: 'Start',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  onChanged: (v) => context
+                                      .read<GoalFormCubit>()
+                                      .startValueChanged(v.isEmpty ? null : v),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Target value',
+                                  style: textTheme.labelMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                TextFormField(
+                                  initialValue: state.targetValue ?? '',
+                                  decoration: const InputDecoration(
+                                    hintText: 'Target',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  onChanged: (v) => context
+                                      .read<GoalFormCubit>()
+                                      .targetValueChanged(v.isEmpty ? null : v),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     _sectionLabel(
                       textTheme,
                       colorScheme,
@@ -345,41 +383,31 @@ class _GoalFormView extends StatelessWidget {
                         }),
                       ],
                     ),
-                    if (state.initialGoal == null) ...[
-                      const SizedBox(height: 20),
-                      _sectionLabel(textTheme, colorScheme, 'Time horizon'),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SegmentedButton<GoalTimeHorizon>(
-                          segments: GoalTimeHorizon.values
-                              .map(
-                                (h) => ButtonSegment<GoalTimeHorizon>(
-                                  value: h,
-                                  label: Text(
-                                    h.name[0].toUpperCase() +
-                                        h.name.substring(1),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          selected: {state.timeHorizon},
-                          onSelectionChanged: (s) {
-                            if (s.isNotEmpty) {
-                              context.read<GoalFormCubit>().timeHorizonChanged(
-                                s.first,
-                              );
-                            }
-                          },
-                        ),
+                    _sectionLabel(
+                      textTheme,
+                      colorScheme,
+                      'Description (optional, max $_maxWordsDescription words)',
+                    ),
+                    TextFormField(
+                      initialValue: state.description ?? '',
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText: 'Brief description',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
                       ),
-                    ],
-                    const SizedBox(height: 80),
+                      onChanged: (v) => context
+                          .read<GoalFormCubit>()
+                          .descriptionChanged(v.isEmpty ? null : v),
+                    ),
+                    const SizedBox(height: 120),
                   ],
                 );
               },
             ),
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           floatingActionButton: state.isSubmitting
               ? null
               : Padding(
@@ -390,9 +418,11 @@ class _GoalFormView extends StatelessWidget {
                     child: FloatingActionButton.extended(
                       onPressed: () => context.read<GoalFormCubit>().submit(),
                       label: Text(
-                        state.initialGoal == null ? 'Create Goal' : 'Save Changes',
+                        state.initialGoal == null
+                            ? 'Create Goal'
+                            : 'Save Changes',
                         style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
+                          color: colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

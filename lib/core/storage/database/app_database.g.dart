@@ -6391,6 +6391,21 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isMeasurableMeta = const VerificationMeta(
+    'isMeasurable',
+  );
+  @override
+  late final GeneratedColumn<bool> isMeasurable = GeneratedColumn<bool>(
+    'is_measurable',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_measurable" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _timeHorizonMeta = const VerificationMeta(
     'timeHorizon',
   );
@@ -6439,6 +6454,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalData> {
     startDate,
     targetDate,
     checkInFrequency,
+    isMeasurable,
     timeHorizon,
     createdAt,
     updatedAt,
@@ -6544,6 +6560,15 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalData> {
         ),
       );
     }
+    if (data.containsKey('is_measurable')) {
+      context.handle(
+        _isMeasurableMeta,
+        isMeasurable.isAcceptableOrUnknown(
+          data['is_measurable']!,
+          _isMeasurableMeta,
+        ),
+      );
+    }
     if (data.containsKey('time_horizon')) {
       context.handle(
         _timeHorizonMeta,
@@ -6632,6 +6657,10 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalData> {
         DriftSqlType.string,
         data['${effectivePrefix}check_in_frequency'],
       ),
+      isMeasurable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_measurable'],
+      )!,
       timeHorizon: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}time_horizon'],
@@ -6667,6 +6696,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
   final int? startDate;
   final int? targetDate;
   final String? checkInFrequency;
+  final bool isMeasurable;
   final String timeHorizon;
   final int createdAt;
   final int updatedAt;
@@ -6684,6 +6714,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
     this.startDate,
     this.targetDate,
     this.checkInFrequency,
+    required this.isMeasurable,
     required this.timeHorizon,
     required this.createdAt,
     required this.updatedAt,
@@ -6726,6 +6757,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
     if (!nullToAbsent || checkInFrequency != null) {
       map['check_in_frequency'] = Variable<String>(checkInFrequency);
     }
+    map['is_measurable'] = Variable<bool>(isMeasurable);
     map['time_horizon'] = Variable<String>(timeHorizon);
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -6767,6 +6799,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
       checkInFrequency: checkInFrequency == null && nullToAbsent
           ? const Value.absent()
           : Value(checkInFrequency),
+      isMeasurable: Value(isMeasurable),
       timeHorizon: Value(timeHorizon),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -6792,6 +6825,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
       startDate: serializer.fromJson<int?>(json['startDate']),
       targetDate: serializer.fromJson<int?>(json['targetDate']),
       checkInFrequency: serializer.fromJson<String?>(json['checkInFrequency']),
+      isMeasurable: serializer.fromJson<bool>(json['isMeasurable']),
       timeHorizon: serializer.fromJson<String>(json['timeHorizon']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
@@ -6814,6 +6848,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
       'startDate': serializer.toJson<int?>(startDate),
       'targetDate': serializer.toJson<int?>(targetDate),
       'checkInFrequency': serializer.toJson<String?>(checkInFrequency),
+      'isMeasurable': serializer.toJson<bool>(isMeasurable),
       'timeHorizon': serializer.toJson<String>(timeHorizon),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
@@ -6834,6 +6869,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
     Value<int?> startDate = const Value.absent(),
     Value<int?> targetDate = const Value.absent(),
     Value<String?> checkInFrequency = const Value.absent(),
+    bool? isMeasurable,
     String? timeHorizon,
     int? createdAt,
     int? updatedAt,
@@ -6855,6 +6891,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
     checkInFrequency: checkInFrequency.present
         ? checkInFrequency.value
         : this.checkInFrequency,
+    isMeasurable: isMeasurable ?? this.isMeasurable,
     timeHorizon: timeHorizon ?? this.timeHorizon,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -6888,6 +6925,9 @@ class GoalData extends DataClass implements Insertable<GoalData> {
       checkInFrequency: data.checkInFrequency.present
           ? data.checkInFrequency.value
           : this.checkInFrequency,
+      isMeasurable: data.isMeasurable.present
+          ? data.isMeasurable.value
+          : this.isMeasurable,
       timeHorizon: data.timeHorizon.present
           ? data.timeHorizon.value
           : this.timeHorizon,
@@ -6912,6 +6952,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
           ..write('startDate: $startDate, ')
           ..write('targetDate: $targetDate, ')
           ..write('checkInFrequency: $checkInFrequency, ')
+          ..write('isMeasurable: $isMeasurable, ')
           ..write('timeHorizon: $timeHorizon, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -6934,6 +6975,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
     startDate,
     targetDate,
     checkInFrequency,
+    isMeasurable,
     timeHorizon,
     createdAt,
     updatedAt,
@@ -6955,6 +6997,7 @@ class GoalData extends DataClass implements Insertable<GoalData> {
           other.startDate == this.startDate &&
           other.targetDate == this.targetDate &&
           other.checkInFrequency == this.checkInFrequency &&
+          other.isMeasurable == this.isMeasurable &&
           other.timeHorizon == this.timeHorizon &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -6974,6 +7017,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
   final Value<int?> startDate;
   final Value<int?> targetDate;
   final Value<String?> checkInFrequency;
+  final Value<bool> isMeasurable;
   final Value<String> timeHorizon;
   final Value<int> createdAt;
   final Value<int> updatedAt;
@@ -6992,6 +7036,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
     this.startDate = const Value.absent(),
     this.targetDate = const Value.absent(),
     this.checkInFrequency = const Value.absent(),
+    this.isMeasurable = const Value.absent(),
     this.timeHorizon = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -7011,6 +7056,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
     this.startDate = const Value.absent(),
     this.targetDate = const Value.absent(),
     this.checkInFrequency = const Value.absent(),
+    this.isMeasurable = const Value.absent(),
     required String timeHorizon,
     required int createdAt,
     required int updatedAt,
@@ -7033,6 +7079,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
     Expression<int>? startDate,
     Expression<int>? targetDate,
     Expression<String>? checkInFrequency,
+    Expression<bool>? isMeasurable,
     Expression<String>? timeHorizon,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
@@ -7052,6 +7099,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
       if (startDate != null) 'start_date': startDate,
       if (targetDate != null) 'target_date': targetDate,
       if (checkInFrequency != null) 'check_in_frequency': checkInFrequency,
+      if (isMeasurable != null) 'is_measurable': isMeasurable,
       if (timeHorizon != null) 'time_horizon': timeHorizon,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -7073,6 +7121,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
     Value<int?>? startDate,
     Value<int?>? targetDate,
     Value<String?>? checkInFrequency,
+    Value<bool>? isMeasurable,
     Value<String>? timeHorizon,
     Value<int>? createdAt,
     Value<int>? updatedAt,
@@ -7092,6 +7141,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
       startDate: startDate ?? this.startDate,
       targetDate: targetDate ?? this.targetDate,
       checkInFrequency: checkInFrequency ?? this.checkInFrequency,
+      isMeasurable: isMeasurable ?? this.isMeasurable,
       timeHorizon: timeHorizon ?? this.timeHorizon,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -7141,6 +7191,9 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
     if (checkInFrequency.present) {
       map['check_in_frequency'] = Variable<String>(checkInFrequency.value);
     }
+    if (isMeasurable.present) {
+      map['is_measurable'] = Variable<bool>(isMeasurable.value);
+    }
     if (timeHorizon.present) {
       map['time_horizon'] = Variable<String>(timeHorizon.value);
     }
@@ -7172,6 +7225,7 @@ class GoalsCompanion extends UpdateCompanion<GoalData> {
           ..write('startDate: $startDate, ')
           ..write('targetDate: $targetDate, ')
           ..write('checkInFrequency: $checkInFrequency, ')
+          ..write('isMeasurable: $isMeasurable, ')
           ..write('timeHorizon: $timeHorizon, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -12767,6 +12821,7 @@ typedef $$GoalsTableCreateCompanionBuilder =
       Value<int?> startDate,
       Value<int?> targetDate,
       Value<String?> checkInFrequency,
+      Value<bool> isMeasurable,
       required String timeHorizon,
       required int createdAt,
       required int updatedAt,
@@ -12787,6 +12842,7 @@ typedef $$GoalsTableUpdateCompanionBuilder =
       Value<int?> startDate,
       Value<int?> targetDate,
       Value<String?> checkInFrequency,
+      Value<bool> isMeasurable,
       Value<String> timeHorizon,
       Value<int> createdAt,
       Value<int> updatedAt,
@@ -12882,6 +12938,11 @@ class $$GoalsTableFilterComposer extends Composer<_$AppDatabase, $GoalsTable> {
 
   ColumnFilters<String> get checkInFrequency => $composableBuilder(
     column: $table.checkInFrequency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isMeasurable => $composableBuilder(
+    column: $table.isMeasurable,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12993,6 +13054,11 @@ class $$GoalsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isMeasurable => $composableBuilder(
+    column: $table.isMeasurable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get timeHorizon => $composableBuilder(
     column: $table.timeHorizon,
     builder: (column) => ColumnOrderings(column),
@@ -13089,6 +13155,11 @@ class $$GoalsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get isMeasurable => $composableBuilder(
+    column: $table.isMeasurable,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get timeHorizon => $composableBuilder(
     column: $table.timeHorizon,
     builder: (column) => column,
@@ -13165,6 +13236,7 @@ class $$GoalsTableTableManager
                 Value<int?> startDate = const Value.absent(),
                 Value<int?> targetDate = const Value.absent(),
                 Value<String?> checkInFrequency = const Value.absent(),
+                Value<bool> isMeasurable = const Value.absent(),
                 Value<String> timeHorizon = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
@@ -13183,6 +13255,7 @@ class $$GoalsTableTableManager
                 startDate: startDate,
                 targetDate: targetDate,
                 checkInFrequency: checkInFrequency,
+                isMeasurable: isMeasurable,
                 timeHorizon: timeHorizon,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -13203,6 +13276,7 @@ class $$GoalsTableTableManager
                 Value<int?> startDate = const Value.absent(),
                 Value<int?> targetDate = const Value.absent(),
                 Value<String?> checkInFrequency = const Value.absent(),
+                Value<bool> isMeasurable = const Value.absent(),
                 required String timeHorizon,
                 required int createdAt,
                 required int updatedAt,
@@ -13221,6 +13295,7 @@ class $$GoalsTableTableManager
                 startDate: startDate,
                 targetDate: targetDate,
                 checkInFrequency: checkInFrequency,
+                isMeasurable: isMeasurable,
                 timeHorizon: timeHorizon,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

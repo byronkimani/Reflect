@@ -29,6 +29,7 @@ class Goals extends Table {
   IntColumn get startDate => integer().nullable()(); // Unix epoch ms
   IntColumn get targetDate => integer().nullable()();
   TextColumn get checkInFrequency => text().nullable()(); // none, daily, weekly, biWeekly, monthly
+  BoolColumn get isMeasurable => boolean().withDefault(const Constant(true))();
   TextColumn get timeHorizon => text()(); // weekly, monthly, quarterly, yearly
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();

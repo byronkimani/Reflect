@@ -124,7 +124,7 @@ class _TaskFormViewState extends State<TaskFormView> {
             ],
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 80 + bottomPadding),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 120 + bottomPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -589,7 +589,7 @@ class _TaskFormViewState extends State<TaskFormView> {
                             ? 'Create Task'
                             : 'Save Changes',
                         style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
+                          color: colorScheme.onPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

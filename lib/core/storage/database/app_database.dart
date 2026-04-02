@@ -40,7 +40,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(DatabaseConnection super.connection);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -97,6 +97,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         if (!await sqliteTableHasColumn(this, 'tasks', 'goal_id')) {
           await migrator.addColumn(tasks, tasks.goalId);
+        }
+      }
+      if (from < 6) {
+        if (!await sqliteTableHasColumn(this, 'goals', 'is_measurable')) {
+          await migrator.addColumn(goals, goals.isMeasurable);
         }
       }
     },
