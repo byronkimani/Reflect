@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
+const priorityLabels = {
+  TaskPriority.p1: 'Highest',
+  TaskPriority.p2: 'High',
+  TaskPriority.p3: 'Medium',
+  TaskPriority.p4: 'Lowest',
+};
+
 /// Jira-like solid priority colors: Critical, High, Medium, Low.
 const priorityChipColors = [
   Color(0xFFDE350B), // P1 Critical - red
@@ -28,6 +35,8 @@ class PriorityChip extends StatelessWidget {
 
   static Color colorFor(TaskPriority priority) =>
       priorityChipColors[priority.index];
+
+  static String labelFor(TaskPriority priority) => priorityLabels[priority]!;
 
   @override
   Widget build(BuildContext context) {

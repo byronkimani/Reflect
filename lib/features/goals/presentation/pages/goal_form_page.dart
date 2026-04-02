@@ -260,14 +260,32 @@ class _GoalFormView extends StatelessWidget {
                     ),
                     Wrap(
                       spacing: 8,
-                      runSpacing: 8,
+                      runSpacing: 12,
                       children: TaskPriority.values.map((p) {
-                        return PriorityChip(
-                          priority: p,
-                          isSelected: state.priority == p,
-                          onTap: () => context
-                              .read<GoalFormCubit>()
-                              .priorityChanged(state.priority == p ? null : p),
+                        final showLabel = p == TaskPriority.p1 || p == TaskPriority.p4;
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PriorityChip(
+                              priority: p,
+                              compact: false,
+                              isSelected: state.priority == p,
+                              onTap: () => context
+                                  .read<GoalFormCubit>()
+                                  .priorityChanged(state.priority == p ? null : p),
+                            ),
+                            const SizedBox(height: 4),
+                            if (showLabel)
+                              Text(
+                                PriorityChip.labelFor(p),
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )
+                            else
+                              const SizedBox(height: 14), // placeholder for text height
+                          ],
                         );
                       }).toList(),
                     ),
@@ -275,14 +293,32 @@ class _GoalFormView extends StatelessWidget {
                     _sectionLabel(textTheme, colorScheme, 'Urgency (optional)'),
                     Wrap(
                       spacing: 8,
-                      runSpacing: 8,
+                      runSpacing: 12,
                       children: TaskPriority.values.map((p) {
-                        return PriorityChip(
-                          priority: p,
-                          isSelected: state.urgency == p,
-                          onTap: () => context
-                              .read<GoalFormCubit>()
-                              .urgencyChanged(state.urgency == p ? null : p),
+                        final showLabel = p == TaskPriority.p1 || p == TaskPriority.p4;
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PriorityChip(
+                              priority: p,
+                              compact: false,
+                              isSelected: state.urgency == p,
+                              onTap: () => context
+                                  .read<GoalFormCubit>()
+                                  .urgencyChanged(state.urgency == p ? null : p),
+                            ),
+                            const SizedBox(height: 4),
+                            if (showLabel)
+                              Text(
+                                PriorityChip.labelFor(p),
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )
+                            else
+                              const SizedBox(height: 14), // placeholder for text height
+                          ],
                         );
                       }).toList(),
                     ),

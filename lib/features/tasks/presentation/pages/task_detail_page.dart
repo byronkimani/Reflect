@@ -166,14 +166,32 @@ class _TaskFormViewState extends State<TaskFormView> {
                 const SizedBox(height: 12),
                 Row(
                   children: TaskPriority.values.map((priority) {
+                    final showLabel = priority == TaskPriority.p1 || priority == TaskPriority.p4;
                     return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: PriorityChip(
-                        priority: priority,
-                        isSelected: state.priority == priority,
-                        onTap: () => context
-                            .read<TaskFormCubit>()
-                            .priorityChanged(priority),
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          PriorityChip(
+                            priority: priority,
+                            compact: false,
+                            isSelected: state.priority == priority,
+                            onTap: () => context
+                                .read<TaskFormCubit>()
+                                .priorityChanged(priority),
+                          ),
+                          const SizedBox(height: 4),
+                          if (showLabel)
+                            Text(
+                              PriorityChip.labelFor(priority),
+                              style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            )
+                          else
+                            const SizedBox(height: 14), // placeholder for text height
+                        ],
                       ),
                     );
                   }).toList(),
