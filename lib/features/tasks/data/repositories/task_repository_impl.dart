@@ -34,7 +34,8 @@ class TaskRepositoryImpl implements ITaskRepository {
     if (rows.isEmpty) return [];
     final taskIds = rows.map((r) => r.id).toList();
     final subtaskRows = await (_db.select(_db.subtasks)
-          ..where((s) => s.taskId.isIn(taskIds)))
+          ..where((s) => s.taskId.isIn(taskIds))
+          ..orderBy([(s) => OrderingTerm.asc(s.sortOrder)]))
         .get();
     final subtasksByTask = <String, List<Subtask>>{};
     for (final s in subtaskRows) {
@@ -154,17 +155,24 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Future<Either<Failure, Task>> createTask(Task task) async {
     try {
-      if (task.recurrenceRule != null) {
-        await _db.into(_db.recurrenceRules).insert(
-              task.recurrenceRule!.toCompanion(),
-              mode: InsertMode.insertOrReplace,
-            );
-      }
-      final companion = task.toCompanion();
-      await _db.into(_db.tasks).insert(companion);
-      for (final subtask in task.subtasks) {
-        await _db.into(_db.subtasks).insert(subtask.toCompanion());
-      }
+      await _db.transaction(() async {
+        if (task.recurrenceRule != null) {
+          await _db.into(_db.recurrenceRules).insert(
+                task.recurrenceRule!.toCompanion(),
+                mode: InsertMode.insertOrReplace,
+              );
+        }
+        await _db.into(_db.tasks).insert(task.toCompanion());
+        
+        if (task.subtasks.isNotEmpty) {
+          await _db.batch((batch) {
+            for (final subtask in task.subtasks) {
+              batch.insert(_db.subtasks, subtask.toCompanion());
+            }
+          });
+        }
+      });
+
       if (task.syncToGcal) {
         _handleGCalSync(task, 'CREATE');
       }
@@ -182,17 +190,24 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Future<Either<Failure, Task>> updateTask(Task task) async {
     try {
-      if (task.recurrenceRule != null) {
-        await _db.into(_db.recurrenceRules).insert(
-              task.recurrenceRule!.toCompanion(),
-              mode: InsertMode.insertOrReplace,
-            );
-      }
-      await (_db.delete(_db.subtasks)..where((s) => s.taskId.equals(task.id))).go();
-      for (final subtask in task.subtasks) {
-        await _db.into(_db.subtasks).insert(subtask.toCompanion());
-      }
-      await _db.update(_db.tasks).replace(task.toCompanion());
+      await _db.transaction(() async {
+        if (task.recurrenceRule != null) {
+          await _db.into(_db.recurrenceRules).insert(
+                task.recurrenceRule!.toCompanion(),
+                mode: InsertMode.insertOrReplace,
+              );
+        }
+        await (_db.delete(_db.subtasks)..where((s) => s.taskId.equals(task.id))).go();
+        if (task.subtasks.isNotEmpty) {
+          await _db.batch((batch) {
+            for (final subtask in task.subtasks) {
+              batch.insert(_db.subtasks, subtask.toCompanion());
+            }
+          });
+        }
+        await _db.update(_db.tasks).replace(task.toCompanion());
+      });
+
       if (task.syncToGcal) {
         _handleGCalSync(task, 'UPDATE');
       }

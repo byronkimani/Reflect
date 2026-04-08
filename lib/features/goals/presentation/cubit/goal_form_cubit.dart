@@ -26,26 +26,26 @@ class GoalFormCubit extends Cubit<GoalFormState> {
 
   final IGoalRepository _repo;
 
-  void titleChanged(String value) => emit(state.copyWith(title: value));
-  void descriptionChanged(String? value) => emit(state.copyWith(description: value));
-  void categoryIdChanged(String? value) => emit(state.copyWith(categoryId: value));
-  void kpiDescriptionChanged(String? value) => emit(state.copyWith(kpiDescription: value));
-  void startValueChanged(String? value) => emit(state.copyWith(startValue: value));
-  void targetValueChanged(String? value) => emit(state.copyWith(targetValue: value));
+  void titleChanged(String value) => emit(state.copyWith(title: value, isModified: true));
+  void descriptionChanged(String? value) => emit(state.copyWith(description: value, isModified: true));
+  void categoryIdChanged(String? value) => emit(state.copyWith(categoryId: value, isModified: true));
+  void kpiDescriptionChanged(String? value) => emit(state.copyWith(kpiDescription: value, isModified: true));
+  void startValueChanged(String? value) => emit(state.copyWith(startValue: value, isModified: true));
+  void targetValueChanged(String? value) => emit(state.copyWith(targetValue: value, isModified: true));
   void priorityChanged(TaskPriority? value) => emit(
-        state.copyWith(priority: value, clearPriority: value == null),
+        state.copyWith(priority: value, clearPriority: value == null, isModified: true),
       );
   void urgencyChanged(TaskPriority? value) => emit(
-        state.copyWith(urgency: value, clearUrgency: value == null),
+        state.copyWith(urgency: value, clearUrgency: value == null, isModified: true),
       );
-  void whyChanged(String? value) => emit(state.copyWith(why: value));
-  void startDateChanged(DateTime? value) => emit(state.copyWith(startDate: value));
-  void targetDateChanged(DateTime? value) => emit(state.copyWith(targetDate: value));
+  void whyChanged(String? value) => emit(state.copyWith(why: value, isModified: true));
+  void startDateChanged(DateTime? value) => emit(state.copyWith(startDate: value, isModified: true));
+  void targetDateChanged(DateTime? value) => emit(state.copyWith(targetDate: value, isModified: true));
   void checkInFrequencyChanged(CheckInFrequency? value) =>
-      emit(state.copyWith(checkInFrequency: value));
+      emit(state.copyWith(checkInFrequency: value, isModified: true));
   void timeHorizonChanged(GoalTimeHorizon value) =>
-      emit(state.copyWith(timeHorizon: value));
-  void isMeasurableChanged(bool value) => emit(state.copyWith(isMeasurable: value));
+      emit(state.copyWith(timeHorizon: value, isModified: true));
+  void isMeasurableChanged(bool value) => emit(state.copyWith(isMeasurable: value, isModified: true));
 
   Future<void> submit() async {
     if (state.title.trim().isEmpty) {

@@ -290,5 +290,29 @@ void main() {
       final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
       expect((captured[0] as Task).notes, 'New notes');
     });
+
+    testWidgets('submitting on the last subtask adds a new subtask', (
+      tester,
+    ) async {
+      final t = task(
+        id: 'task-1',
+        title: 'Task',
+        subtasks: [subtask(id: 's1', title: 'Step 1')],
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      var textFields = find.byType(TextField);
+      // title, notes, and 1 subtask
+      final initialCount = textFields.evaluate().length;
+
+      // Submit on the subtask (it is the second to last text field, before notes)
+      await tester.showKeyboard(textFields.at(initialCount - 2));
+      await tester.testTextInput.receiveAction(TextInputAction.next);
+      await tester.pumpAndSettle();
+
+      textFields = find.byType(TextField);
+      expect(textFields.evaluate().length, initialCount + 1);
+    });
   });
 }

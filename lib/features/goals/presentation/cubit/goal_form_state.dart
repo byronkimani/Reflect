@@ -19,6 +19,7 @@ class GoalFormState {
     this.isMeasurable = true,
     this.isSubmitting = false,
     this.isSuccess = false,
+    this.isModified = false,
     this.error,
     this.initialGoal,
   });
@@ -39,6 +40,7 @@ class GoalFormState {
   final bool isMeasurable;
   final bool isSubmitting;
   final bool isSuccess;
+  final bool isModified;
   final String? error;
   final Goal? initialGoal;
 
@@ -59,6 +61,7 @@ class GoalFormState {
     bool? isMeasurable,
     bool? isSubmitting,
     bool? isSuccess,
+    bool? isModified,
     String? error,
     Goal? initialGoal,
     bool clearDescription = false,
@@ -83,6 +86,7 @@ class GoalFormState {
       isMeasurable: isMeasurable ?? this.isMeasurable,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isSuccess: isSuccess ?? this.isSuccess,
+      isModified: isModified ?? this.isModified,
       error: error,
       initialGoal: initialGoal ?? this.initialGoal,
     );

@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TaskFormState {
 
- String get title; String get notes; TaskPriority get priority; DateTime? get dueDate; String? get dueTime; List<SubtaskFormItem> get subtaskItems; bool get hasEnabledReminder; bool get isRepeating; RecurrenceFrequency? get recurrenceFrequency; List<int> get recurrenceDaysOfWeek; bool get syncToGcal; bool get isSubmitting; bool get isSuccess; String? get error; Task? get initialTask; List<Goal> get availableGoals; String? get selectedGoalId;
+ String get title; String get notes; TaskPriority get priority; DateTime? get dueDate; String? get dueTime; List<SubtaskFormItem> get subtaskItems; bool get hasEnabledReminder; bool get isRepeating; RecurrenceFrequency? get recurrenceFrequency; List<int> get recurrenceDaysOfWeek; bool get syncToGcal; bool get isSubmitting; bool get isSuccess; String? get error; Task? get initialTask; List<Goal> get availableGoals; String? get selectedGoalId; bool get isModified;
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TaskFormStateCopyWith<TaskFormState> get copyWith => _$TaskFormStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&const DeepCollectionEquality().equals(other.subtaskItems, subtaskItems)&&(identical(other.hasEnabledReminder, hasEnabledReminder) || other.hasEnabledReminder == hasEnabledReminder)&&(identical(other.isRepeating, isRepeating) || other.isRepeating == isRepeating)&&(identical(other.recurrenceFrequency, recurrenceFrequency) || other.recurrenceFrequency == recurrenceFrequency)&&const DeepCollectionEquality().equals(other.recurrenceDaysOfWeek, recurrenceDaysOfWeek)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask)&&const DeepCollectionEquality().equals(other.availableGoals, availableGoals)&&(identical(other.selectedGoalId, selectedGoalId) || other.selectedGoalId == selectedGoalId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&const DeepCollectionEquality().equals(other.subtaskItems, subtaskItems)&&(identical(other.hasEnabledReminder, hasEnabledReminder) || other.hasEnabledReminder == hasEnabledReminder)&&(identical(other.isRepeating, isRepeating) || other.isRepeating == isRepeating)&&(identical(other.recurrenceFrequency, recurrenceFrequency) || other.recurrenceFrequency == recurrenceFrequency)&&const DeepCollectionEquality().equals(other.recurrenceDaysOfWeek, recurrenceDaysOfWeek)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask)&&const DeepCollectionEquality().equals(other.availableGoals, availableGoals)&&(identical(other.selectedGoalId, selectedGoalId) || other.selectedGoalId == selectedGoalId)&&(identical(other.isModified, isModified) || other.isModified == isModified));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,dueTime,const DeepCollectionEquality().hash(subtaskItems),hasEnabledReminder,isRepeating,recurrenceFrequency,const DeepCollectionEquality().hash(recurrenceDaysOfWeek),syncToGcal,isSubmitting,isSuccess,error,initialTask,const DeepCollectionEquality().hash(availableGoals),selectedGoalId);
+int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,dueTime,const DeepCollectionEquality().hash(subtaskItems),hasEnabledReminder,isRepeating,recurrenceFrequency,const DeepCollectionEquality().hash(recurrenceDaysOfWeek),syncToGcal,isSubmitting,isSuccess,error,initialTask,const DeepCollectionEquality().hash(availableGoals),selectedGoalId,isModified);
 
 @override
 String toString() {
-  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, subtaskItems: $subtaskItems, hasEnabledReminder: $hasEnabledReminder, isRepeating: $isRepeating, recurrenceFrequency: $recurrenceFrequency, recurrenceDaysOfWeek: $recurrenceDaysOfWeek, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask, availableGoals: $availableGoals, selectedGoalId: $selectedGoalId)';
+  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, subtaskItems: $subtaskItems, hasEnabledReminder: $hasEnabledReminder, isRepeating: $isRepeating, recurrenceFrequency: $recurrenceFrequency, recurrenceDaysOfWeek: $recurrenceDaysOfWeek, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask, availableGoals: $availableGoals, selectedGoalId: $selectedGoalId, isModified: $isModified)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TaskFormStateCopyWith<$Res>  {
   factory $TaskFormStateCopyWith(TaskFormState value, $Res Function(TaskFormState) _then) = _$TaskFormStateCopyWithImpl;
 @useResult
 $Res call({
- String title, String notes, TaskPriority priority, DateTime? dueDate, String? dueTime, List<SubtaskFormItem> subtaskItems, bool hasEnabledReminder, bool isRepeating, RecurrenceFrequency? recurrenceFrequency, List<int> recurrenceDaysOfWeek, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask, List<Goal> availableGoals, String? selectedGoalId
+ String title, String notes, TaskPriority priority, DateTime? dueDate, String? dueTime, List<SubtaskFormItem> subtaskItems, bool hasEnabledReminder, bool isRepeating, RecurrenceFrequency? recurrenceFrequency, List<int> recurrenceDaysOfWeek, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask, List<Goal> availableGoals, String? selectedGoalId, bool isModified
 });
 
 
@@ -62,7 +62,7 @@ class _$TaskFormStateCopyWithImpl<$Res>
 
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? subtaskItems = null,Object? hasEnabledReminder = null,Object? isRepeating = null,Object? recurrenceFrequency = freezed,Object? recurrenceDaysOfWeek = null,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,Object? availableGoals = null,Object? selectedGoalId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? subtaskItems = null,Object? hasEnabledReminder = null,Object? isRepeating = null,Object? recurrenceFrequency = freezed,Object? recurrenceDaysOfWeek = null,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,Object? availableGoals = null,Object? selectedGoalId = freezed,Object? isModified = null,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
@@ -81,7 +81,8 @@ as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_t
 as String?,initialTask: freezed == initialTask ? _self.initialTask : initialTask // ignore: cast_nullable_to_non_nullable
 as Task?,availableGoals: null == availableGoals ? _self.availableGoals : availableGoals // ignore: cast_nullable_to_non_nullable
 as List<Goal>,selectedGoalId: freezed == selectedGoalId ? _self.selectedGoalId : selectedGoalId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isModified: null == isModified ? _self.isModified : isModified // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of TaskFormState
@@ -178,10 +179,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  List<SubtaskFormItem> subtaskItems,  bool hasEnabledReminder,  bool isRepeating,  RecurrenceFrequency? recurrenceFrequency,  List<int> recurrenceDaysOfWeek,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask,  List<Goal> availableGoals,  String? selectedGoalId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  List<SubtaskFormItem> subtaskItems,  bool hasEnabledReminder,  bool isRepeating,  RecurrenceFrequency? recurrenceFrequency,  List<int> recurrenceDaysOfWeek,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask,  List<Goal> availableGoals,  String? selectedGoalId,  bool isModified)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TaskFormState() when $default != null:
-return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTime,_that.subtaskItems,_that.hasEnabledReminder,_that.isRepeating,_that.recurrenceFrequency,_that.recurrenceDaysOfWeek,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask,_that.availableGoals,_that.selectedGoalId);case _:
+return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTime,_that.subtaskItems,_that.hasEnabledReminder,_that.isRepeating,_that.recurrenceFrequency,_that.recurrenceDaysOfWeek,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask,_that.availableGoals,_that.selectedGoalId,_that.isModified);case _:
   return orElse();
 
 }
@@ -199,10 +200,10 @@ return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  List<SubtaskFormItem> subtaskItems,  bool hasEnabledReminder,  bool isRepeating,  RecurrenceFrequency? recurrenceFrequency,  List<int> recurrenceDaysOfWeek,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask,  List<Goal> availableGoals,  String? selectedGoalId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  List<SubtaskFormItem> subtaskItems,  bool hasEnabledReminder,  bool isRepeating,  RecurrenceFrequency? recurrenceFrequency,  List<int> recurrenceDaysOfWeek,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask,  List<Goal> availableGoals,  String? selectedGoalId,  bool isModified)  $default,) {final _that = this;
 switch (_that) {
 case _TaskFormState():
-return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTime,_that.subtaskItems,_that.hasEnabledReminder,_that.isRepeating,_that.recurrenceFrequency,_that.recurrenceDaysOfWeek,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask,_that.availableGoals,_that.selectedGoalId);case _:
+return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTime,_that.subtaskItems,_that.hasEnabledReminder,_that.isRepeating,_that.recurrenceFrequency,_that.recurrenceDaysOfWeek,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask,_that.availableGoals,_that.selectedGoalId,_that.isModified);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -219,10 +220,10 @@ return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  List<SubtaskFormItem> subtaskItems,  bool hasEnabledReminder,  bool isRepeating,  RecurrenceFrequency? recurrenceFrequency,  List<int> recurrenceDaysOfWeek,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask,  List<Goal> availableGoals,  String? selectedGoalId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String notes,  TaskPriority priority,  DateTime? dueDate,  String? dueTime,  List<SubtaskFormItem> subtaskItems,  bool hasEnabledReminder,  bool isRepeating,  RecurrenceFrequency? recurrenceFrequency,  List<int> recurrenceDaysOfWeek,  bool syncToGcal,  bool isSubmitting,  bool isSuccess,  String? error,  Task? initialTask,  List<Goal> availableGoals,  String? selectedGoalId,  bool isModified)?  $default,) {final _that = this;
 switch (_that) {
 case _TaskFormState() when $default != null:
-return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTime,_that.subtaskItems,_that.hasEnabledReminder,_that.isRepeating,_that.recurrenceFrequency,_that.recurrenceDaysOfWeek,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask,_that.availableGoals,_that.selectedGoalId);case _:
+return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTime,_that.subtaskItems,_that.hasEnabledReminder,_that.isRepeating,_that.recurrenceFrequency,_that.recurrenceDaysOfWeek,_that.syncToGcal,_that.isSubmitting,_that.isSuccess,_that.error,_that.initialTask,_that.availableGoals,_that.selectedGoalId,_that.isModified);case _:
   return null;
 
 }
@@ -234,7 +235,7 @@ return $default(_that.title,_that.notes,_that.priority,_that.dueDate,_that.dueTi
 
 
 class _TaskFormState implements TaskFormState {
-  const _TaskFormState({this.title = '', this.notes = '', this.priority = TaskPriority.p4, this.dueDate, this.dueTime, final  List<SubtaskFormItem> subtaskItems = const [], this.hasEnabledReminder = false, this.isRepeating = false, this.recurrenceFrequency, final  List<int> recurrenceDaysOfWeek = const [], this.syncToGcal = false, this.isSubmitting = false, this.isSuccess = false, this.error, this.initialTask, final  List<Goal> availableGoals = const [], this.selectedGoalId}): _subtaskItems = subtaskItems,_recurrenceDaysOfWeek = recurrenceDaysOfWeek,_availableGoals = availableGoals;
+  const _TaskFormState({this.title = '', this.notes = '', this.priority = TaskPriority.p4, this.dueDate, this.dueTime, final  List<SubtaskFormItem> subtaskItems = const [], this.hasEnabledReminder = false, this.isRepeating = false, this.recurrenceFrequency, final  List<int> recurrenceDaysOfWeek = const [], this.syncToGcal = false, this.isSubmitting = false, this.isSuccess = false, this.error, this.initialTask, final  List<Goal> availableGoals = const [], this.selectedGoalId, this.isModified = false}): _subtaskItems = subtaskItems,_recurrenceDaysOfWeek = recurrenceDaysOfWeek,_availableGoals = availableGoals;
   
 
 @override@JsonKey() final  String title;
@@ -272,6 +273,7 @@ class _TaskFormState implements TaskFormState {
 }
 
 @override final  String? selectedGoalId;
+@override@JsonKey() final  bool isModified;
 
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
@@ -283,16 +285,16 @@ _$TaskFormStateCopyWith<_TaskFormState> get copyWith => __$TaskFormStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&const DeepCollectionEquality().equals(other._subtaskItems, _subtaskItems)&&(identical(other.hasEnabledReminder, hasEnabledReminder) || other.hasEnabledReminder == hasEnabledReminder)&&(identical(other.isRepeating, isRepeating) || other.isRepeating == isRepeating)&&(identical(other.recurrenceFrequency, recurrenceFrequency) || other.recurrenceFrequency == recurrenceFrequency)&&const DeepCollectionEquality().equals(other._recurrenceDaysOfWeek, _recurrenceDaysOfWeek)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask)&&const DeepCollectionEquality().equals(other._availableGoals, _availableGoals)&&(identical(other.selectedGoalId, selectedGoalId) || other.selectedGoalId == selectedGoalId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskFormState&&(identical(other.title, title) || other.title == title)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.dueTime, dueTime) || other.dueTime == dueTime)&&const DeepCollectionEquality().equals(other._subtaskItems, _subtaskItems)&&(identical(other.hasEnabledReminder, hasEnabledReminder) || other.hasEnabledReminder == hasEnabledReminder)&&(identical(other.isRepeating, isRepeating) || other.isRepeating == isRepeating)&&(identical(other.recurrenceFrequency, recurrenceFrequency) || other.recurrenceFrequency == recurrenceFrequency)&&const DeepCollectionEquality().equals(other._recurrenceDaysOfWeek, _recurrenceDaysOfWeek)&&(identical(other.syncToGcal, syncToGcal) || other.syncToGcal == syncToGcal)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error)&&(identical(other.initialTask, initialTask) || other.initialTask == initialTask)&&const DeepCollectionEquality().equals(other._availableGoals, _availableGoals)&&(identical(other.selectedGoalId, selectedGoalId) || other.selectedGoalId == selectedGoalId)&&(identical(other.isModified, isModified) || other.isModified == isModified));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,dueTime,const DeepCollectionEquality().hash(_subtaskItems),hasEnabledReminder,isRepeating,recurrenceFrequency,const DeepCollectionEquality().hash(_recurrenceDaysOfWeek),syncToGcal,isSubmitting,isSuccess,error,initialTask,const DeepCollectionEquality().hash(_availableGoals),selectedGoalId);
+int get hashCode => Object.hash(runtimeType,title,notes,priority,dueDate,dueTime,const DeepCollectionEquality().hash(_subtaskItems),hasEnabledReminder,isRepeating,recurrenceFrequency,const DeepCollectionEquality().hash(_recurrenceDaysOfWeek),syncToGcal,isSubmitting,isSuccess,error,initialTask,const DeepCollectionEquality().hash(_availableGoals),selectedGoalId,isModified);
 
 @override
 String toString() {
-  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, subtaskItems: $subtaskItems, hasEnabledReminder: $hasEnabledReminder, isRepeating: $isRepeating, recurrenceFrequency: $recurrenceFrequency, recurrenceDaysOfWeek: $recurrenceDaysOfWeek, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask, availableGoals: $availableGoals, selectedGoalId: $selectedGoalId)';
+  return 'TaskFormState(title: $title, notes: $notes, priority: $priority, dueDate: $dueDate, dueTime: $dueTime, subtaskItems: $subtaskItems, hasEnabledReminder: $hasEnabledReminder, isRepeating: $isRepeating, recurrenceFrequency: $recurrenceFrequency, recurrenceDaysOfWeek: $recurrenceDaysOfWeek, syncToGcal: $syncToGcal, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error, initialTask: $initialTask, availableGoals: $availableGoals, selectedGoalId: $selectedGoalId, isModified: $isModified)';
 }
 
 
@@ -303,7 +305,7 @@ abstract mixin class _$TaskFormStateCopyWith<$Res> implements $TaskFormStateCopy
   factory _$TaskFormStateCopyWith(_TaskFormState value, $Res Function(_TaskFormState) _then) = __$TaskFormStateCopyWithImpl;
 @override @useResult
 $Res call({
- String title, String notes, TaskPriority priority, DateTime? dueDate, String? dueTime, List<SubtaskFormItem> subtaskItems, bool hasEnabledReminder, bool isRepeating, RecurrenceFrequency? recurrenceFrequency, List<int> recurrenceDaysOfWeek, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask, List<Goal> availableGoals, String? selectedGoalId
+ String title, String notes, TaskPriority priority, DateTime? dueDate, String? dueTime, List<SubtaskFormItem> subtaskItems, bool hasEnabledReminder, bool isRepeating, RecurrenceFrequency? recurrenceFrequency, List<int> recurrenceDaysOfWeek, bool syncToGcal, bool isSubmitting, bool isSuccess, String? error, Task? initialTask, List<Goal> availableGoals, String? selectedGoalId, bool isModified
 });
 
 
@@ -320,7 +322,7 @@ class __$TaskFormStateCopyWithImpl<$Res>
 
 /// Create a copy of TaskFormState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? subtaskItems = null,Object? hasEnabledReminder = null,Object? isRepeating = null,Object? recurrenceFrequency = freezed,Object? recurrenceDaysOfWeek = null,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,Object? availableGoals = null,Object? selectedGoalId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? notes = null,Object? priority = null,Object? dueDate = freezed,Object? dueTime = freezed,Object? subtaskItems = null,Object? hasEnabledReminder = null,Object? isRepeating = null,Object? recurrenceFrequency = freezed,Object? recurrenceDaysOfWeek = null,Object? syncToGcal = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,Object? initialTask = freezed,Object? availableGoals = null,Object? selectedGoalId = freezed,Object? isModified = null,}) {
   return _then(_TaskFormState(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
@@ -339,7 +341,8 @@ as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_t
 as String?,initialTask: freezed == initialTask ? _self.initialTask : initialTask // ignore: cast_nullable_to_non_nullable
 as Task?,availableGoals: null == availableGoals ? _self._availableGoals : availableGoals // ignore: cast_nullable_to_non_nullable
 as List<Goal>,selectedGoalId: freezed == selectedGoalId ? _self.selectedGoalId : selectedGoalId // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isModified: null == isModified ? _self.isModified : isModified // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

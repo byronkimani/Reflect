@@ -51,14 +51,14 @@ class TaskFormCubit extends Cubit<TaskFormState> {
     return super.close();
   }
 
-  void titleChanged(String value) => emit(state.copyWith(title: value));
-  void notesChanged(String value) => emit(state.copyWith(notes: value));
-  void priorityChanged(TaskPriority value) => emit(state.copyWith(priority: value));
-  void dueDateChanged(DateTime? value) => emit(state.copyWith(dueDate: value));
-  void dueTimeChanged(String? value) => emit(state.copyWith(dueTime: value));
-  void hasEnabledReminderChanged(bool value) => emit(state.copyWith(hasEnabledReminder: value));
-  void syncToGcalChanged(bool value) => emit(state.copyWith(syncToGcal: value));
-  void goalIdChanged(String? goalId) => emit(state.copyWith(selectedGoalId: goalId));
+  void titleChanged(String value) => emit(state.copyWith(title: value, isModified: true));
+  void notesChanged(String value) => emit(state.copyWith(notes: value, isModified: true));
+  void priorityChanged(TaskPriority value) => emit(state.copyWith(priority: value, isModified: true));
+  void dueDateChanged(DateTime? value) => emit(state.copyWith(dueDate: value, isModified: true));
+  void dueTimeChanged(String? value) => emit(state.copyWith(dueTime: value, isModified: true));
+  void hasEnabledReminderChanged(bool value) => emit(state.copyWith(hasEnabledReminder: value, isModified: true));
+  void syncToGcalChanged(bool value) => emit(state.copyWith(syncToGcal: value, isModified: true));
+  void goalIdChanged(String? goalId) => emit(state.copyWith(selectedGoalId: goalId, isModified: true));
 
   void isRepeatingChanged(bool value) {
     if (value) {
@@ -66,12 +66,14 @@ class TaskFormCubit extends Cubit<TaskFormState> {
         isRepeating: true,
         recurrenceFrequency: RecurrenceFrequency.DAILY,
         recurrenceDaysOfWeek: [],
+        isModified: true,
       ));
     } else {
       emit(state.copyWith(
         isRepeating: false,
         recurrenceFrequency: null,
         recurrenceDaysOfWeek: [],
+        isModified: true,
       ));
     }
   }
@@ -80,11 +82,12 @@ class TaskFormCubit extends Cubit<TaskFormState> {
     emit(state.copyWith(
       recurrenceFrequency: value,
       recurrenceDaysOfWeek: value == RecurrenceFrequency.WEEKLY ? weekdaysPreset : [],
+      isModified: true,
     ));
   }
 
   void recurrenceDaysOfWeekChanged(List<int> days) {
-    emit(state.copyWith(recurrenceDaysOfWeek: List<int>.from(days)));
+    emit(state.copyWith(recurrenceDaysOfWeek: List<int>.from(days), isModified: true));
   }
 
   void toggleRecurrenceDay(int weekday) {
@@ -95,7 +98,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
       current.add(weekday);
       current.sort();
     }
-    emit(state.copyWith(recurrenceDaysOfWeek: current));
+    emit(state.copyWith(recurrenceDaysOfWeek: current, isModified: true));
   }
 
   void addSubtask([String title = '']) {
@@ -108,6 +111,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           isCompleted: false,
         ),
       ],
+      isModified: true,
     ));
   }
 
@@ -118,6 +122,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
         ...state.subtaskItems.take(index),
         ...state.subtaskItems.skip(index + 1),
       ],
+      isModified: true,
     ));
   }
 
@@ -125,14 +130,60 @@ class TaskFormCubit extends Cubit<TaskFormState> {
     if (index < 0 || index >= state.subtaskItems.length) return;
     final updated = List<SubtaskFormItem>.from(state.subtaskItems);
     updated[index] = updated[index].copyWith(title: title.trim());
-    emit(state.copyWith(subtaskItems: updated));
+    emit(state.copyWith(subtaskItems: updated, isModified: true));
   }
 
   void toggleSubtaskCompletedAt(int index) {
     if (index < 0 || index >= state.subtaskItems.length) return;
-    final updated = List<SubtaskFormItem>.from(state.subtaskItems);
-    updated[index] = updated[index].copyWith(isCompleted: !updated[index].isCompleted);
+    final oldList = List<SubtaskFormItem>.from(state.subtaskItems);
+    final item = oldList[index];
+    final updatedItem = item.copyWith(isCompleted: !item.isCompleted);
+    oldList[index] = updatedItem;
+
+    final pending = oldList.where((e) => !e.isCompleted).toList();
+    final completed = oldList.where((e) => e.isCompleted).toList();
+    final updated = [...pending, ...completed];
+
     emit(state.copyWith(subtaskItems: updated));
+
+    // Save silently so the today page reflects changes immediately
+    _saveSilently();
+  }
+
+  Future<void> _saveSilently() async {
+    if (state.initialTask == null) return;
+    final taskId = state.initialTask!.id;
+    final now = DateTime.now();
+    final subtasks = state.subtaskItems
+        .where((item) => item.title.trim().isNotEmpty)
+        .toList()
+        .asMap()
+        .entries
+        .map((e) => Subtask(
+              id: e.value.id,
+              taskId: taskId,
+              title: e.value.title.trim(),
+              isCompleted: e.value.isCompleted,
+              sortOrder: e.key,
+              createdAt: now,
+            ))
+        .toList();
+
+    final task = state.initialTask!.copyWith(
+      title: state.title,
+      notes: state.notes.isEmpty ? null : state.notes,
+      priority: state.priority,
+      dueDate: state.dueDate,
+      dueTime: state.dueTime,
+      hasEnabledReminder: state.hasEnabledReminder,
+      subtasks: subtasks,
+      syncToGcal: state.syncToGcal,
+      goalId: state.selectedGoalId,
+      updatedAt: now,
+    );
+
+    // We do not await or handle failure/success here to avoid disrupting the UI
+    _taskRepository.updateTask(task);
   }
 
   Future<void> submit() async {

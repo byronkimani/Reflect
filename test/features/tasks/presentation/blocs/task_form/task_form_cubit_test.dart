@@ -202,13 +202,44 @@ void main() {
       expect(cubit.state.subtaskItems[0].title, 'Updated');
     });
 
-    test('toggleSubtaskCompletedAt flips isCompleted', () {
-      cubit = TaskFormCubit(mockRepo, mockGoalRepo, task(subtasks: [subtask(id: 's1', title: 'S', isCompleted: false)]));
+    test('toggleSubtaskCompletedAt flips isCompleted and moves to bottom, then saves silently', () async {
+      final t = task(
+        id: 'task-1',
+        title: 'T',
+        subtasks: [
+          subtask(id: 's1', title: 'A', isCompleted: false),
+          subtask(id: 's2', title: 'B', isCompleted: false),
+          subtask(id: 's3', title: 'C', isCompleted: false),
+        ],
+      );
+      when(() => mockRepo.updateTask(any())).thenAnswer((_) async => Right(t));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
+      
       expect(cubit.state.subtaskItems[0].isCompleted, false);
       cubit.toggleSubtaskCompletedAt(0);
-      expect(cubit.state.subtaskItems[0].isCompleted, true);
-      cubit.toggleSubtaskCompletedAt(0);
-      expect(cubit.state.subtaskItems[0].isCompleted, false);
+
+      // 'A' should move to the bottom, pushing 'B' and 'C' up
+      expect(cubit.state.subtaskItems.length, 3);
+      expect(cubit.state.subtaskItems[0].title, 'B');
+      expect(cubit.state.subtaskItems[1].title, 'C');
+      expect(cubit.state.subtaskItems[2].title, 'A');
+      expect(cubit.state.subtaskItems[2].isCompleted, true);
+      
+      // Auto-save silently should've triggered updateTask
+      await Future.delayed(Duration.zero);
+      final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
+      expect(captured.length, 1);
+      final updatedTask = captured[0] as Task;
+      expect(updatedTask.subtasks[2].title, 'A');
+      expect(updatedTask.subtasks[2].isCompleted, true);
+
+      // Unchecking 'A' should move it back up to the pending list (bottom of pending, top of completed)
+      // Since everyone was pending, 'B' and 'C' are pending, 'A' will be added back at the end of pending
+      cubit.toggleSubtaskCompletedAt(2);
+      expect(cubit.state.subtaskItems[0].title, 'B');
+      expect(cubit.state.subtaskItems[1].title, 'C');
+      expect(cubit.state.subtaskItems[2].title, 'A');
+      expect(cubit.state.subtaskItems[2].isCompleted, false);
     });
   });
 

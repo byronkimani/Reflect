@@ -32,6 +32,7 @@ abstract class TaskFormState with _$TaskFormState {
     Task? initialTask,
     @Default([]) List<Goal> availableGoals,
     String? selectedGoalId,
+    @Default(false) bool isModified,
   }) = _TaskFormState;
 
   factory TaskFormState.initial(Task? task, {bool createAsBacklog = false}) {
@@ -50,13 +51,18 @@ abstract class TaskFormState with _$TaskFormState {
       priority: task?.priority ?? TaskPriority.p4,
       dueDate: initialDueDate,
       dueTime: task?.dueTime,
-      subtaskItems: (task?.subtasks ?? const [])
-          .map((s) => SubtaskFormItem(
-                id: s.id,
-                title: s.title,
-                isCompleted: s.isCompleted,
-              ))
-          .toList(),
+      subtaskItems: (() {
+        final subs = (task?.subtasks ?? const []);
+        final pending = subs.where((s) => !s.isCompleted).toList();
+        final completed = subs.where((s) => s.isCompleted).toList();
+        return [...pending, ...completed]
+            .map((s) => SubtaskFormItem(
+                  id: s.id,
+                  title: s.title,
+                  isCompleted: s.isCompleted,
+                ))
+            .toList();
+      })(),
       hasEnabledReminder: task?.hasEnabledReminder ?? false,
       isRepeating: task?.recurrenceRule != null,
       recurrenceFrequency: freq,
