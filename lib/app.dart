@@ -29,26 +29,26 @@ class ReflectApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ConnectivityBloc>(
-          create: (_) => getIt<ConnectivityBloc>()..add(const ConnectivityEvent.monitorStarted()),
+          create: (_) =>
+              getIt<ConnectivityBloc>()
+                ..add(const ConnectivityEvent.monitorStarted()),
         ),
         BlocProvider<GCalSyncCubit>(
           create: (_) => getIt<GCalSyncCubit>()..processQueue(),
         ),
         BlocProvider<TaskListBloc>(
-          create: (_) => getIt<TaskListBloc>()..add(TaskListEvent.loadTasksForDate(DateTime.now())),
+          create: (_) =>
+              getIt<TaskListBloc>()
+                ..add(TaskListEvent.loadTasksForDate(DateTime.now())),
         ),
-        BlocProvider<PlanningCubit>(
-          create: (_) => getIt<PlanningCubit>(),
-        ),
+        BlocProvider<PlanningCubit>(create: (_) => getIt<PlanningCubit>()),
         BlocProvider<DailyReviewCubit>(
           create: (_) => getIt<DailyReviewCubit>(),
         ),
         BlocProvider<TaskSelectionCubit>(
           create: (_) => getIt<TaskSelectionCubit>(),
         ),
-        BlocProvider<SettingsCubit>(
-          create: (_) => getIt<SettingsCubit>(),
-        ),
+        BlocProvider<SettingsCubit>(create: (_) => getIt<SettingsCubit>()),
       ],
       child: Builder(
         builder: (context) {

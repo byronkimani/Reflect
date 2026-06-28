@@ -1,0 +1,32 @@
+# Implementation status — Reflect
+
+Live matrix of routes, data sources, and delivery state. Update this file when shipping or deferring features.
+
+Legend: **Shipped** | **In Progress** | **Planned** | **Deferred**
+
+| Feature | UI | Data Layer | BLoC/Cubit | Status |
+|---------|-----|-----------|------------|--------|
+| Task CRUD | ✅ | ✅ Drift | ✅ TaskListBloc | Shipped |
+| Backlog | ✅ | ✅ Drift | ✅ TaskListBloc | Shipped |
+| Recurrence engine | ✅ | ✅ | ✅ | Shipped |
+| Daily planning | ✅ | ✅ | ✅ PlanningCubit | Shipped |
+| Daily review | ✅ | ✅ | ✅ DailyReviewCubit | Shipped |
+| Goals | ✅ | ✅ | ✅ GoalsCubit | Shipped |
+| Analytics | ✅ | ✅ AnalyticsDao | ✅ AnalyticsBloc | Shipped |
+| Settings (theme, heartbeat) | ✅ | HydratedBloc | ✅ SettingsCubit | Shipped |
+| Local notifications | — | ✅ | — | Shipped |
+| GCal sync outbox | — | ✅ | ✅ GCalSyncCubit | In Progress |
+| Insights | ✅ | — | — | In Progress |
+| Weekly/Monthly reviews | — | Partial | — | Planned |
+| Profile | — | — | — | Planned |
+| Posts | — | ✅ PostRepository | — | Planned |
+
+## Core Infrastructure
+
+| Layer | Status | Notes |
+|-------|--------|-------|
+| Database (Drift) | Shipped | Local SQLite persistence |
+| Dependency Injection | Shipped | GetIt fully integrated |
+| Navigation | Shipped | GoRouter with StatefulShellRoute |
+| API/Networking | Shipped | Dio client configured with token storage |
+| Analytics charts | Shipped | Using `fl_chart` |
