@@ -4,12 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_state.dart';
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
@@ -313,6 +315,25 @@ void main() {
 
       textFields = find.byType(TextField);
       expect(textFields.evaluate().length, initialCount + 1);
+    });
+
+    testWidgets('tapping PriorityChip updates priority', (tester) async {
+      final t = task(id: 'task-1', title: 'P1 task');
+      when(() => mockRepo.updateTask(any())).thenAnswer((invocation) async {
+        return Right(invocation.positionalArguments[0] as Task);
+      });
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      final p2Chip = find.byType(PriorityChip).at(1);
+      await tester.tap(p2Chip);
+      await tester.pumpAndSettle();
+      
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
+      expect((captured[0] as Task).priority, TaskPriority.p2);
     });
   });
 }

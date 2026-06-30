@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -12,24 +13,21 @@ class MockFlutterLocalNotificationsPlugin extends Mock
 class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
-  late NotificationScheduler scheduler;
   late MockFlutterLocalNotificationsPlugin mockPlugin;
   late MockNotificationService mockService;
+  late NotificationScheduler scheduler;
 
   setUpAll(() {
     tz.initializeTimeZones();
-    registerFallbackValue(const NotificationDetails());
     registerFallbackValue(tz.TZDateTime.now(tz.local));
+    registerFallbackValue(const NotificationDetails());
     registerFallbackValue(AndroidScheduleMode.exactAllowWhileIdle);
-    registerFallbackValue(DateTimeComponents.time);
   });
 
   setUp(() {
     mockPlugin = MockFlutterLocalNotificationsPlugin();
     mockService = MockNotificationService();
-    
     when(() => mockService.notificationsPlugin).thenReturn(mockPlugin);
-    
     scheduler = NotificationScheduler(mockService);
 
     when(() => mockPlugin.zonedSchedule(
@@ -41,48 +39,113 @@ void main() {
           androidScheduleMode: any(named: 'androidScheduleMode'),
           payload: any(named: 'payload'),
           matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
-        )).thenAnswer((_) async => {});
+        )).thenAnswer((_) async {});
+
+    when(() => mockPlugin.cancel(id: any(named: 'id')))
+        .thenAnswer((_) async {});
   });
 
-  group('NotificationScheduler', () {
-    test('scheduleMorningPlanning calls zonedSchedule with correct ID and payload', () async {
-      await scheduler.scheduleMorningPlanning();
+  test('scheduleAllHeartbeats schedules all planning notifications', () async {
+    await scheduler.scheduleAllHeartbeats();
+    verify(() => mockPlugin.zonedSchedule(
+          id: 1001,
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        )).called(1);
+    verify(() => mockPlugin.zonedSchedule(
+          id: 1002,
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        )).called(1);
+    verify(() => mockPlugin.zonedSchedule(
+          id: 1003,
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        )).called(1);
+    verify(() => mockPlugin.zonedSchedule(
+          id: any(named: 'id'),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: any(named: 'payload'),
+          matchDateTimeComponents: any(named: 'matchDateTimeComponents'),
+        )).called(12);
+  });
 
-      verify(() => mockPlugin.zonedSchedule(
-            id: 1001,
-            title: any(named: 'title'),
-            body: any(named: 'body'),
-            scheduledDate: any(named: 'scheduledDate'),
-            notificationDetails: any(named: 'notificationDetails'),
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-            payload: '/today/planning',
-            matchDateTimeComponents: DateTimeComponents.time,
-          )).called(1);
-    });
+  test('cancel commands cancel correct ids', () async {
+    await scheduler.cancelMorningPlanning();
+    verify(() => mockPlugin.cancel(id: 1001)).called(1);
+    await scheduler.cancelEveningReview();
+    verify(() => mockPlugin.cancel(id: 1002)).called(1);
+    await scheduler.cancelWeeklyPlanning();
+    verify(() => mockPlugin.cancel(id: 1003)).called(1);
+    await scheduler.cancelMonthlyPlanning();
+    verify(() => mockPlugin.cancel(id: any(named: 'id'))).called(12);
+  });
 
-    test('scheduleMonthlyPlanning schedules 12 instances', () async {
-      await scheduler.scheduleMonthlyPlanning();
+  test('scheduleTaskReminder schedules if due time exists', () async {
+    final task = Task(
+      id: 'task_1',
+      title: 'Do this',
+      status: TaskStatus.pending,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      dueDate: DateTime.now().add(const Duration(days: 1)),
+      dueTime: '10:00',
+      hasEnabledReminder: true,
+    );
+    await scheduler.scheduleTaskReminder(task);
+    verify(() => mockPlugin.zonedSchedule(
+          id: any(named: 'id'),
+          title: 'Task due',
+          body: 'Do this',
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: '/task/task_1',
+        )).called(1);
+  });
 
-      // Verify 12 calls with sequential IDs starting from 1100
-      for (int i = 0; i < 12; i++) {
-        verify(() => mockPlugin.zonedSchedule(
-              id: 1100 + i,
-              title: any(named: 'title'),
-              body: any(named: 'body'),
-              scheduledDate: any(named: 'scheduledDate'),
-              notificationDetails: any(named: 'notificationDetails'),
-              androidScheduleMode: any(named: 'androidScheduleMode'),
-              payload: '/monthly/plan',
-            )).called(1);
-      }
-    });
+  test('scheduleTaskReminder ignores if no due date', () async {
+    final task = Task(
+      id: 'task_1',
+      title: 'Do this',
+      status: TaskStatus.pending,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      hasEnabledReminder: true,
+    );
+    await scheduler.scheduleTaskReminder(task);
+    verifyNever(() => mockPlugin.zonedSchedule(
+          id: any(named: 'id'),
+          title: any(named: 'title'),
+          body: any(named: 'body'),
+          scheduledDate: any(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: any(named: 'payload'),
+        ));
+  });
 
-    test('cancelNotification triggers plugin cancel', () async {
-      when(() => mockPlugin.cancel(id: any(named: 'id'))).thenAnswer((_) async => {});
-      
-      await scheduler.cancelNotification(1002);
-
-      verify(() => mockPlugin.cancel(id: 1002)).called(1);
-    });
+  test('cancelTaskReminder cancels correct id', () async {
+    await scheduler.cancelTaskReminder('task_1');
+    verify(() => mockPlugin.cancel(id: NotificationScheduler.taskReminderNotificationId('task_1'))).called(1);
   });
 }

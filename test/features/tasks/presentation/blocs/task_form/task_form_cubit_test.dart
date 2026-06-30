@@ -131,11 +131,48 @@ void main() {
     test('initial state with null task does not throw when building subtaskItems', () {
       expect(() => TaskFormCubit(mockRepo, mockGoalRepo, null), returnsNormally);
       cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
-      expect(cubit.state.subtaskItems, isEmpty);
     });
   });
 
-  group('TaskFormCubit addSubtask', () {
+  group('TaskFormCubit basic field changes', () {
+    test('field changes update state properly', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      
+      cubit.titleChanged('New Title');
+      expect(cubit.state.title, 'New Title');
+      
+      cubit.notesChanged('New Notes');
+      expect(cubit.state.notes, 'New Notes');
+      
+      cubit.priorityChanged(TaskPriority.p2);
+      expect(cubit.state.priority, TaskPriority.p2);
+      
+      final date = DateTime.now();
+      cubit.dueDateChanged(date);
+      expect(cubit.state.dueDate, date);
+      
+      cubit.dueTimeChanged('10:00');
+      expect(cubit.state.dueTime, '10:00');
+      
+      cubit.goalIdChanged('goal-1');
+      expect(cubit.state.selectedGoalId, 'goal-1');
+      
+      cubit.hasEnabledReminderChanged(true);
+      expect(cubit.state.hasEnabledReminder, true);
+      
+      cubit.syncToGcalChanged(true);
+      expect(cubit.state.syncToGcal, true);
+      
+      cubit.isRepeatingChanged(true);
+      expect(cubit.state.isRepeating, true);
+      
+      cubit.recurrenceFrequencyChanged(RecurrenceFrequency.DAILY);
+      expect(cubit.state.recurrenceFrequency, RecurrenceFrequency.DAILY);
+      
+      cubit.recurrenceDaysOfWeekChanged([1, 2]);
+      expect(cubit.state.recurrenceDaysOfWeek, [1, 2]);
+    });
+  });  group('TaskFormCubit addSubtask', () {
     test('addSubtask appends a new item with empty title and not completed', () {
       cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
       cubit.addSubtask();

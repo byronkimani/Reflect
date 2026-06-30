@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'task_tables.dart';
 
 @DataClassName('GCalSyncQueueData')
 class GCalSyncQueue extends Table {

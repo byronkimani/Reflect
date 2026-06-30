@@ -12,5 +12,5 @@ class EnvConfig {
 
   static String get baseUrl => 'https://fallback-url.com';
 
-  static String get envName => dotenv.env['APP_ENV'] ?? 'unknown';
+  static String get envName => dotenv.isInitialized ? dotenv.env['APP_ENV'] ?? 'unknown' : 'unknown';
 }

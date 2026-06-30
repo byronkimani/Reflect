@@ -261,5 +261,67 @@ CREATE TABLE goals (
     expect(await driftDb.select(driftDb.goals).get(), isEmpty);
     await driftDb.close();
   });
+
+  test('seedGoalCategoriesIfEmpty inserts seeds if empty', () async {
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.memory()),
+    );
+    await driftDb.seedGoalCategoriesIfEmpty();
+    final categories = await driftDb.select(driftDb.goalCategories).get();
+    expect(categories.length, 7);
+    expect(categories.first.name, 'Meaningful connections with family and friends');
+    
+    // Test idempotent
+    await driftDb.seedGoalCategoriesIfEmpty();
+    final afterSecond = await driftDb.select(driftDb.goalCategories).get();
+    expect(afterSecond.length, 7);
+    
+    await driftDb.close();
+  });
+
+  test('upgrade 1→6 normal migration', () async {
+    final raw = sqlite.sqlite3.openInMemory();
+
+    // V1 schema
+    raw.execute('''
+CREATE TABLE tasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  priority TEXT NOT NULL,
+  due_date INTEGER,
+  due_time INTEGER,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  is_overdue INTEGER NOT NULL DEFAULT 0,
+  overdue_day INTEGER NOT NULL DEFAULT 0,
+  recurrence_rule_id TEXT,
+  recurrence_parent_id TEXT,
+  gcal_event_id TEXT,
+  sync_to_gcal INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+    // Insert dummy task without new columns
+    raw.execute(
+      "INSERT INTO tasks (id, title, priority, status, created_at, updated_at, due_date, due_time) VALUES ('t1', 'Test', 'medium', 'pending', 0, 0, 1696982400000, 600);"
+    );
+
+    raw.userVersion = 1;
+
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.opened(raw)),
+    );
+
+    // This triggers the migration
+    final tasks = await driftDb.select(driftDb.tasks).get();
+    expect(tasks.length, 1);
+    expect(tasks.first.hasEnabledReminder, 0);
+    expect(tasks.first.dueDateLocalDayStart != null, true);
+    expect(tasks.first.dueDateUtcMs != null, true);
+    expect(tasks.first.goalId, null);
+
+    await driftDb.close();
+  });
 }
 
