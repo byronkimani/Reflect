@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:reflect/core/di/injectors.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/app.dart';
 import 'package:reflect/core/config/env_config.dart';
+import 'package:reflect/firebase_options.dart';
 import 'package:get_it/get_it.dart';
 
 // Dependency Injection Setup
@@ -15,6 +17,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await EnvConfig.init();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: HydratedStorageDirectory(
