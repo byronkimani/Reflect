@@ -33,7 +33,7 @@ class WeeklyPlans extends Table {
 @DataClassName('WeeklyReviewData')
 class WeeklyReviews extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
-  IntColumn get weekStartDate => integer().unique().customConstraint('NOT NULL REFERENCES weekly_plans(week_start_date)')();
+  IntColumn get weekStartDate => integer().customConstraint('NOT NULL UNIQUE REFERENCES weekly_plans(week_start_date)')();
   IntColumn get themeAchieved => integer().nullable()();
   TextColumn get reflectionNotes => text().nullable()();
   IntColumn get weekRating => integer()();
@@ -70,7 +70,7 @@ class MonthlyPlans extends Table {
 @DataClassName('MonthlyReviewData')
 class MonthlyReviews extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
-  TextColumn get monthYear => text().unique().customConstraint('NOT NULL REFERENCES monthly_plans(month_year)')();
+  TextColumn get monthYear => text().customConstraint('NOT NULL UNIQUE REFERENCES monthly_plans(month_year)')();
   IntColumn get overallRating => integer()();
   TextColumn get win1 => text().nullable()();
   TextColumn get win2 => text().nullable()();

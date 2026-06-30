@@ -16,6 +16,7 @@
 12. **Preserve official app name.** The product name is **Reflect**. Do not rename it in metadata, docs, or UI unless explicitly requested.
 13. **Immutable models.** Use `@freezed` for all domain entities and state classes. Do not create mutable model classes.
 14. **Update docs on code changes.** When adding or removing features, update `docs/implementation-status.md` and related documentation.
+15. **Version bumping.** When a new feature is added or a bug is fixed, you MUST ask the user for explicit consent before bumping the `MAJOR.MINOR.PATCH` version string in `pubspec.yaml`. Read `docs/versioning.md` for guidelines.
 
 ---
 
@@ -50,6 +51,7 @@
 - [ ] Every changed or new function has at least one failure/edge test.
 - [ ] Clean Architecture boundaries are intact.
 - [ ] No unauthorized `git commit` was created.
+- [ ] If this task adds or changes a feature, ask the user for permission to bump the version string in `pubspec.yaml`.
 
 ---
 

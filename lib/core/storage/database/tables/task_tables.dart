@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'goal_tables.dart';
 
 @DataClassName('TaskData')
 class Tasks extends Table {

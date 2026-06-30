@@ -1,0 +1,95 @@
+name: Firebase App Distribution
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    name: Build & Distribute APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Decode Environment Variables
+        run: |
+          echo "${{ secrets.ENV_PRODUCTION_BASE64 }}" | base64 --decode > .env.production
+          touch .env.testing
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: Decode Firebase Credentials
+        run: |
+          echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 --decode > firebase-credentials.json
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Run Tests with Coverage
+        run: flutter test --coverage
+
+      - name: Filter Coverage
+        run: |
+          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' -o coverage/lcov.info --ignore-errors unused
+
+      - name: Generate Coverage HTML
+        run: genhtml coverage/lcov.info -o coverage/html
+
+      - name: Check Coverage Threshold
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: coverage/lcov.info
+          min_coverage: 60
+
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html-report
+          path: coverage/html/
+
+      - name: Build Release APK
+        env:
+          KEYSTORE_PATH: upload-keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: flutter build apk --release --build-number=${{ github.run_number }}
+
+      - name: Upload to Firebase App Distribution
+        uses: nickwph/firebase-app-distribution-action@v1
+        with:
+          app: ${{ secrets.FIREBASE_APP_ID }}
+          credentials-file: firebase-credentials.json
+          groups: qa-team
+          file: build/app/outputs/flutter-apk/app-release.apk

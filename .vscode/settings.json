@@ -3,5 +3,6 @@
         "colour",
         "daos",
         "Gcal"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

@@ -1,0 +1,152 @@
+                                    |Lines      |Functions 
+Filename                            |Rate    Num|Rate  Num
+==========================================================
+[lib/]
+app.dart                            | 3.0%    33|    -   0
+
+[lib/core/config/]
+env_config.dart                     | 0.0%     4|    -   0
+
+[lib/core/errors/]
+failure.dart                        |66.7%     6|    -   0
+
+[lib/core/network/]
+auth_interceptor.dart               | 0.0%    22|    -   0
+dio_client.dart                     |71.0%    31|    -   0
+network_info.dart                   | 0.0%     5|    -   0
+
+[lib/core/network/presentation/]
+connectivity_bloc.dart              | 0.0%    16|    -   0
+
+[lib/core/presentation/]
+app_scaffold.dart                   | 0.0%    16|    -   0
+connectivity_wrapper.dart           | 0.0%    21|    -   0
+
+[lib/core/presentation/utils/]
+adaptive_dialog.dart                |44.0%    25|    -   0
+
+[lib/core/presentation/widgets/]
+priority_chip.dart                  | 100%    35|    -   0
+section_header.dart                 | 100%     9|    -   0
+task_card.dart                      |81.2%    69|    -   0
+
+[lib/core/router/]
+app_router.dart                     |60.9%    69|    -   0
+
+[lib/core/storage/database/]
+app_database.dart                   |41.1%    56|    -   0
+sqlite_migration.dart               | 100%    10|    -   0
+
+[lib/core/storage/]
+token_storage.dart                  | 0.0%     9|    -   0
+
+[lib/core/utils/]
+recurrence_engine.dart              |79.6%    54|    -   0
+
+[lib/features/analytics/data/daos/]
+analytics_dao.dart                  |85.3%    95|    -   0
+
+[lib/features/analytics/presentation/bloc/]
+analytics_bloc.dart                 |85.2%    27|    -   0
+
+[lib/features/analytics/presentation/pages/]
+insights_page.dart                  | 100%   164|    -   0
+
+[lib/features/gcal/data/repositories/]
+gcal_repository_impl.dart           |31.2%    32|    -   0
+
+[lib/features/gcal/data/sources/]
+gcal_api_service.dart               | 100%     3|    -   0
+
+[lib/features/gcal/presentation/]
+g_cal_sync_cubit.dart               |96.4%    28|    -   0
+
+[lib/features/goals/data/mappers/]
+goal_mappers.dart                   |81.7%    60|    -   0
+
+[lib/features/goals/data/repositories/]
+goal_repository_impl.dart           |91.0%    67|    -   0
+
+[lib/features/goals/domain/entities/]
+goal.dart                           | 100%     1|    -   0
+
+[lib/features/goals/presentation/cubit/]
+goal_form_cubit.dart                |97.0%    66|    -   0
+goal_form_state.dart                | 100%    21|    -   0
+goals_cubit.dart                    |86.5%    52|    -   0
+goals_state.dart                    | 100%     9|    -   0
+
+[lib/features/goals/presentation/pages/]
+goal_form_page.dart                 |54.1%   338|    -   0
+goals_page.dart                     |89.9%    69|    -   0
+
+[lib/features/more/presentation/pages/]
+more_options_page.dart              |85.7%    14|    -   0
+
+[lib/features/notifications/]
+notification_scheduler.dart         |39.2%    79|    -   0
+notification_service.dart           | 0.0%    19|    -   0
+
+[lib/features/planning/presentation/pages/]
+planning_page.dart                  |50.0%     2|    -   0
+
+[lib/features/planning/presentation/]
+planning_cubit.dart                 |95.7%    47|    -   0
+
+[lib/features/post/data/]
+post_dto.dart                       | 0.0%     5|    -   0
+post_repository.dart                | 0.0%     8|    -   0
+
+[lib/features/post/domain/]
+post.dart                           | 0.0%     1|    -   0
+
+[lib/features/review/data/repositories/]
+review_repository_impl.dart         |92.9%    28|    -   0
+
+[lib/features/review/presentation/]
+daily_review_cubit.dart             | 100%    20|    -   0
+daily_review_state.dart             | 100%     6|    -   0
+
+[lib/features/review/presentation/pages/]
+daily_review_page.dart              |77.3%    44|    -   0
+
+[lib/features/settings/presentation/cubit/]
+settings_cubit.dart                 |48.6%    37|    -   0
+settings_state.dart                 |30.4%    23|    -   0
+
+[lib/features/settings/presentation/pages/]
+settings_page.dart                  |75.0%    44|    -   0
+
+[lib/features/tasks/data/models/]
+mappers.dart                        |60.4%   106|    -   0
+
+[lib/features/tasks/data/repositories/]
+task_repository_impl.dart           |53.2%   203|    -   0
+
+[lib/features/tasks/domain/entities/]
+recurrence_rule.dart                | 0.0%     2|    -   0
+subtask.dart                        | 0.0%     2|    -   0
+tag.dart                            | 0.0%     1|    -   0
+task.dart                           |85.7%     7|    -   0
+
+[lib/features/tasks/domain/services/]
+recurrence_engine.dart              |94.7%    19|    -   0
+
+[lib/features/tasks/presentation/]
+blocs/task_form/s...k_form_item.dart|85.7%    14|    -   0
+blocs/task_form/task_form_cubit.dart|72.7%   150|    -   0
+blocs/task_form/task_form_state.dart|89.7%    29|    -   0
+blocs/task_list/task_list_bloc.dart |61.2%    98|    -   0
+blocs/task_list/task_list_state.dart|98.1%    54|    -   0
+blocs/task_select...ction_cubit.dart| 100%    17|    -   0
+pages/backlog_page.dart             |88.7%    53|    -   0
+pages/task_detail_page.dart         |59.6%   364|    -   0
+pages/today_page.dart               |81.0%   153|    -   0
+widgets/task_list_filter_sheet.dart |74.8%   139|    -   0
+
+[lib/]
+main.dart                           | 7.1%    14|    -   0
+==========================================================
+                              Total:|67.9%  3324|    -   0
+Message summary:
+  no messages were reported

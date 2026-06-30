@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment variables
+.env*
+
+# Secrets and Keys
+*.jks
+*.keystore
+*firebase-adminsdk*.json
+firebase-credentials.json

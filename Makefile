@@ -27,6 +27,7 @@ test:
 # Usage: make coverage
 coverage:
 	flutter test --coverage
+	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' -o coverage/lcov.info --ignore-errors unused
 	genhtml coverage/lcov.info -o coverage/html
 	open coverage/html/index.html
 
