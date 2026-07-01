@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reflect/core/errors/failure.dart';
 import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
+import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
-import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_state.dart';
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
@@ -78,7 +80,9 @@ void main() {
         ),
       ],
     );
-    return MaterialApp.router(routerConfig: router);
+    return SlidableAutoCloseBehavior(
+      child: MaterialApp.router(routerConfig: router),
+    );
   }
 
   setUp(() {
@@ -94,6 +98,32 @@ void main() {
       Task(id: '', title: '', createdAt: now, updatedAt: now),
     );
   });
+
+  Future<void> scrollForm(WidgetTester tester, {double delta = -280}) async {
+    await tester.drag(find.byType(SingleChildScrollView).first, Offset(0, delta));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> dragAndHold(
+    WidgetTester tester,
+    Finder finder,
+    Offset offset,
+  ) async {
+    final gesture = await tester.startGesture(tester.getCenter(finder));
+    await gesture.moveBy(offset);
+    await tester.pump();
+  }
+
+  Future<void> tapSwitchTile(WidgetTester tester, String label) async {
+    final tile = find.widgetWithText(SwitchListTile, label);
+    await tester.ensureVisible(tile);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: tile, matching: find.byType(Switch)),
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+  }
 
   group('TaskDetailPage / TaskFormView', () {
     testWidgets('new task shows title "New Task" and empty form', (
@@ -334,6 +364,365 @@ void main() {
 
       final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
       expect((captured[0] as Task).priority, TaskPriority.p2);
+    });
+
+    testWidgets('createTask failure shows error snackbar', (tester) async {
+      when(() => mockRepo.createTask(any())).thenAnswer(
+        (_) async => const Left(CacheFailure(errorMessage: 'Network error')),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'New task');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Network error'), findsOneWidget);
+    });
+
+    testWidgets('updateTask failure shows error snackbar', (tester) async {
+      final t = task(id: 'task-1', title: 'Task');
+      when(() => mockRepo.updateTask(any())).thenAnswer(
+        (_) async => const Left(CacheFailure(errorMessage: 'Save failed')),
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Changed title');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Save failed'), findsOneWidget);
+    });
+
+    testWidgets('back with unsaved changes shows discard dialog', (tester) async {
+      final t = task(id: 'task-1', title: 'Original');
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Modified');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Discard changes?'), findsOneWidget);
+      await tester.tap(find.text('Keep Editing'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit Task'), findsOneWidget);
+    });
+
+    testWidgets('discard dialog confirms navigation pop', (tester) async {
+      final t = task(id: 'task-1', title: 'Original');
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Modified');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit Task'), findsNothing);
+    });
+
+    testWidgets('Add to backlog calls updateTask with cleared due date', (
+      tester,
+    ) async {
+      final t = task(
+        id: 'task-1',
+        title: 'Due today',
+        dueDate: now,
+      ).copyWith(dueTime: '09:00');
+      when(() => mockRepo.updateTask(any())).thenAnswer(
+        (invocation) async => Right(invocation.positionalArguments[0] as Task),
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Add to backlog'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
+      final updated = captured[0] as Task;
+      expect(updated.dueDate, isNull);
+      expect(updated.dueTime, isNull);
+    });
+
+    testWidgets('shows goal dropdown when goals stream emits data', (
+      tester,
+    ) async {
+      when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            Goal(
+              id: 'goal-1',
+              title: 'Run a marathon',
+              timeHorizon: GoalTimeHorizon.yearly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ]),
+        ),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Goal (optional)'), findsOneWidget);
+      expect(find.byType(DropdownButtonFormField<String?>), findsOneWidget);
+    });
+
+    testWidgets('toggling Repeats shows weekly recurrence controls', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tapSwitchTile(tester, 'Repeats');
+      await scrollForm(tester);
+
+      expect(find.text('Daily'), findsOneWidget);
+      expect(find.text('Weekly'), findsOneWidget);
+
+      await tester.tap(find.text('Weekly'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Weekdays'), findsOneWidget);
+      expect(find.text('Mon'), findsOneWidget);
+    });
+
+    testWidgets('toggling reminder switch updates state', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      final reminderSwitch = find.widgetWithText(
+        SwitchListTile,
+        'Remind me when due',
+      );
+      await tester.ensureVisible(reminderSwitch);
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(reminderSwitch).value, isFalse);
+
+      await tester.tap(
+        find.descendant(of: reminderSwitch, matching: find.byType(Switch)),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<SwitchListTile>(reminderSwitch).value, isTrue);
+    });
+
+    testWidgets('tapping subtask checkbox toggles completion', (tester) async {
+      final t = task(
+        subtasks: [subtask(id: 's1', title: 'Step 1', isCompleted: false)],
+      );
+      when(() => mockRepo.updateTask(any())).thenAnswer(
+        (invocation) async => Right(invocation.positionalArguments[0] as Task),
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      final checkbox = find.byType(Checkbox);
+      expect(tester.widget<Checkbox>(checkbox).value, isFalse);
+
+      await tester.tap(checkbox);
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<Checkbox>(checkbox).value, isTrue);
+    });
+
+    testWidgets('swiping subtask reveals delete action', (tester) async {
+      final t = task(
+        subtasks: [subtask(id: 's1', title: 'Remove me')],
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Remove me'));
+      await tester.pumpAndSettle();
+
+      final subtaskCheckbox = find.descendant(
+        of: find.ancestor(
+          of: find.text('Remove me'),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byType(Checkbox),
+      );
+      await dragAndHold(tester, subtaskCheckbox, const Offset(-400, 0));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(SlidableAction), findsOneWidget);
+    });
+
+    testWidgets('submit with weekly recurrence includes recurrence rule', (
+      tester,
+    ) async {
+      when(() => mockRepo.createTask(any())).thenAnswer(
+        (invocation) async => Right(invocation.positionalArguments[0] as Task),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Weekly standup');
+      await tester.pumpAndSettle();
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      await tapSwitchTile(tester, 'Repeats');
+      await scrollForm(tester);
+      await tester.tap(find.text('Weekly'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Weekdays'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final captured = verify(() => mockRepo.createTask(captureAny())).captured;
+      final created = captured[0] as Task;
+      expect(created.recurrenceRule?.frequency, RecurrenceFrequency.WEEKLY);
+      expect(created.recurrenceRule?.daysOfWeek, isNotNull);
+    });
+
+    testWidgets('due date picker updates due date label', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.ensureVisible(find.text('Due Date'));
+      await tester.tap(find.text('Due Date'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No date set'), findsNothing);
+    });
+
+    testWidgets('due time picker updates due time label', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester, delta: -350);
+      await tester.ensureVisible(find.text('No time set'));
+      await tester.tap(find.text('No time set'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No time set'), findsNothing);
+    });
+
+    testWidgets('weekly presets Every day and Weekend update recurrence', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tapSwitchTile(tester, 'Repeats');
+      await scrollForm(tester);
+      await tester.tap(find.text('Weekly'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Every day'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Weekend'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('selects linked goal from dropdown', (tester) async {
+      when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            Goal(
+              id: 'goal-1',
+              title: 'Run marathon',
+              timeHorizon: GoalTimeHorizon.yearly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ]),
+        ),
+      );
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.ensureVisible(find.text('Goal (optional)'));
+      await tester.tap(find.byType(DropdownButtonFormField<String?>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Run marathon').last);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('back without changes pops immediately', (tester) async {
+      final t = task(id: 'task-1', title: 'Unchanged');
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit Task'), findsNothing);
+    });
+
+    testWidgets('shows submitting indicator while save is in progress', (
+      tester,
+    ) async {
+      when(() => mockRepo.createTask(any())).thenAnswer((inv) async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        return Right(inv.positionalArguments[0] as Task);
+      });
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Saving task');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('tapping custom weekday chip toggles recurrence day', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tapSwitchTile(tester, 'Repeats');
+      await scrollForm(tester);
+      await tester.tap(find.text('Weekly'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Mon'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('due time picker uses existing due time as initial value', (
+      tester,
+    ) async {
+      final t = task(id: 'task-1', title: 'Timed task').copyWith(
+        dueTime: '14:30',
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester, delta: -350);
+      await tester.ensureVisible(find.text('14:30'));
+      await tester.tap(find.text('14:30'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
     });
   });
 }

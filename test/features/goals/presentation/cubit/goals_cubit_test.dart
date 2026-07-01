@@ -6,7 +6,6 @@ import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/entities/goal_category.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
-import 'package:reflect/features/goals/presentation/cubit/goals_state.dart';
 
 class MockGoalRepository extends Mock implements IGoalRepository {}
 
@@ -92,6 +91,95 @@ void main() {
 
       expect(cubit.state.error, 'Failed to load goals');
 
+      cubit.close();
+    });
+
+    test('categories stream emits error on failure', () async {
+      when(() => mockRepo.watchCategories()).thenAnswer(
+        (_) => Stream.value(Left(CacheFailure(errorMessage: 'Cat Fail'))),
+      );
+
+      final cubit = GoalsCubit(mockRepo);
+      await Future.delayed(const Duration(milliseconds: 10));
+
+      expect(cubit.state.error, 'Failed to load categories');
+
+      cubit.close();
+    });
+
+    test('createGoal succeeds without error', () async {
+      when(() => mockRepo.createGoal(testGoal))
+          .thenAnswer((_) async => Right(testGoal));
+
+      final cubit = GoalsCubit(mockRepo);
+      await cubit.createGoal(testGoal);
+
+      expect(cubit.state.error, isNull);
+      cubit.close();
+    });
+
+    test('updateGoal succeeds without error', () async {
+      when(() => mockRepo.updateGoal(testGoal))
+          .thenAnswer((_) async => Right(testGoal));
+
+      final cubit = GoalsCubit(mockRepo);
+      await cubit.updateGoal(testGoal);
+
+      expect(cubit.state.error, isNull);
+      cubit.close();
+    });
+
+    test('deleteGoal succeeds without error', () async {
+      when(() => mockRepo.deleteGoal('g1'))
+          .thenAnswer((_) async => const Right(unit));
+
+      final cubit = GoalsCubit(mockRepo);
+      await cubit.deleteGoal('g1');
+
+      expect(cubit.state.error, isNull);
+      cubit.close();
+    });
+
+    test('createCategory succeeds without error', () async {
+      when(() => mockRepo.createCategory(testCategory))
+          .thenAnswer((_) async => Right(testCategory));
+
+      final cubit = GoalsCubit(mockRepo);
+      await cubit.createCategory(testCategory);
+
+      expect(cubit.state.error, isNull);
+      cubit.close();
+    });
+
+    test('updateCategory succeeds without error', () async {
+      when(() => mockRepo.updateCategory(testCategory))
+          .thenAnswer((_) async => Right(testCategory));
+
+      final cubit = GoalsCubit(mockRepo);
+      await cubit.updateCategory(testCategory);
+
+      expect(cubit.state.error, isNull);
+      cubit.close();
+    });
+
+    test('deleteCategory succeeds without error', () async {
+      when(() => mockRepo.deleteCategory('c1'))
+          .thenAnswer((_) async => const Right(unit));
+
+      final cubit = GoalsCubit(mockRepo);
+      await cubit.deleteCategory('c1');
+
+      expect(cubit.state.error, isNull);
+      cubit.close();
+    });
+
+    test('setHorizon is no-op when horizon unchanged', () {
+      final cubit = GoalsCubit(mockRepo);
+      final before = cubit.state;
+
+      cubit.setHorizon(GoalTimeHorizon.weekly);
+
+      expect(cubit.state, before);
       cubit.close();
     });
 

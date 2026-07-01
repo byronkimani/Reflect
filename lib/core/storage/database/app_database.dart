@@ -11,6 +11,8 @@ import 'tables/review_tables.dart';
 import 'tables/sync_tables.dart';
 import 'tables/goal_tables.dart';
 import 'package:reflect/features/analytics/data/daos/analytics_dao.dart';
+import 'package:reflect/core/storage/database/database_key_service.dart';
+import 'package:reflect/core/storage/database/sqlcipher_key.dart';
 import 'package:reflect/core/storage/database/sqlite_migration.dart';
 
 part 'app_database.g.dart';
@@ -36,11 +38,11 @@ part 'app_database.g.dart';
   daos: [AnalyticsDao],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase(DatabaseKeyService keyService) : super(_openConnection(keyService));
   AppDatabase.forTesting(DatabaseConnection super.connection);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -104,9 +106,74 @@ class AppDatabase extends _$AppDatabase {
           await migrator.addColumn(goals, goals.isMeasurable);
         }
       }
+      if (from < 7) {
+        // Drop FK on g_cal_sync_queue so DELETE outbox rows survive local task removal.
+        if (await sqliteTableExists(this, 'g_cal_sync_queue')) {
+          await customStatement('''
+            CREATE TABLE g_cal_sync_queue_new (
+              id TEXT NOT NULL PRIMARY KEY,
+              task_id TEXT NOT NULL,
+              operation TEXT NOT NULL,
+              payload TEXT NOT NULL,
+              retry_count INTEGER NOT NULL DEFAULT 0,
+              created_at INTEGER NOT NULL
+            )
+          ''');
+          await customStatement('''
+            INSERT INTO g_cal_sync_queue_new
+            SELECT id, task_id, operation, payload, retry_count, created_at
+            FROM g_cal_sync_queue
+          ''');
+          await customStatement('DROP TABLE g_cal_sync_queue');
+          await customStatement(
+            'ALTER TABLE g_cal_sync_queue_new RENAME TO g_cal_sync_queue',
+          );
+        }
+      }
+      if (from < 9) {
+        if (!await sqliteIndexExists(this, 'idx_tasks_due_date')) {
+          await customStatement(
+            'CREATE INDEX idx_tasks_due_date ON tasks (due_date)',
+          );
+        }
+        if (!await sqliteIndexExists(this, 'idx_tasks_status')) {
+          await customStatement(
+            'CREATE INDEX idx_tasks_status ON tasks (status)',
+          );
+        }
+        if (!await sqliteIndexExists(this, 'idx_subtasks_task_id')) {
+          if (await sqliteTableExists(this, 'subtasks')) {
+            await customStatement(
+              'CREATE INDEX idx_subtasks_task_id ON subtasks (task_id)',
+            );
+          }
+        }
+      }
+      if (from < 10) {
+        if (!await sqliteIndexExists(this, 'idx_tasks_due_date_local')) {
+          await customStatement(
+            'CREATE INDEX idx_tasks_due_date_local ON tasks (due_date_local_day_start)',
+          );
+        }
+        final rows = await select(tasks).get();
+        for (final t in rows) {
+          if (t.dueDate == null || t.dueDateLocalDayStart != null) continue;
+          final d = DateTime.fromMillisecondsSinceEpoch(t.dueDate!);
+          final localStart =
+              DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
+          await (update(tasks)..where((r) => r.id.equals(t.id))).write(
+            TasksCompanion(
+              dueDateLocalDayStart: Value(localStart),
+            ),
+          );
+        }
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA journal_mode = WAL');
+      await customStatement('PRAGMA synchronous = NORMAL');
+      await customStatement('PRAGMA cache_size = -8000');
     },
   );
 
@@ -138,10 +205,23 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-LazyDatabase _openConnection() {
+LazyDatabase _openConnection(DatabaseKeyService keyService) {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'reflect.sqlite'));
-    return NativeDatabase.createInBackground(file);
+
+    if (!await keyService.hasCompletedEncryptionMigration()) {
+      await deleteSqliteDatabaseFiles(file);
+      await keyService.markEncryptionMigrationComplete();
+    }
+
+    final key = await keyService.getOrCreateKey();
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (rawDb) => SqlCipherKey.apply(
+        execute: rawDb.execute,
+        keyMaterial: key,
+      ),
+    );
   });
 }

@@ -111,6 +111,85 @@ void main() {
     });
   });
 
+  group('RecurrenceEngine - Yearly', () {
+    test('Calculates next yearly occurrence preserving month and day', () {
+      final rule = RecurrenceRule(
+        id: '11',
+        frequency: RecurrenceFrequency.YEARLY,
+        intervalVal: 1,
+      );
+      final from = DateTime(2024, 3, 15, 14, 0);
+      final next = RecurrenceEngine.nextOccurrenceDate(rule, from);
+
+      expect(next, DateTime(2025, 3, 15, 14, 0));
+    });
+
+    test('Leap year clamping (Feb 29 to Feb 28 in non-leap year)', () {
+      final rule = RecurrenceRule(
+        id: '12',
+        frequency: RecurrenceFrequency.YEARLY,
+        intervalVal: 1,
+      );
+      final from = DateTime(2024, 2, 29, 8, 0);
+      final next = RecurrenceEngine.nextOccurrenceDate(rule, from);
+
+      expect(next, DateTime(2025, 2, 28, 8, 0));
+    });
+
+    test('Leap year preserves Feb 29 when target year is leap', () {
+      final rule = RecurrenceRule(
+        id: '13',
+        frequency: RecurrenceFrequency.YEARLY,
+        intervalVal: 4,
+      );
+      final from = DateTime(2024, 2, 29, 8, 0);
+      final next = RecurrenceEngine.nextOccurrenceDate(rule, from);
+
+      expect(next, DateTime(2028, 2, 29, 8, 0));
+    });
+  });
+
+  group('RecurrenceEngine - Monthly extras', () {
+    test('Uses explicit dayOfMonth when provided', () {
+      final rule = RecurrenceRule(
+        id: '14',
+        frequency: RecurrenceFrequency.MONTHLY,
+        intervalVal: 1,
+        dayOfMonth: 5,
+      );
+      final from = DateTime(2024, 1, 20, 10, 0);
+      final next = RecurrenceEngine.nextOccurrenceDate(rule, from);
+
+      expect(next, DateTime(2024, 2, 5, 10, 0));
+    });
+
+    test('Handles interval spanning multiple years', () {
+      final rule = RecurrenceRule(
+        id: '15',
+        frequency: RecurrenceFrequency.MONTHLY,
+        intervalVal: 14,
+      );
+      final from = DateTime(2024, 6, 10, 9, 0);
+      final next = RecurrenceEngine.nextOccurrenceDate(rule, from);
+
+      expect(next, DateTime(2025, 8, 10, 9, 0));
+    });
+  });
+
+  group('RecurrenceEngine - Weekly defaults', () {
+    test('Uses current weekday when daysOfWeek is null', () {
+      final rule = RecurrenceRule(
+        id: '16',
+        frequency: RecurrenceFrequency.WEEKLY,
+        intervalVal: 1,
+      );
+      final from = DateTime(2024, 1, 3, 10, 30); // Wednesday
+      final next = RecurrenceEngine.nextOccurrenceDate(rule, from);
+
+      expect(next, DateTime(2024, 1, 10, 10, 30));
+    });
+  });
+
   group('RecurrenceEngine - End Conditions', () {
     test('Stops after reaching endCount', () {
       final rule = RecurrenceRule(

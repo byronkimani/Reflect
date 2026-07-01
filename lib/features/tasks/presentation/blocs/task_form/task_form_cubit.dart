@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
@@ -17,6 +18,7 @@ import 'subtask_form_item.dart';
 class TaskFormCubit extends Cubit<TaskFormState> {
   final ITaskRepository _taskRepository;
   final IGoalRepository _goalRepository;
+  final AppAnalyticsService _analytics;
   StreamSubscription<Either<Failure, List<Goal>>>? _goalsSub;
 
   TaskFormCubit(
@@ -24,7 +26,9 @@ class TaskFormCubit extends Cubit<TaskFormState> {
     this._goalRepository,
     Task? initialTask, {
     bool isBacklogContext = false,
-  }) : super(TaskFormState.initial(
+    AppAnalyticsService? analyticsService,
+  })  : _analytics = analyticsService ?? const NoOpAppAnalyticsService(),
+        super(TaskFormState.initial(
           initialTask,
           createAsBacklog: isBacklogContext && initialTask == null,
         )) {
@@ -274,9 +278,16 @@ class TaskFormCubit extends Cubit<TaskFormState> {
         ? await _taskRepository.updateTask(task)
         : await _taskRepository.createTask(task);
 
-    result.fold(
-      (failure) => emit(state.copyWith(isSubmitting: false, error: failure.errorMessage)),
-      (_) => emit(state.copyWith(isSubmitting: false, isSuccess: true)),
+    await result.fold<Future<void>>(
+      (failure) async {
+        emit(state.copyWith(isSubmitting: false, error: failure.errorMessage));
+      },
+      (_) async {
+        if (state.initialTask == null) {
+          await _analytics.logTaskCreated();
+        }
+        emit(state.copyWith(isSubmitting: false, isSuccess: true));
+      },
     );
   }
 

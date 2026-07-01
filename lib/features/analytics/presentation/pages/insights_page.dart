@@ -17,6 +17,7 @@ class InsightsPage extends StatelessWidget {
             ..add(const AnalyticsEvent.load(DateRange.last7Days)),
       child: Scaffold(
         body: BlocBuilder<AnalyticsBloc, AnalyticsState>(
+          buildWhen: (previous, current) => previous != current,
           builder: (context, state) {
             return state.when(
               initial: () => const Center(child: CircularProgressIndicator()),

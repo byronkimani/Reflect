@@ -13,6 +13,8 @@ Legend: **Shipped** | **In Progress** | **Planned** | **Deferred**
 | Daily review | ✅ | ✅ | ✅ DailyReviewCubit | Shipped |
 | Goals | ✅ | ✅ | ✅ GoalsCubit | Shipped |
 | Analytics | ✅ | ✅ AnalyticsDao | ✅ AnalyticsBloc | Shipped |
+| Crashlytics | ✅ | — | — | Global error handlers + `FirebaseCrashReporter` |
+| Product analytics (Firebase) | ✅ | — | ✅ Settings opt-in | Opt-in; `task_created`, `daily_review_submitted`, `planning_completed` |
 | Settings (theme, heartbeat) | ✅ | HydratedBloc | ✅ SettingsCubit | Shipped |
 | Local notifications | — | ✅ | — | Shipped |
 | GCal sync outbox | — | ✅ | ✅ GCalSyncCubit | In Progress |
@@ -25,8 +27,9 @@ Legend: **Shipped** | **In Progress** | **Planned** | **Deferred**
 
 | Layer | Status | Notes |
 |-------|--------|-------|
-| Database (Drift) | Shipped | Local SQLite persistence |
+| Database (Drift) | Shipped | SQLCipher encryption; fresh-start on first encrypted upgrade |
 | Dependency Injection | Shipped | GetIt fully integrated |
 | Navigation | Shipped | GoRouter with StatefulShellRoute |
-| API/Networking | Shipped | Dio client configured with token storage |
+| API/Networking | Shipped | Dio + auth refresh mutex; sanitized failures |
+| Security hardening | Shipped | See [`security.md`](security.md) |
 | Analytics charts | Shipped | Using `fl_chart` |

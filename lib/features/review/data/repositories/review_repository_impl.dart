@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/errors/failure_mapper.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/review/domain/repositories/review_repository.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
@@ -31,7 +32,7 @@ class ReviewRepositoryImpl implements IReviewRepository {
       );
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -54,7 +55,7 @@ class ReviewRepositoryImpl implements IReviewRepository {
         taskCompletionRate: result.taskCompletionRate,
       ));
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 }

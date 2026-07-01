@@ -69,7 +69,7 @@ void main() {
           const TaskListState.loading(),
           predicate<TaskListState>((state) {
             return state.maybeWhen(
-              loaded: (pending, completed, overdue, _, _) {
+              loaded: (_, pending, completed, overdue, _, _) {
                 return pending.length == 1 &&
                     completed.length == 1 &&
                     overdue.length == 1 &&
@@ -107,7 +107,7 @@ void main() {
             const TaskListState.loading(),
             predicate<TaskListState>((state) {
               return state.maybeWhen(
-                loaded: (pending, completed, overdue, _, _) {
+                loaded: (_, pending, completed, overdue, _, _) {
                   // In our current implementation, TaskListBloc puts all non-completed non-overdue
                   // into pending. So if the repository returned tomorrow's tasks,
                   // they would show up. This confirms we NEED the repository to filter correctly.

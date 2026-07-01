@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
@@ -14,6 +15,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(GoalTimeHorizon.weekly);
+    registerFallbackValue('');
   });
 
   setUp(() {
@@ -21,10 +23,29 @@ void main() {
   });
 
   Widget buildPage() {
-    return MaterialApp(
-      home: BlocProvider<GoalsCubit>.value(
-        value: mockGoalsCubit,
-        child: const GoalsPage(),
+    return MaterialApp.router(
+      routerConfig: GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => BlocProvider<GoalsCubit>.value(
+              value: mockGoalsCubit,
+              child: const GoalsPage(),
+            ),
+          ),
+          GoRoute(
+            path: '/goals/new',
+            builder: (_, state) => Scaffold(
+              body: Text('New goal ${state.extra}'),
+            ),
+          ),
+          GoRoute(
+            path: '/goals/:id',
+            builder: (_, state) => Scaffold(
+              body: Text('Edit goal ${state.pathParameters['id']}'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -115,5 +136,72 @@ void main() {
     await tester.pumpAndSettle();
     
     verify(() => mockGoalsCubit.deleteGoal('g1')).called(1);
+  });
+
+  testWidgets('GoalsPage delete dialog cancel does not delete goal', (tester) async {
+    final goal = Goal(
+      id: 'g1',
+      title: 'Keep Me',
+      timeHorizon: GoalTimeHorizon.weekly,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    when(() => mockGoalsCubit.state).thenReturn(GoalsState(
+      goalsByHorizon: {GoalTimeHorizon.weekly: [goal]},
+      selectedHorizon: GoalTimeHorizon.weekly,
+    ));
+    when(() => mockGoalsCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    await tester.pumpWidget(buildPage());
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('Keep Me'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    verifyNever(() => mockGoalsCubit.deleteGoal(any()));
+  });
+
+  testWidgets('GoalsPage FAB navigates to new goal with selected horizon', (
+    tester,
+  ) async {
+    when(() => mockGoalsCubit.state).thenReturn(
+      const GoalsState(selectedHorizon: GoalTimeHorizon.quarterly),
+    );
+    when(() => mockGoalsCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    await tester.pumpWidget(buildPage());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('New goal GoalTimeHorizon.quarterly'), findsOneWidget);
+  });
+
+  testWidgets('GoalsPage edit button navigates to goal form', (tester) async {
+    final goal = Goal(
+      id: 'g-edit',
+      title: 'Editable Goal',
+      timeHorizon: GoalTimeHorizon.weekly,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    when(() => mockGoalsCubit.state).thenReturn(GoalsState(
+      goalsByHorizon: {GoalTimeHorizon.weekly: [goal]},
+      selectedHorizon: GoalTimeHorizon.weekly,
+    ));
+    when(() => mockGoalsCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    await tester.pumpWidget(buildPage());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit goal g-edit'), findsOneWidget);
   });
 }

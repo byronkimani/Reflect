@@ -89,7 +89,7 @@ void main() {
       // Note: In reality, we expect the repository to not return tomorrow's tasks for watchTasksForDate(today).
       // Here we simulate what the Bloc emits after receiving data from the repository.
       when(() => mockTaskListBloc.state).thenReturn(
-        TaskListState.loaded(
+        TaskListState.loaded(rawTasks: [], 
           pending: pending,
           completed: completed,
           overdue: overdue,
@@ -109,7 +109,7 @@ void main() {
       WidgetTester tester,
     ) async {
       when(() => mockTaskListBloc.state).thenReturn(
-        const TaskListState.loaded(
+        const TaskListState.loaded(rawTasks: [], 
           pending: [],
           completed: [],
           overdue: [],

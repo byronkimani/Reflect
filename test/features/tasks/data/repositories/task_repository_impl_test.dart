@@ -9,8 +9,6 @@ import 'package:reflect/features/tasks/data/repositories/task_repository_impl.da
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
-import 'package:uuid/uuid.dart';
-import 'package:fpdart/fpdart.dart' hide Task;
 
 class MockNetworkInfo extends Mock implements NetworkInfo {}
 class MockGCalApiService extends Mock implements GCalApiService {}
@@ -84,6 +82,18 @@ void main() {
       final tasks = result.getOrElse((_) => []);
       expect(tasks.length, 1);
       expect(tasks.first.id, 't1');
+    });
+
+    test('getTasksForDate excludes tasks due on a different local day', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+
+      final otherDay = DateTime(2023, 10, 11);
+      final result = await repository.getTasksForDate(otherDay);
+
+      expect(result.isRight(), isTrue);
+      expect(result.getOrElse((_) => []), isEmpty);
     });
 
     test('getBacklogTasks retrieves tasks without due dates or past due', () async {
@@ -256,5 +266,37 @@ void main() {
       expect(result.isLeft(), isTrue);
     });
 
+    test('deleteTask returns Left when reminder cancellation fails', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+
+      when(() => mockNotificationScheduler.cancelTaskReminder('t1'))
+          .thenThrow(Exception('cancel failed'));
+
+      final result = await repository.deleteTask('t1');
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('reopenTasks returns Left when database is unavailable', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      final localDb =
+          AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
+      final localRepo = TaskRepositoryImpl(
+        localDb,
+        mockNetworkInfo,
+        mockGCalApiService,
+        mockRecurrenceEngine,
+        mockNotificationScheduler,
+      );
+      await localRepo.createTask(task1.copyWith(status: TaskStatus.completed));
+      await localDb.close();
+
+      final result = await localRepo.reopenTasks(['t1']);
+
+      expect(result.isLeft(), isTrue);
+    });
   });
 }

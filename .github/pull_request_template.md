@@ -39,9 +39,10 @@
 
 ## Checklist
 
-- [ ] Tests added/updated (Unit/Widget/Integration)
+- [ ] Tests added/updated: happy-path **and** failure/edge (unit / widget / bloc_test as appropriate)
+- [ ] Filtered coverage ≥ 98% (`make coverage`)
 - [ ] No debug code or hardcoded secrets
-- [ ] Linter passes (`make lint`) without bypassed rules
+- [ ] Linter passes (`make lint`) with **zero** analyzer issues and no bypassed rules
 - [ ] Error states handled
 - [ ] `docs/implementation-status.md` updated (if delivery state changed)
 

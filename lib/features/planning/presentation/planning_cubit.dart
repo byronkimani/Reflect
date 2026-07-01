@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 
@@ -6,8 +7,10 @@ import 'planning_state.dart';
 
 class PlanningCubit extends Cubit<PlanningState> {
   final ITaskRepository _taskRepository;
+  final AppAnalyticsService _analytics;
 
-  PlanningCubit(this._taskRepository) : super(const PlanningState());
+  PlanningCubit(this._taskRepository, this._analytics)
+      : super(const PlanningState());
 
   Future<void> loadPlanningData() async {
     emit(state.copyWith(isLoading: true));
@@ -91,6 +94,7 @@ class PlanningCubit extends Cubit<PlanningState> {
   }
 
   Future<void> confirmPlanning() async {
+    await _analytics.logPlanningCompleted();
     emit(const PlanningState());
   }
 }

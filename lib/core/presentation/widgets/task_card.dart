@@ -23,7 +23,12 @@ class TaskCard extends StatelessWidget {
     final isCompleted = task.status == TaskStatus.completed;
     final isOverdue = task.isOverdue && !isCompleted;
 
-    return BlocBuilder<TaskSelectionCubit, TaskSelectionState>(
+    return RepaintBoundary(
+      child: BlocBuilder<TaskSelectionCubit, TaskSelectionState>(
+      buildWhen: (previous, current) {
+        return previous.selectedTaskIds.contains(task.id) != current.selectedTaskIds.contains(task.id) ||
+               previous.isSelectionMode != current.isSelectionMode;
+      },
       builder: (context, selectionState) {
         final isSelected = selectionState.selectedTaskIds.contains(task.id);
         final isSelectionMode = selectionState.isSelectionMode;
@@ -157,6 +162,7 @@ class TaskCard extends StatelessWidget {
           ),
         );
       },
+    ),
     );
   }
 }

@@ -25,7 +25,8 @@ Fast task-to-file lookup. Read [`../AGENTS.md`](../AGENTS.md) first, then [`../A
 | DI / service registration | `di.md` | `lib/core/di/injectors.dart` | — |
 | Routing | `routing.md` | `lib/core/router/app_router.dart` | — |
 | Network / Dio | — | `lib/core/network/` | — |
-| Env config | — | `lib/core/config/` | — |
+| Env config | — | `lib/core/config/`, `env/active.env.example` | `test/core/config/` |
+| Security / secrets / encryption | `security.md` | `lib/core/errors/failure_mapper.dart`, `lib/core/storage/` | `test/core/errors/` |
 
 ## Shared folders
 

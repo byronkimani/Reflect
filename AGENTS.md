@@ -2,21 +2,22 @@
 
 > All rules below are non-negotiable. Scan this list before writing any code.
 
-1. **No unauthorized commits.** Stage all changes, show the diff to the user, and wait for explicit approval before running `git commit`.
-2. **Tests are mandatory, not optional.** Every changed or new function ships with at least one happy-path test **and** at least one failure/edge test. Unit, widget, and integration tests are required based on the layer changed.
-3. **No linter bypasses.** Never bypass the linter using `// ignore: ...` unless explicitly specified by the user.
-4. **No UI without a design reference.** Do not invent new UI layouts or visual treatments unless the user has provided an explicit Figma reference or an approved direction.
-5. **Run codegen after model changes.** Any change to `@freezed`, `@JsonSerializable`, or `@DriftDatabase`/`@DriftAccessor` annotated files requires running `make gen` before continuing.
-6. **Follow Clean Architecture boundaries.** Presentation layer must not import `data/` directly. Domain layer must not import Flutter or `data/`. Data layer implements domain interfaces.
-7. **Use BLoC/Cubit for state management.** Do not use `setState`, `ChangeNotifier`, or other state management in feature code.
-8. **No raw Material widgets for app-level patterns.** Use the app's shared widgets from `core/presentation/` (e.g., `AppScaffold`, `ConnectivityWrapper`) rather than bare `Scaffold` or `MaterialApp`.
-9. **Use typed routes.** Use GoRouter path constants — do not hardcode route strings.
-10. **Use GetIt for DI.** Register dependencies in `core/di/injectors.dart`. Do not use manual constructor injection at the widget level.
-11. **No secrets in source.** Use `.env.*` files via `flutter_dotenv`. Never commit `.env.production`.
-12. **Preserve official app name.** The product name is **Reflect**. Do not rename it in metadata, docs, or UI unless explicitly requested.
-13. **Immutable models.** Use `@freezed` for all domain entities and state classes. Do not create mutable model classes.
-14. **Update docs on code changes.** When adding or removing features, update `docs/implementation-status.md` and related documentation.
-15. **Version bumping.** When a new feature is added or a bug is fixed, you MUST ask the user for explicit consent before bumping the `MAJOR.MINOR.PATCH` version string in `pubspec.yaml`. Read `docs/versioning.md` for guidelines.
+1. **Tests ship with every change — no exceptions.** Every new or changed behavior must include tests before merge: at minimum one **happy-path** and one **failure/edge** test. **Unit** tests for domain/data/core, **widget** tests for presentation UI, **bloc_test** for BLoC/Cubit. Filtered coverage from `make coverage` must stay **≥ 98%** (same exclusions as CI). No exceptions without explicit user approval.
+2. **No unauthorized commits.** Stage all changes, show the diff to the user, and wait for explicit approval before running `git commit`.
+3. **Tests are mandatory, not optional.** (See rule 1.) Every changed or new function ships with at least one happy-path test **and** at least one failure/edge test. Unit, widget, and integration tests are required based on the layer changed.
+4. **No linter bypasses.** Never bypass the linter using `// ignore: ...` unless explicitly specified by the user. `make lint` must exit with **zero** analyzer issues (errors, warnings, and info).
+5. **No UI without a design reference.** Do not invent new UI layouts or visual treatments unless the user has provided an explicit Figma reference or an approved direction.
+6. **Run codegen after model changes.** Any change to `@freezed`, `@JsonSerializable`, or `@DriftDatabase`/`@DriftAccessor` annotated files requires running `make gen` before continuing.
+7. **Follow Clean Architecture boundaries.** Presentation layer must not import `data/` directly. Domain layer must not import Flutter or `data/`. Data layer implements domain interfaces.
+8. **Use BLoC/Cubit for state management.** Do not use `setState`, `ChangeNotifier`, or other state management in feature code.
+9. **No raw Material widgets for app-level patterns.** Use the app's shared widgets from `core/presentation/` (e.g., `AppScaffold`, `ConnectivityWrapper`) rather than bare `Scaffold` or `MaterialApp`.
+10. **Use typed routes.** Use GoRouter path constants — do not hardcode route strings.
+11. **Use GetIt for DI.** Register dependencies in `core/di/injectors.dart`. Do not use manual constructor injection at the widget level.
+12. **No secrets in source.** Use `.env.*` files via `flutter_dotenv`. Never commit `.env.production`.
+13. **Preserve official app name.** The product name is **Reflect**. Do not rename it in metadata, docs, or UI unless explicitly requested.
+14. **Immutable models.** Use `@freezed` for all domain entities and state classes. Do not create mutable model classes.
+15. **Update docs on code changes.** When adding or removing features, update `docs/implementation-status.md` and related documentation.
+16. **Version bumping.** When a new feature is added or a bug is fixed, you MUST ask the user for explicit consent before bumping the `MAJOR.MINOR.PATCH` version string in `pubspec.yaml`. Read `docs/versioning.md` for guidelines.
 
 ---
 
@@ -46,7 +47,7 @@
 
 ### Before handing back to the user (post-flight)
 
-- [ ] Run `make lint` — fix all errors and warnings (without bypassing rules).
+- [ ] Run `make lint` — **zero** analyzer issues (errors, warnings, and info; no bypasses).
 - [ ] Run `make test` — all tests pass.
 - [ ] Every changed or new function has at least one failure/edge test.
 - [ ] Clean Architecture boundaries are intact.

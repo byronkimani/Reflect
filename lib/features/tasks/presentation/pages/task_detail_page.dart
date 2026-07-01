@@ -10,6 +10,7 @@ import 'package:reflect/features/tasks/domain/repositories/task_repository.dart'
 import 'package:reflect/features/tasks/presentation/blocs/task_form/subtask_form_item.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_state.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/main.dart';
 
@@ -33,6 +34,7 @@ class TaskDetailPage extends StatelessWidget {
         getIt<IGoalRepository>(),
         initialTask,
         isBacklogContext: isBacklogContext,
+        analyticsService: getIt<AppAnalyticsService>(),
       ),
       child: const TaskFormView(),
     );

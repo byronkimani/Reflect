@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
@@ -17,10 +18,24 @@ void main() {
   });
 
   Widget buildPage() {
-    return MaterialApp(
-      home: BlocProvider<DailyReviewCubit>.value(
-        value: mockCubit,
-        child: const DailyReviewPage(),
+    return MaterialApp.router(
+      routerConfig: GoRouter(
+        initialLocation: '/review',
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => const Scaffold(body: Text('Home')),
+            routes: [
+              GoRoute(
+                path: 'review',
+                builder: (_, _) => BlocProvider<DailyReviewCubit>.value(
+                  value: mockCubit,
+                  child: const DailyReviewPage(),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -64,6 +79,18 @@ void main() {
       'Food',
     );
     verify(() => mockCubit.gratitudeChanged(0, 'Food')).called(1);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, '2. I am grateful for...'),
+      'Family',
+    );
+    verify(() => mockCubit.gratitudeChanged(1, 'Family')).called(1);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, '3. I am grateful for...'),
+      'Health',
+    );
+    verify(() => mockCubit.gratitudeChanged(2, 'Health')).called(1);
   });
 
   testWidgets('DailyReviewPage Save Review button calls submitReview when enabled', (tester) async {
@@ -101,5 +128,72 @@ void main() {
       (widget) => widget is FilledButton && widget.onPressed == null
     );
     expect(saveButtonFinder, findsOneWidget);
+  });
+
+  testWidgets('selecting day rating calls ratingChanged', (tester) async {
+    when(() => mockCubit.state).thenReturn(const DailyReviewState());
+    whenListen(
+      mockCubit,
+      Stream.value(const DailyReviewState()),
+      initialState: const DailyReviewState(),
+    );
+
+    await tester.pumpWidget(buildPage());
+
+    await tester.tap(find.text('4'));
+    await tester.pump();
+
+    verify(() => mockCubit.ratingChanged(4)).called(1);
+  });
+
+  testWidgets('shows success snackbar and pops on success state', (tester) async {
+    whenListen(
+      mockCubit,
+      Stream.fromIterable([
+        const DailyReviewState(),
+        const DailyReviewState(isSuccess: true),
+      ]),
+      initialState: const DailyReviewState(),
+    );
+
+    await tester.pumpWidget(buildPage());
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Daily Review saved!'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+  });
+
+  testWidgets('shows error snackbar when state has error', (tester) async {
+    whenListen(
+      mockCubit,
+      Stream.fromIterable([
+        const DailyReviewState(),
+        const DailyReviewState(error: 'Could not save'),
+      ]),
+      initialState: const DailyReviewState(),
+    );
+
+    await tester.pumpWidget(buildPage());
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Could not save'), findsOneWidget);
+  });
+
+  testWidgets('shows loading indicator while submitting', (tester) async {
+    when(() => mockCubit.state).thenReturn(
+      const DailyReviewState(
+        dayRating: 4,
+        gratitude1: 'a',
+        gratitude2: 'b',
+        gratitude3: 'c',
+        isSubmitting: true,
+      ),
+    );
+
+    await tester.pumpWidget(buildPage());
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 }

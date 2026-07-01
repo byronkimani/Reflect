@@ -16,6 +16,7 @@ class SettingsPage extends StatelessWidget {
         title: const Text('Settings'),
       ),
       body: BlocBuilder<SettingsCubit, SettingsState>(
+        buildWhen: settingsStateShouldRebuild,
         builder: (context, state) {
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -95,6 +96,25 @@ class SettingsPage extends StatelessWidget {
                 value: state.monthlyPlanningEnabled,
                 onChanged: (v) =>
                     context.read<SettingsCubit>().setMonthlyPlanningEnabled(v),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 28, 16, 8),
+                child: Text(
+                  'Privacy',
+                  style: textTheme.titleSmall?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SwitchListTile(
+                title: const Text('Usage analytics'),
+                subtitle: const Text(
+                  'Share anonymous product events to improve Reflect (opt-in)',
+                ),
+                value: state.analyticsEnabled,
+                onChanged: (v) =>
+                    context.read<SettingsCubit>().setAnalyticsEnabled(v),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),

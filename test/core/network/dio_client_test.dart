@@ -115,6 +115,22 @@ void main() {
       );
     });
 
+    test('returns Left(ServerFailure) on post DioException', () async {
+      when(() => mockDio.post(any(), data: any(named: 'data')))
+          .thenThrow(DioException(
+        requestOptions: RequestOptions(path: '/test'),
+        type: DioExceptionType.connectionTimeout,
+      ));
+
+      final result = await dioClient.post('/test', data: {'key': 'val'});
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (l) => expect(l, isA<NetworkFailure>()),
+        (r) => fail('Should not return Right'),
+      );
+    });
+
     test('returns Left(ServerFailure) on post exception', () async {
       when(() => mockDio.post(any(), data: any(named: 'data')))
           .thenThrow(Exception('Post error'));
@@ -126,6 +142,40 @@ void main() {
         (l) => expect(l, isA<ServerFailure>()),
         (r) => fail('Should not return Right'),
       );
+    });
+    test('returns NetworkFailure for various DioExceptionTypes', () async {
+      final timeoutTypes = [
+        DioExceptionType.sendTimeout,
+        DioExceptionType.receiveTimeout,
+        DioExceptionType.connectionError,
+        DioExceptionType.cancel,
+        DioExceptionType.unknown,
+      ];
+
+      for (final type in timeoutTypes) {
+        when(() => mockDio.get(any(), queryParameters: any(named: 'queryParameters')))
+            .thenThrow(DioException(
+          requestOptions: RequestOptions(path: '/test'),
+          type: type,
+        ));
+
+        final result = await dioClient.get('/test');
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (l) => expect(
+            l, 
+            type == DioExceptionType.unknown || type == DioExceptionType.badResponse 
+                ? isA<ServerFailure>() 
+                : isA<NetworkFailure>()
+          ),
+          (r) => fail('Should not return Right'),
+        );
+      }
+    });
+    
+    test('instantiates normally without override', () {
+      final client = DioClient(baseUrl: 'http://test', tokenStorage: mockTokenStorage);
+      expect(client.instance.interceptors.any((i) => i.runtimeType.toString() == 'AuthInterceptor'), isTrue);
     });
   });
 }

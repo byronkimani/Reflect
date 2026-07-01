@@ -51,11 +51,14 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
   /// Navigate to the current location of the branch at the provided index.
   void _onTap(BuildContext context, int index) {
-    final bloc = context.read<TaskListBloc>();
-    if (index == 0) {
-      bloc.add(TaskListEvent.loadTasksForDate(DateTime.now()));
-    } else if (index == 1) {
-      bloc.add(const TaskListEvent.loadBacklog());
+    final switchingTab = index != navigationShell.currentIndex;
+    if (switchingTab) {
+      final bloc = context.read<TaskListBloc>();
+      if (index == 0) {
+        bloc.add(TaskListEvent.loadTasksForDate(DateTime.now()));
+      } else if (index == 1) {
+        bloc.add(const TaskListEvent.loadBacklog());
+      }
     }
     navigationShell.goBranch(
       index,

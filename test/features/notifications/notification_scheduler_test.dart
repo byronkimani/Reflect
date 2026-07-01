@@ -119,7 +119,7 @@ void main() {
           scheduledDate: any(named: 'scheduledDate'),
           notificationDetails: any(named: 'notificationDetails'),
           androidScheduleMode: any(named: 'androidScheduleMode'),
-          payload: '/task/task_1',
+          payload: '/today/task/task_1',
         )).called(1);
   });
 
@@ -147,5 +147,10 @@ void main() {
   test('cancelTaskReminder cancels correct id', () async {
     await scheduler.cancelTaskReminder('task_1');
     verify(() => mockPlugin.cancel(id: NotificationScheduler.taskReminderNotificationId('task_1'))).called(1);
+  });
+
+  test('cancelNotification cancels by id via plugin', () async {
+    await scheduler.cancelNotification(42);
+    verify(() => mockPlugin.cancel(id: 42)).called(1);
   });
 }

@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
-import 'goal_tables.dart';
 
+@TableIndex(name: 'idx_tasks_due_date', columns: {#dueDate})
+@TableIndex(name: 'idx_tasks_due_date_local', columns: {#dueDateLocalDayStart})
+@TableIndex(name: 'idx_tasks_status', columns: {#status})
 @DataClassName('TaskData')
 class Tasks extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
@@ -38,6 +40,7 @@ class Tasks extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@TableIndex(name: 'idx_subtasks_task_id', columns: {#taskId})
 @DataClassName('SubtaskData')
 class Subtasks extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();

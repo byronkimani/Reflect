@@ -1,14 +1,30 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:reflect/core/router/app_router.dart';
+import 'package:reflect/core/router/notification_routes.dart';
 import 'package:go_router/go_router.dart';
+
+/// Invoked when a notification payload should navigate to a route.
+typedef NotificationRouteHandler = void Function(String route);
+
+/// Platform target used by [NotificationService.requestPermissions].
+enum NotificationPlatformTarget { ios, android, other }
 
 /// A wrapper service for flutter_local_notifications.
 /// Handles initialization, permissions, and notification tap callbacks.
 class NotificationService {
-  final FlutterLocalNotificationsPlugin notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  NotificationService({
+    FlutterLocalNotificationsPlugin? notificationsPlugin,
+    this._onNotificationRoute,
+    this._platformTarget,
+  }) : notificationsPlugin =
+           notificationsPlugin ?? FlutterLocalNotificationsPlugin();
+
+  final FlutterLocalNotificationsPlugin notificationsPlugin;
+  final NotificationRouteHandler? _onNotificationRoute;
+  final NotificationPlatformTarget? _platformTarget;
 
   /// Initializes the notification plugin and the timezone database.
   Future<void> init() async {
@@ -34,40 +50,78 @@ class NotificationService {
 
     await notificationsPlugin.initialize(
       settings: initializationSettings,
-      onDidReceiveNotificationResponse: _handleNotificationResponse,
+      onDidReceiveNotificationResponse: handleNotificationResponse,
     );
   }
 
   /// Handles notification tap events and performs navigation.
-  void _handleNotificationResponse(NotificationResponse response) {
-    final String? payload = response.payload;
-    if (payload != null && payload.isNotEmpty) {
-      final context = rootNavigatorKey.currentContext;
-      if (context != null) {
-        context.push(payload);
-      }
+  @visibleForTesting
+  void handleNotificationResponse(NotificationResponse response) {
+    final route = NotificationRoutes.normalize(response.payload);
+    if (route == null) {
+      return;
     }
+
+    final routeHandler = _onNotificationRoute;
+    if (routeHandler != null) {
+      routeHandler(route);
+      return;
+    }
+
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      context.push(route);
+    }
+  }
+
+  NotificationPlatformTarget get platformTarget =>
+      _platformTarget ?? _detectPlatform();
+
+  static NotificationPlatformTarget _detectPlatform() => resolvePlatform(
+        isWeb: kIsWeb,
+        isIOS: Platform.isIOS,
+        isMacOS: Platform.isMacOS,
+        isAndroid: Platform.isAndroid,
+      );
+
+  @visibleForTesting
+  static NotificationPlatformTarget resolvePlatform({
+    required bool isWeb,
+    required bool isIOS,
+    required bool isMacOS,
+    required bool isAndroid,
+  }) {
+    if (isWeb) {
+      return NotificationPlatformTarget.other;
+    }
+    if (isIOS || isMacOS) {
+      return NotificationPlatformTarget.ios;
+    }
+    if (isAndroid) {
+      return NotificationPlatformTarget.android;
+    }
+    return NotificationPlatformTarget.other;
   }
 
   /// Requests permissions for Android 13+ and iOS.
   Future<void> requestPermissions() async {
-    if (Platform.isIOS) {
-      await notificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
-          ?.requestPermissions(alert: true, badge: true, sound: true);
-    } else if (Platform.isAndroid) {
-      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          notificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >();
+    switch (platformTarget) {
+      case NotificationPlatformTarget.ios:
+        await notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
+            ?.requestPermissions(alert: true, badge: true, sound: true);
+      case NotificationPlatformTarget.android:
+        final androidImplementation = notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
-      // Request normal notification permission
-      await androidImplementation?.requestNotificationsPermission();
-      // Request permission for exact alarms (required for Android 12+)
-      await androidImplementation?.requestExactAlarmsPermission();
+        await androidImplementation?.requestNotificationsPermission();
+        await androidImplementation?.requestExactAlarmsPermission();
+      case NotificationPlatformTarget.other:
+        break;
     }
   }
 }

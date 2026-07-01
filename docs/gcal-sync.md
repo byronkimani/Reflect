@@ -33,6 +33,13 @@ BlocProvider<GCalSyncCubit>(
 
 If an API call fails (e.g., due to no internet connection), the `needsSync` flag remains true. The cubit will automatically retry the operation during its next processing cycle or when the device regains connectivity (triggered by `ConnectivityBloc`).
 
-## Future Enhancements
+## OAuth security (planned)
 
-- **Two-way sync:** Currently, the sync is mostly one-way (Reflect -> GCal). Pulling events from GCal into Reflect is planned for a future update.
+When Google Sign-In is implemented:
+
+- Use OAuth 2.0 with **PKCE** (no client secret in the app).
+- Store access/refresh tokens in `GCalTokenStorage` (secure storage, separate from app auth tokens).
+- Request minimal Calendar scopes only.
+- `signOut` must clear `GCalTokenStorage` (implemented); revoke tokens server-side when supported.
+
+`signIn` currently returns a failure until the OAuth flow is built.

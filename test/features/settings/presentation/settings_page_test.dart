@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/features/settings/presentation/pages/settings_page.dart';
@@ -41,7 +42,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: BlocProvider<SettingsCubit>(
-          create: (_) => SettingsCubit(scheduler),
+          create: (_) => SettingsCubit(scheduler, const NoOpAppAnalyticsService()),
           child: const SettingsPage(),
         ),
       ),
@@ -53,5 +54,7 @@ void main() {
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Morning planning'), findsOneWidget);
     expect(find.text('Evening review'), findsOneWidget);
+    expect(find.text('Privacy'), findsOneWidget);
+    expect(find.text('Usage analytics'), findsOneWidget);
   });
 }

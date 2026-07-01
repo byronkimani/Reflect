@@ -15,10 +15,64 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_deploy:
-    name: Build & Distribute APK
+  test:
+    name: Test & Coverage
     runs-on: ubuntu-latest
-    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Prepare Testing Environment
+        run: |
+          chmod +x tool/prepare_env.sh
+          ./tool/prepare_env.sh testing
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Check Direct Dependencies Are Current
+        run: make deps-check
+
+      - name: Run Linter
+        run: make lint
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Run Tests with Coverage
+        run: flutter test --coverage
+
+      - name: Filter Coverage
+        run: |
+          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
+
+      - name: Generate Coverage HTML
+        run: genhtml coverage/lcov.info -o coverage/html
+
+      - name: Check Coverage Threshold
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: coverage/lcov.info
+          min_coverage: 98
+
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html-report
+          path: coverage/html/
+
+  deploy:
+    name: Build & Distribute APK
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -28,6 +82,9 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -39,7 +96,8 @@ jobs:
       - name: Decode Environment Variables
         run: |
           echo "${{ secrets.ENV_PRODUCTION_BASE64 }}" | base64 --decode > .env.production
-          touch .env.testing
+          chmod +x tool/prepare_env.sh
+          ./tool/prepare_env.sh production
 
       - name: Decode Keystore
         run: |
@@ -52,39 +110,24 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-
-      - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install -y lcov
-
-      - name: Run Tests with Coverage
-        run: flutter test --coverage
-
-      - name: Filter Coverage
-        run: |
-          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' -o coverage/lcov.info --ignore-errors unused
-
-      - name: Generate Coverage HTML
-        run: genhtml coverage/lcov.info -o coverage/html
-
-      - name: Check Coverage Threshold
-        uses: VeryGoodOpenSource/very_good_coverage@v3
-        with:
-          path: coverage/lcov.info
-          min_coverage: 60
-
-      - name: Upload Coverage Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-html-report
-          path: coverage/html/
-
       - name: Build Release APK
         env:
           KEYSTORE_PATH: upload-keystore.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build apk --release --build-number=${{ github.run_number }}
+        run: |
+          flutter build apk --release \
+            --obfuscate \
+            --split-debug-info=build/debug-info \
+            --dart-define=ENV=production \
+            --build-number=${{ github.run_number }}
+
+      - name: Upload Debug Symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-symbols
+          path: build/debug-info/
 
       - name: Upload to Firebase App Distribution
         uses: nickwph/firebase-app-distribution-action@v1
@@ -93,3 +136,8 @@ jobs:
           credentials-file: firebase-credentials.json
           groups: qa-team
           file: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Cleanup Secrets
+        if: always()
+        run: |
+          rm -f .env.production env/active.env android/app/upload-keystore.jks firebase-credentials.json

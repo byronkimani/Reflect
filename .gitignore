@@ -46,6 +46,10 @@ app.*.map.json
 
 # Environment variables
 .env*
+env/active.env
+
+# Release obfuscation symbols
+build/debug-info/
 
 # Secrets and Keys
 *.jks

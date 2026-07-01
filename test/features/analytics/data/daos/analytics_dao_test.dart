@@ -231,5 +231,83 @@ void main() {
       expect(trend[1].rating, 3); // 1 day ago
       expect(trend[2].rating, 4); // today
     });
+
+    test('getTagBreakdown groups completed tasks by tag', () async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      await db.into(db.tags).insert(
+        TagsCompanion.insert(
+          id: const Value('tag-work'),
+          name: 'Work',
+          colour: '#FF0000',
+          createdAt: now.millisecondsSinceEpoch,
+        ),
+      );
+      await db.into(db.tags).insert(
+        TagsCompanion.insert(
+          id: const Value('tag-home'),
+          name: 'Home',
+          colour: '#00FF00',
+          createdAt: now.millisecondsSinceEpoch,
+        ),
+      );
+
+      await db.into(db.tasks).insert(
+        TasksCompanion.insert(
+          id: const Value('t1'),
+          title: 'Work task 1',
+          status: const Value('completed'),
+          priority: 'P4',
+          createdAt: now.millisecondsSinceEpoch,
+          updatedAt: now.millisecondsSinceEpoch,
+          dueDateLocalDayStart: Value(today.millisecondsSinceEpoch),
+        ),
+      );
+      await db.into(db.tasks).insert(
+        TasksCompanion.insert(
+          id: const Value('t2'),
+          title: 'Work task 2',
+          status: const Value('completed'),
+          priority: 'P4',
+          createdAt: now.millisecondsSinceEpoch,
+          updatedAt: now.millisecondsSinceEpoch,
+          dueDateLocalDayStart: Value(today.millisecondsSinceEpoch),
+        ),
+      );
+      await db.into(db.tasks).insert(
+        TasksCompanion.insert(
+          id: const Value('t3'),
+          title: 'Home task',
+          status: const Value('completed'),
+          priority: 'P4',
+          createdAt: now.millisecondsSinceEpoch,
+          updatedAt: now.millisecondsSinceEpoch,
+          dueDateLocalDayStart: Value(today.millisecondsSinceEpoch),
+        ),
+      );
+
+      await db.into(db.taskTags).insert(
+        TaskTagsCompanion.insert(taskId: 't1', tagId: 'tag-work'),
+      );
+      await db.into(db.taskTags).insert(
+        TaskTagsCompanion.insert(taskId: 't2', tagId: 'tag-work'),
+      );
+      await db.into(db.taskTags).insert(
+        TaskTagsCompanion.insert(taskId: 't3', tagId: 'tag-home'),
+      );
+
+      final breakdown = await dao.getTagBreakdown(
+        today.subtract(const Duration(days: 1)),
+        today.add(const Duration(days: 1)),
+      );
+
+      expect(breakdown.length, 2);
+      expect(breakdown.first.label, 'Work');
+      expect(breakdown.first.count, 2);
+      expect(breakdown.first.hexColor, '#FF0000');
+      expect(breakdown.last.label, 'Home');
+      expect(breakdown.last.count, 1);
+    });
   });
 }

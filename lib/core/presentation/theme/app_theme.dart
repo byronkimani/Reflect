@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const _seedColor = Color(0xFF0052CC); // Jira-like blue
+  static const _fontFamily = 'Inter';
 
   static TextTheme _buildTextTheme(TextTheme base, ColorScheme colorScheme) {
-    final inter = GoogleFonts.interTextTheme(base);
+    final inter = base.apply(fontFamily: _fontFamily);
     return inter.copyWith(
       displayLarge: inter.displayLarge?.copyWith(
         fontWeight: FontWeight.bold,
@@ -46,13 +46,15 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.surface,
+      fontFamily: _fontFamily,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
+          fontFamily: _fontFamily,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: colorScheme.onSurface,
@@ -107,13 +109,15 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.surface,
+      fontFamily: _fontFamily,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
+          fontFamily: _fontFamily,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: colorScheme.onSurface,

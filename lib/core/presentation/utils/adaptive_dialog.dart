@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +9,10 @@ Future<bool?> showAdaptiveConfirmationDialog({
   String cancelLabel = 'Cancel',
   bool isDestructive = true,
 }) async {
-  if (Platform.isIOS || Platform.isMacOS) {
+  final targetPlatform = Theme.of(context).platform;
+  final isApple = targetPlatform == TargetPlatform.iOS || targetPlatform == TargetPlatform.macOS;
+
+  if (isApple) {
     return showCupertinoDialog<bool>(
       context: context,
       builder: (context) => CupertinoAlertDialog(

@@ -1,32 +1,39 @@
 import 'package:dio/dio.dart';
 import 'package:reflect/core/config/env_config.dart';
+import 'package:reflect/core/network/auth_session_notifier.dart';
 import '../storage/token_storage.dart';
 
 class AuthInterceptor extends Interceptor {
+  AuthInterceptor(
+    this._tokenStorage,
+    this._dio, {
+    Dio? refreshDio,
+    this._sessionNotifier,
+  })  : _refreshDio = refreshDio ??
+            Dio(
+              BaseOptions(
+                baseUrl: EnvConfig.baseUrl,
+                connectTimeout: const Duration(seconds: 10),
+                receiveTimeout: const Duration(seconds: 10),
+              ),
+            );
+
   final TokenStorage _tokenStorage;
   final Dio _dio;
+  final Dio _refreshDio;
+  final AuthSessionNotifier? _sessionNotifier;
 
-  // Create a separate Dio instance for refreshing to avoid circular interceptor loops
-  final Dio _refreshDio = Dio(
-    BaseOptions(
-      baseUrl: EnvConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ),
-  );
+  Future<void>? _inFlightRefresh;
 
-  AuthInterceptor(this._tokenStorage, this._dio);
+  static const _refreshPath = '/refreshToken';
 
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // 1. Get the token
     final token = await _tokenStorage.getAccessToken();
 
-    // 2. Add Authorization header if token exists
-    // We can also exempt specific paths (like login) here if needed
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
@@ -39,53 +46,91 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    // 1. Check if the error is 401 Unauthorized
-    if (err.response?.statusCode == 401) {
-      try {
-        // 2. Get Refresh Token
-        final refreshToken = await _tokenStorage.getRefreshToken();
-
-        if (refreshToken == null) {
-          // No refresh token? Logout logic should trigger here.
-          return handler.next(err);
-        }
-
-        // 3. Perform Refresh Call
-        // Note: We use _refreshDio, NOT _dio, to avoid hitting this interceptor again
-        final response = await _refreshDio.post(
-          '/refreshToken', // Your refresh endpoint
-          data: {'refreshToken': refreshToken},
-        );
-
-        if (response.statusCode == 200) {
-          // 4. Extract new tokens
-          final newAccessToken = response.data['accessToken'];
-          final newRefreshToken = response.data['refreshToken']; // If rotated
-
-          // 5. Save new tokens
-          await _tokenStorage.saveTokens(
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken ?? refreshToken,
-          );
-
-          // 6. Retry the original request
-          // Clone the original request options with the new token
-          final options = err.requestOptions;
-          options.headers['Authorization'] = 'Bearer $newAccessToken';
-
-          final retryResponse = await _dio.fetch(options);
-
-          // 7. Resolve the original request with the retry response
-          return handler.resolve(retryResponse);
-        }
-      } catch (e) {
-        // Refresh failed (Session Expired)
-        // You might want to clear tokens here or emit a global "Logout" event
-        await _tokenStorage.clearTokens();
-        return handler.next(err);
-      }
+    if (err.response?.statusCode != 401) {
+      return super.onError(err, handler);
     }
 
-    super.onError(err, handler);
+    if (err.requestOptions.path == _refreshPath) {
+      await _tokenStorage.clearTokens();
+      _sessionNotifier?.notifySessionExpired();
+      return handler.next(err);
+    }
+
+    try {
+      final refreshToken = await _tokenStorage.getRefreshToken();
+      if (refreshToken == null) {
+        await _handleRefreshFailure(handler, err);
+        return;
+      }
+
+      await _refreshTokens();
+      final newAccessToken = await _tokenStorage.getAccessToken();
+      if (newAccessToken == null || newAccessToken.isEmpty) {
+        await _handleRefreshFailure(handler, err);
+        return;
+      }
+
+      final options = err.requestOptions;
+      options.headers['Authorization'] = 'Bearer $newAccessToken';
+      final retryResponse = await _dio.fetch(options);
+      return handler.resolve(retryResponse);
+    } catch (_) {
+      await _handleRefreshFailure(handler, err);
+    }
+  }
+
+  Future<void> _refreshTokens() {
+    return _inFlightRefresh ??= _performRefresh().whenComplete(() {
+      _inFlightRefresh = null;
+    });
+  }
+
+  Future<void> _performRefresh() async {
+    final refreshToken = await _tokenStorage.getRefreshToken();
+    if (refreshToken == null) {
+      throw StateError('No refresh token available');
+    }
+
+    final response = await _refreshDio.post(
+      _refreshPath,
+      data: {'refreshToken': refreshToken},
+    );
+
+    if (response.statusCode != 200) {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+      );
+    }
+
+    final data = response.data;
+    if (data is! Map) {
+      throw const FormatException('Refresh response is not a JSON object');
+    }
+
+    final newAccessToken = data['accessToken'];
+    final newRefreshToken = data['refreshToken'];
+
+    if (newAccessToken is! String || newAccessToken.isEmpty) {
+      throw const FormatException('Refresh response missing accessToken');
+    }
+
+    final rotatedRefresh = newRefreshToken is String && newRefreshToken.isNotEmpty
+        ? newRefreshToken
+        : refreshToken;
+
+    await _tokenStorage.saveTokens(
+      accessToken: newAccessToken,
+      refreshToken: rotatedRefresh,
+    );
+  }
+
+  Future<void> _handleRefreshFailure(
+    ErrorInterceptorHandler handler,
+    DioException err,
+  ) async {
+    await _tokenStorage.clearTokens();
+    _sessionNotifier?.notifySessionExpired();
+    handler.next(err);
   }
 }

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:uuid/uuid.dart';
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/errors/failure_mapper.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/goals/data/mappers/goal_mappers.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
@@ -53,7 +54,7 @@ class GoalRepositoryImpl implements IGoalRepository {
         updatedAt: now,
       ));
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -67,7 +68,7 @@ class GoalRepositoryImpl implements IGoalRepository {
               ));
       return Right(goal.copyWith(updatedAt: now));
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -77,7 +78,7 @@ class GoalRepositoryImpl implements IGoalRepository {
       await (_db.delete(_db.goals)..where((g) => g.id.equals(id))).go();
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -113,7 +114,7 @@ class GoalRepositoryImpl implements IGoalRepository {
         updatedAt: now,
       ));
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -134,7 +135,7 @@ class GoalRepositoryImpl implements IGoalRepository {
       );
       return Right(category.copyWith(updatedAt: now));
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -145,7 +146,7 @@ class GoalRepositoryImpl implements IGoalRepository {
           .go();
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 }

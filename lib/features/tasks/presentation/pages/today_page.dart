@@ -22,23 +22,16 @@ class TodayPage extends StatelessWidget {
 
     return Scaffold(
       body: BlocBuilder<TaskListBloc, TaskListState>(
+        buildWhen: (previous, current) => previous != current,
         builder: (context, state) {
           return state.when(
             initial: () => const Center(child: CircularProgressIndicator()),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (message) => Center(child: Text('Error: $message')),
-            loaded: (pending, completed, overdue, sortMode, filter) {
-              final (
-                displayedOverdue,
-                displayedPending,
-                displayedCompleted,
-              ) = applyTaskListFilterAndSort(
-                overdue,
-                pending,
-                completed,
-                sortMode,
-                filter,
-              );
+            loaded: (rawTasks, pending, completed, overdue, sortMode, filter) {
+              final displayedOverdue = overdue;
+              final displayedPending = pending;
+              final displayedCompleted = completed;
 
               final now = DateTime.now();
               final hour = now.hour;

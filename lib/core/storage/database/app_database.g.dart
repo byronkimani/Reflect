@@ -3610,7 +3610,8 @@ class $WeeklyReviewsTable extends WeeklyReviews
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES weekly_plans(week_start_date)',
+    $customConstraints:
+        'NOT NULL UNIQUE REFERENCES weekly_plans(week_start_date)',
   );
   static const VerificationMeta _themeAchievedMeta = const VerificationMeta(
     'themeAchieved',
@@ -4775,7 +4776,7 @@ class $MonthlyReviewsTable extends MonthlyReviews
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES monthly_plans(month_year)',
+    $customConstraints: 'NOT NULL UNIQUE REFERENCES monthly_plans(month_year)',
   );
   static const VerificationMeta _overallRatingMeta = const VerificationMeta(
     'overallRating',
@@ -7259,7 +7260,6 @@ class $GCalSyncQueueTable extends GCalSyncQueue
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL REFERENCES tasks(id) ON DELETE CASCADE',
   );
   static const VerificationMeta _operationMeta = const VerificationMeta(
     'operation',
@@ -7413,6 +7413,8 @@ class $GCalSyncQueueTable extends GCalSyncQueue
 class GCalSyncQueueData extends DataClass
     implements Insertable<GCalSyncQueueData> {
   final String id;
+
+  /// Denormalized reference for debugging; not an FK so DELETE rows survive task removal.
   final String taskId;
   final String operation;
   final String payload;
@@ -7663,6 +7665,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GoalCategoriesTable goalCategories = $GoalCategoriesTable(this);
   late final $GoalsTable goals = $GoalsTable(this);
   late final $GCalSyncQueueTable gCalSyncQueue = $GCalSyncQueueTable(this);
+  late final Index idxTasksDueDate = Index(
+    'idx_tasks_due_date',
+    'CREATE INDEX idx_tasks_due_date ON tasks (due_date)',
+  );
+  late final Index idxTasksDueDateLocal = Index(
+    'idx_tasks_due_date_local',
+    'CREATE INDEX idx_tasks_due_date_local ON tasks (due_date_local_day_start)',
+  );
+  late final Index idxTasksStatus = Index(
+    'idx_tasks_status',
+    'CREATE INDEX idx_tasks_status ON tasks (status)',
+  );
+  late final Index idxSubtasksTaskId = Index(
+    'idx_subtasks_task_id',
+    'CREATE INDEX idx_subtasks_task_id ON subtasks (task_id)',
+  );
   late final AnalyticsDao analyticsDao = AnalyticsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -7684,6 +7702,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     goalCategories,
     goals,
     gCalSyncQueue,
+    idxTasksDueDate,
+    idxTasksDueDateLocal,
+    idxTasksStatus,
+    idxSubtasksTaskId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -7769,10 +7791,7 @@ final class $$RecurrenceRulesTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.tasks,
-    aliasName: $_aliasNameGenerator(
-      db.recurrenceRules.id,
-      db.tasks.recurrenceRuleId,
-    ),
+    aliasName: 'recurrence_rules__id__tasks__recurrence_rule_id',
   );
 
   $$TasksTableProcessedTableManager get tasksRefs {
@@ -8177,10 +8196,9 @@ final class $$TasksTableReferences
     extends BaseReferences<_$AppDatabase, $TasksTable, TaskData> {
   $$TasksTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $RecurrenceRulesTable _recurrenceRuleIdTable(_$AppDatabase db) =>
-      db.recurrenceRules.createAlias(
-        $_aliasNameGenerator(db.tasks.recurrenceRuleId, db.recurrenceRules.id),
-      );
+  static $RecurrenceRulesTable _recurrenceRuleIdTable(_$AppDatabase db) => db
+      .recurrenceRules
+      .createAlias('tasks__recurrence_rule_id__recurrence_rules__id');
 
   $$RecurrenceRulesTableProcessedTableManager? get recurrenceRuleId {
     final $_column = $_itemColumn<String>('recurrence_rule_id');
@@ -8199,7 +8217,7 @@ final class $$TasksTableReferences
   static MultiTypedResultKey<$SubtasksTable, List<SubtaskData>>
   _subtasksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.subtasks,
-    aliasName: $_aliasNameGenerator(db.tasks.id, db.subtasks.taskId),
+    aliasName: 'tasks__id__subtasks__task_id',
   );
 
   $$SubtasksTableProcessedTableManager get subtasksRefs {
@@ -8217,7 +8235,7 @@ final class $$TasksTableReferences
   static MultiTypedResultKey<$TaskTagsTable, List<TaskTagData>>
   _taskTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.taskTags,
-    aliasName: $_aliasNameGenerator(db.tasks.id, db.taskTags.taskId),
+    aliasName: 'tasks__id__task_tags__task_id',
   );
 
   $$TaskTagsTableProcessedTableManager get taskTagsRefs {
@@ -8942,9 +8960,8 @@ final class $$SubtasksTableReferences
     extends BaseReferences<_$AppDatabase, $SubtasksTable, SubtaskData> {
   $$SubtasksTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $TasksTable _taskIdTable(_$AppDatabase db) => db.tasks.createAlias(
-    $_aliasNameGenerator(db.subtasks.taskId, db.tasks.id),
-  );
+  static $TasksTable _taskIdTable(_$AppDatabase db) =>
+      db.tasks.createAlias('subtasks__task_id__tasks__id');
 
   $$TasksTableProcessedTableManager get taskId {
     final $_column = $_itemColumn<String>('task_id')!;
@@ -9280,7 +9297,7 @@ final class $$TagsTableReferences
   static MultiTypedResultKey<$TaskTagsTable, List<TaskTagData>>
   _taskTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.taskTags,
-    aliasName: $_aliasNameGenerator(db.tags.id, db.taskTags.tagId),
+    aliasName: 'tags__id__task_tags__tag_id',
   );
 
   $$TaskTagsTableProcessedTableManager get taskTagsRefs {
@@ -9544,9 +9561,8 @@ final class $$TaskTagsTableReferences
     extends BaseReferences<_$AppDatabase, $TaskTagsTable, TaskTagData> {
   $$TaskTagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $TasksTable _taskIdTable(_$AppDatabase db) => db.tasks.createAlias(
-    $_aliasNameGenerator(db.taskTags.taskId, db.tasks.id),
-  );
+  static $TasksTable _taskIdTable(_$AppDatabase db) =>
+      db.tasks.createAlias('task_tags__task_id__tasks__id');
 
   $$TasksTableProcessedTableManager get taskId {
     final $_column = $_itemColumn<String>('task_id')!;
@@ -9563,7 +9579,7 @@ final class $$TaskTagsTableReferences
   }
 
   static $TagsTable _tagIdTable(_$AppDatabase db) =>
-      db.tags.createAlias($_aliasNameGenerator(db.taskTags.tagId, db.tags.id));
+      db.tags.createAlias('task_tags__tag_id__tags__id');
 
   $$TagsTableProcessedTableManager get tagId {
     final $_column = $_itemColumn<String>('tag_id')!;
@@ -10204,10 +10220,7 @@ final class $$WeeklyPlansTableReferences
   static MultiTypedResultKey<$WeeklyReviewsTable, List<WeeklyReviewData>>
   _weeklyReviewsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.weeklyReviews,
-    aliasName: $_aliasNameGenerator(
-      db.weeklyPlans.weekStartDate,
-      db.weeklyReviews.weekStartDate,
-    ),
+    aliasName: 'weekly_plans__week_start_date__weekly_reviews__week_start_date',
   );
 
   $$WeeklyReviewsTableProcessedTableManager get weeklyReviewsRefs {
@@ -10227,10 +10240,7 @@ final class $$WeeklyPlansTableReferences
   static MultiTypedResultKey<$WeeklyGoalsTable, List<WeeklyGoalData>>
   _weeklyGoalsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.weeklyGoals,
-    aliasName: $_aliasNameGenerator(
-      db.weeklyPlans.weekStartDate,
-      db.weeklyGoals.weekStartDate,
-    ),
+    aliasName: 'weekly_plans__week_start_date__weekly_goals__week_start_date',
   );
 
   $$WeeklyGoalsTableProcessedTableManager get weeklyGoalsRefs {
@@ -10622,10 +10632,7 @@ final class $$WeeklyReviewsTableReferences
 
   static $WeeklyPlansTable _weekStartDateTable(_$AppDatabase db) =>
       db.weeklyPlans.createAlias(
-        $_aliasNameGenerator(
-          db.weeklyReviews.weekStartDate,
-          db.weeklyPlans.weekStartDate,
-        ),
+        'weekly_reviews__week_start_date__weekly_plans__week_start_date',
       );
 
   $$WeeklyPlansTableProcessedTableManager get weekStartDate {
@@ -10986,10 +10993,7 @@ final class $$WeeklyGoalsTableReferences
 
   static $WeeklyPlansTable _weekStartDateTable(_$AppDatabase db) =>
       db.weeklyPlans.createAlias(
-        $_aliasNameGenerator(
-          db.weeklyGoals.weekStartDate,
-          db.weeklyPlans.weekStartDate,
-        ),
+        'weekly_goals__week_start_date__weekly_plans__week_start_date',
       );
 
   $$WeeklyPlansTableProcessedTableManager get weekStartDate {
@@ -11309,10 +11313,7 @@ final class $$MonthlyPlansTableReferences
   static MultiTypedResultKey<$MonthlyReviewsTable, List<MonthlyReviewData>>
   _monthlyReviewsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.monthlyReviews,
-    aliasName: $_aliasNameGenerator(
-      db.monthlyPlans.monthYear,
-      db.monthlyReviews.monthYear,
-    ),
+    aliasName: 'monthly_plans__month_year__monthly_reviews__month_year',
   );
 
   $$MonthlyReviewsTableProcessedTableManager get monthlyReviewsRefs {
@@ -11332,10 +11333,7 @@ final class $$MonthlyPlansTableReferences
   static MultiTypedResultKey<$MonthlyGoalsTable, List<MonthlyGoalData>>
   _monthlyGoalsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.monthlyGoals,
-    aliasName: $_aliasNameGenerator(
-      db.monthlyPlans.monthYear,
-      db.monthlyGoals.monthYear,
-    ),
+    aliasName: 'monthly_plans__month_year__monthly_goals__month_year',
   );
 
   $$MonthlyGoalsTableProcessedTableManager get monthlyGoalsRefs {
@@ -11721,13 +11719,8 @@ final class $$MonthlyReviewsTableReferences
     super.$_typedResult,
   );
 
-  static $MonthlyPlansTable _monthYearTable(_$AppDatabase db) =>
-      db.monthlyPlans.createAlias(
-        $_aliasNameGenerator(
-          db.monthlyReviews.monthYear,
-          db.monthlyPlans.monthYear,
-        ),
-      );
+  static $MonthlyPlansTable _monthYearTable(_$AppDatabase db) => db.monthlyPlans
+      .createAlias('monthly_reviews__month_year__monthly_plans__month_year');
 
   $$MonthlyPlansTableProcessedTableManager get monthYear {
     final $_column = $_itemColumn<String>('month_year')!;
@@ -12196,13 +12189,8 @@ final class $$MonthlyGoalsTableReferences
     extends BaseReferences<_$AppDatabase, $MonthlyGoalsTable, MonthlyGoalData> {
   $$MonthlyGoalsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $MonthlyPlansTable _monthYearTable(_$AppDatabase db) =>
-      db.monthlyPlans.createAlias(
-        $_aliasNameGenerator(
-          db.monthlyGoals.monthYear,
-          db.monthlyPlans.monthYear,
-        ),
-      );
+  static $MonthlyPlansTable _monthYearTable(_$AppDatabase db) => db.monthlyPlans
+      .createAlias('monthly_goals__month_year__monthly_plans__month_year');
 
   $$MonthlyPlansTableProcessedTableManager get monthYear {
     final $_column = $_itemColumn<String>('month_year')!;
@@ -12529,7 +12517,7 @@ final class $$GoalCategoriesTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.goals,
-    aliasName: $_aliasNameGenerator(db.goalCategories.id, db.goals.categoryId),
+    aliasName: 'goal_categories__id__goals__category_id',
   );
 
   $$GoalsTableProcessedTableManager get goalsRefs {
@@ -12854,9 +12842,7 @@ final class $$GoalsTableReferences
   $$GoalsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $GoalCategoriesTable _categoryIdTable(_$AppDatabase db) =>
-      db.goalCategories.createAlias(
-        $_aliasNameGenerator(db.goals.categoryId, db.goalCategories.id),
-      );
+      db.goalCategories.createAlias('goals__category_id__goal_categories__id');
 
   $$GoalCategoriesTableProcessedTableManager? get categoryId {
     final $_column = $_itemColumn<String>('category_id');

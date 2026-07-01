@@ -90,8 +90,7 @@ void main() {
     test('createGoal inserts goal', () async {
       await repository.createCategory(testCategory);
       final result = await repository.createGoal(testGoal);
-      result.fold((l) => print(l.errorMessage), (r) => print('Success'));
-      
+
       expect(result.isRight(), isTrue);
       
       final dbGoals = await db.select(db.goals).get();
@@ -152,6 +151,75 @@ void main() {
       expect(goals.isRight(), isTrue);
       expect(goals.getOrElse((_) => []).length, 1);
       expect(goals.getOrElse((_) => []).first.id, 'g1');
+    });
+
+    test('createGoal returns Left on duplicate id', () async {
+      await repository.createCategory(testCategory);
+      await repository.createGoal(testGoal);
+
+      final result = await repository.createGoal(testGoal);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('updateGoal returns Left when database is closed', () async {
+      final localDb =
+          AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
+      final localRepo = GoalRepositoryImpl(localDb);
+      await localRepo.createCategory(testCategory);
+      await localRepo.createGoal(testGoal);
+      await localDb.close();
+
+      final result = await localRepo.updateGoal(testGoal.copyWith(title: 'X'));
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('deleteGoal returns Left when database is closed', () async {
+      final localDb =
+          AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
+      final localRepo = GoalRepositoryImpl(localDb);
+      await localRepo.createCategory(testCategory);
+      await localRepo.createGoal(testGoal);
+      await localDb.close();
+
+      final result = await localRepo.deleteGoal('g1');
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('createCategory returns Left on duplicate id', () async {
+      await repository.createCategory(testCategory);
+
+      final result = await repository.createCategory(testCategory);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('updateCategory returns Left when database is closed', () async {
+      final localDb =
+          AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
+      final localRepo = GoalRepositoryImpl(localDb);
+      await localRepo.createCategory(testCategory);
+      await localDb.close();
+
+      final result = await localRepo.updateCategory(
+        testCategory.copyWith(name: 'Updated'),
+      );
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('deleteCategory returns Left when database is closed', () async {
+      final localDb =
+          AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
+      final localRepo = GoalRepositoryImpl(localDb);
+      await localRepo.createCategory(testCategory);
+      await localDb.close();
+
+      final result = await localRepo.deleteCategory('cat1');
+
+      expect(result.isLeft(), isTrue);
     });
   });
 }
