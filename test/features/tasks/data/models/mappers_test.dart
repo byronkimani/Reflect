@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/tasks/data/models/mappers.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
-import 'package:reflect/features/tasks/domain/entities/subtask.dart';
-import 'package:reflect/features/tasks/domain/entities/tag.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
 void main() {
@@ -44,6 +41,35 @@ void main() {
       expect(task.status, TaskStatus.pending);
       expect(task.isOverdue, isFalse);
       expect(task.hasEnabledReminder, isTrue);
+    });
+
+    test('TaskData toDomain falls back for unknown priority and status', () {
+      final invalid = TaskData(
+        id: 'task2',
+        title: 'Invalid enums',
+        priority: 'not-a-priority',
+        dueDate: null,
+        dueDateLocalDayStart: null,
+        dueDateUtcMs: null,
+        dueTime: null,
+        notes: null,
+        status: 'not-a-status',
+        isOverdue: 0,
+        overdueDay: 0,
+        recurrenceRuleId: null,
+        recurrenceParentId: null,
+        gcalEventId: null,
+        syncToGcal: 0,
+        goalId: null,
+        hasEnabledReminder: 0,
+        createdAt: now.millisecondsSinceEpoch,
+        updatedAt: now.millisecondsSinceEpoch,
+      );
+
+      final task = invalid.toDomain();
+
+      expect(task.priority, TaskPriority.p4);
+      expect(task.status, TaskStatus.pending);
     });
 
     test('Task toCompanion maps correctly', () {

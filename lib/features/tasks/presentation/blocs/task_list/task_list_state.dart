@@ -49,15 +49,26 @@ class TaskListFilter {
 
 enum TaskStatusFilter { all, pendingOnly, completedOnly }
 
-/// Applies [filter] and [sortMode] to the raw section lists and returns
+/// Applies [filter] and [sortMode] to [rawTasks] and returns
 /// (displayedOverdue, displayedPending, displayedCompleted).
-(List<Task> overdue, List<Task> pending, List<Task> completed) applyTaskListFilterAndSort(
-  List<Task> rawOverdue,
-  List<Task> rawPending,
-  List<Task> rawCompleted,
+(List<Task> overdue, List<Task> pending, List<Task> completed) processTasks(
+  List<Task> rawTasks,
   SortMode sortMode,
   TaskListFilter filter,
 ) {
+  final List<Task> rawPending = [];
+  final List<Task> rawCompleted = [];
+  final List<Task> rawOverdue = [];
+  for (final t in rawTasks) {
+    if (t.status == TaskStatus.completed) {
+      rawCompleted.add(t);
+    } else if (t.isOverdue) {
+      rawOverdue.add(t);
+    } else {
+      rawPending.add(t);
+    }
+  }
+
   List<Task> filterList(List<Task> list) {
     return list.where((t) {
       if (filter.priorities != null && !filter.priorities!.contains(t.priority)) return false;
@@ -137,6 +148,7 @@ class TaskListState with _$TaskListState {
   const factory TaskListState.initial() = _Initial;
   const factory TaskListState.loading() = _Loading;
   const factory TaskListState.loaded({
+    required List<Task> rawTasks,
     required List<Task> pending,
     required List<Task> completed,
     required List<Task> overdue,

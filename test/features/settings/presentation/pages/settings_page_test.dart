@@ -42,6 +42,8 @@ void main() {
       expect(find.text('Evening review'), findsOneWidget);
       expect(find.text('Weekly planning'), findsOneWidget);
       expect(find.text('Monthly planning'), findsOneWidget);
+      expect(find.text('Privacy'), findsOneWidget);
+      expect(find.text('Usage analytics'), findsOneWidget);
     });
 
     testWidgets('interactions call cubit methods', (tester) async {
@@ -50,6 +52,7 @@ void main() {
       when(() => mockCubit.setEveningReviewEnabled(any())).thenAnswer((_) async {});
       when(() => mockCubit.setWeeklyPlanningEnabled(any())).thenAnswer((_) async {});
       when(() => mockCubit.setMonthlyPlanningEnabled(any())).thenAnswer((_) async {});
+      when(() => mockCubit.setAnalyticsEnabled(any())).thenAnswer((_) async {});
 
       await tester.pumpWidget(buildPage());
 
@@ -60,7 +63,7 @@ void main() {
 
       // Switches
       final switches = find.byType(Switch);
-      expect(switches, findsNWidgets(4));
+      expect(switches, findsNWidgets(5));
 
       await tester.tap(switches.at(0));
       verify(() => mockCubit.setMorningPlanningEnabled(false)).called(1);
@@ -73,6 +76,9 @@ void main() {
 
       await tester.tap(switches.at(3));
       verify(() => mockCubit.setMonthlyPlanningEnabled(false)).called(1);
+
+      await tester.tap(switches.at(4));
+      verify(() => mockCubit.setAnalyticsEnabled(true)).called(1);
     });
   });
 }

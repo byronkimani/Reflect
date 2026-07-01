@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reflect/core/errors/failure_mapper.dart';
 import 'package:reflect/features/analytics/data/daos/analytics_dao.dart';
 import 'package:reflect/features/analytics/domain/entities/analytics_models.dart';
 
@@ -36,6 +37,15 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     LoadAnalytics event,
     Emitter<AnalyticsState> emit,
   ) async {
+    final current = state;
+    final alreadyLoaded = current.maybeWhen(
+      loaded: (activeRange, _, _, _, _, _) => activeRange == event.range,
+      orElse: () => false,
+    );
+    if (alreadyLoaded) {
+      return;
+    }
+
     emit(const AnalyticsState.loading());
 
     try {
@@ -75,7 +85,10 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
         ),
       );
     } catch (e) {
-      emit(AnalyticsState.error('Failed to load analytics: ${e.toString()}'));
+      FailureMapper.debugLogFailure(e, context: 'analytics');
+      emit(
+        AnalyticsState.error(FailureMapper.cacheFailure(e).errorMessage),
+      );
     }
   }
 }

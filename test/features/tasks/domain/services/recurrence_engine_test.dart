@@ -95,6 +95,26 @@ void main() {
       expect(next, DateTime(2026, 7, 6)); // Monday
     });
 
+    test('weekly recurrence with invalid weekdays falls back to one week later', () {
+      final task = Task(
+        id: '1',
+        title: 'Test',
+        dueDate: baseDate,
+        createdAt: now,
+        updatedAt: now,
+        recurrenceRule: const RecurrenceRule(
+          id: 'rule-invalid',
+          frequency: RecurrenceFrequency.WEEKLY,
+          intervalVal: 1,
+          daysOfWeek: [0],
+        ),
+      );
+
+      final next = engine.getNextOccurrence(task);
+
+      expect(next, DateTime(2026, 7, 7));
+    });
+
     test('monthly recurrence adds intervalVal months', () {
       final task = Task(
         id: '1',

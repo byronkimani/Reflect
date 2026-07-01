@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reflect/features/post/data/post_dto.dart';
-import 'package:reflect/features/post/domain/post.dart';
 
 void main() {
   test('PostDTO toDomain maps correctly', () {

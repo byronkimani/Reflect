@@ -8,6 +8,7 @@ import 'package:reflect/features/tasks/domain/repositories/task_repository.dart'
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/pages/today_page.dart';
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
@@ -17,15 +18,27 @@ void main() {
   late TaskSelectionCubit taskSelectionCubit;
   late MockITaskRepository mockRepo;
 
+  setUpAll(() {
+    registerFallbackValue(DateTime(2025, 3, 19));
+    registerFallbackValue(const TaskListEvent.bulkMoveToBacklog([]));
+  });
+
   setUp(() {
     mockRepo = MockITaskRepository();
     taskListBloc = TaskListBloc(mockRepo);
     taskSelectionCubit = TaskSelectionCubit();
 
-    // Default setup for watchTasksForDate
     when(
       () => mockRepo.watchTasksForDate(any()),
     ).thenAnswer((_) => Stream.value(const Right([])));
+    when(() => mockRepo.completeTasks(any()))
+        .thenAnswer((_) async => const Right(unit));
+    when(() => mockRepo.reopenTasks(any()))
+        .thenAnswer((_) async => const Right(unit));
+    when(() => mockRepo.moveTasksToBacklog(any()))
+        .thenAnswer((_) async => const Right(unit));
+    when(() => mockRepo.deleteTasks(any()))
+        .thenAnswer((_) async => const Right(unit));
   });
 
   tearDown(() {
@@ -63,7 +76,7 @@ void main() {
       final tasks = [testTask('1', 'Task 1'), testTask('2', 'Task 2')];
 
       taskListBloc.emit(
-        TaskListState.loaded(pending: tasks, completed: [], overdue: []),
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
       );
 
       await tester.pumpWidget(buildTestWidget());
@@ -93,7 +106,7 @@ void main() {
       final tasks = [testTask('1', 'Task 1'), testTask('2', 'Task 2')];
 
       taskListBloc.emit(
-        TaskListState.loaded(pending: tasks, completed: [], overdue: []),
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
       );
 
       await tester.pumpWidget(buildTestWidget());
@@ -125,7 +138,7 @@ void main() {
       final tasks = [testTask('1', 'Task 1')];
 
       taskListBloc.emit(
-        TaskListState.loaded(pending: tasks, completed: [], overdue: []),
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
       );
 
       await tester.pumpWidget(buildTestWidget());
@@ -149,7 +162,7 @@ void main() {
       final tasks = [testTask('1', 'Task 1')];
 
       taskListBloc.emit(
-        TaskListState.loaded(pending: tasks, completed: [], overdue: []),
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
       );
 
       await tester.pumpWidget(buildTestWidget());
@@ -167,6 +180,78 @@ void main() {
         find.text('Are you sure you want to delete 1 tasks?'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('Done bulk action completes selected tasks', (tester) async {
+      final tasks = [testTask('1', 'Task 1')];
+      taskListBloc.emit(
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.longPress(find.text('Task 1'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Done'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 selected'), findsNothing);
+    });
+
+    testWidgets('Undone bulk action reopens selected tasks', (tester) async {
+      final tasks = [
+        testTask('1', 'Task 1').copyWith(status: TaskStatus.completed),
+      ];
+      taskListBloc.emit(
+        TaskListState.loaded(rawTasks: [], pending: [], completed: tasks, overdue: []),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.longPress(find.text('Task 1'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undone'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 selected'), findsNothing);
+    });
+
+    testWidgets('Backlog bulk action moves selected tasks', (tester) async {
+      final tasks = [testTask('1', 'Task 1')];
+      taskListBloc.emit(
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.longPress(find.text('Task 1'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Backlog').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 selected'), findsNothing);
+    });
+
+    testWidgets('Delete confirmation dispatches bulk delete', (tester) async {
+      final tasks = [testTask('1', 'Task 1')];
+      taskListBloc.emit(
+        TaskListState.loaded(rawTasks: [], pending: tasks, completed: [], overdue: []),
+      );
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.longPress(find.text('Task 1'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 selected'), findsNothing);
     });
   });
 }

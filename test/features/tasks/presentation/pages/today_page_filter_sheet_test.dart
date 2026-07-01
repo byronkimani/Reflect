@@ -41,6 +41,12 @@ void main() {
     taskSelectionCubit.close();
   });
 
+  Future<void> scrollFilterSheetTo(WidgetTester tester, Finder target) async {
+    final scrollable = find.byType(Scrollable).first;
+    await tester.scrollUntilVisible(target, 80, scrollable: scrollable);
+    await tester.pumpAndSettle();
+  }
+
   Widget buildTestWidget() {
     return MaterialApp(
       home: MultiBlocProvider(
@@ -59,24 +65,16 @@ void main() {
   }) async {
     taskListBloc.emit(
       TaskListState.loaded(
-        pending: [],
-        completed: [],
-        overdue: [],
+        rawTasks: const [],
+        pending: const [],
+        completed: const [],
+        overdue: const [],
         sortMode: SortMode.statusPendingFirst,
         filter: filter,
       ),
     );
     await tester.pumpWidget(buildTestWidget());
-  }
-
-  /// Scroll the filter sheet down so content like Apply button is visible.
-  Future<void> scrollSheetTo(WidgetTester tester) async {
-    final listView = find.ancestor(
-      of: find.text('Filter'),
-      matching: find.byType(ListView),
-    );
-    await tester.drag(listView, const Offset(0, -400));
-    await tester.pumpAndSettle();
+    await tester.pump();
   }
 
   group('TodayPage filter sheet', () {
@@ -120,8 +118,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
-      expect(find.text('Apply'), findsOneWidget);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
     });
 
     testWidgets(
@@ -193,8 +190,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.tune));
         await tester.pumpAndSettle();
 
-        await scrollSheetTo(tester);
-        expect(find.text('Pending only'), findsOneWidget);
+        await scrollFilterSheetTo(tester, find.text('Pending only'));
         expect(find.text('Completed only'), findsOneWidget);
       },
     );
@@ -217,7 +213,7 @@ void main() {
 
         final state = taskListBloc.state;
         state.maybeWhen(
-          loaded: (_, _, _, _, filter) {
+          loaded: (_, _, _, _, _, filter) {
             expect(filter.priorities, isNull);
             expect(filter.hasDueTimeOnly, isNull);
             expect(filter.repeatingOnly, isNull);
@@ -237,16 +233,17 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
 
+      await scrollFilterSheetTo(tester, find.text('P1'));
       await tester.tap(find.text('P1'));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       final state = taskListBloc.state;
       state.maybeWhen(
-        loaded: (_, _, _, _, filter) {
+        loaded: (_, _, _, _, _, filter) {
           expect(filter.priorities, {TaskPriority.p1});
         },
         orElse: () => fail('Expected loaded state'),
@@ -262,16 +259,17 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
 
+      await scrollFilterSheetTo(tester, find.text('With time'));
       await tester.tap(find.text('With time'));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       final state = taskListBloc.state;
       state.maybeWhen(
-        loaded: (_, _, _, _, filter) {
+        loaded: (_, _, _, _, _, filter) {
           expect(filter.hasDueTimeOnly, true);
         },
         orElse: () => fail('Expected loaded state'),
@@ -287,16 +285,17 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
 
+      await scrollFilterSheetTo(tester, find.text('Repeating'));
       await tester.tap(find.text('Repeating'));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       final state = taskListBloc.state;
       state.maybeWhen(
-        loaded: (_, _, _, _, filter) {
+        loaded: (_, _, _, _, _, filter) {
           expect(filter.repeatingOnly, true);
         },
         orElse: () => fail('Expected loaded state'),
@@ -312,17 +311,17 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Pending only'));
       await tester.tap(find.text('Pending only'));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       final state = taskListBloc.state;
       state.maybeWhen(
-        loaded: (_, _, _, _, filter) {
+        loaded: (_, _, _, _, _, filter) {
           expect(filter.statusFilter, TaskStatusFilter.pendingOnly);
         },
         orElse: () => fail('Expected loaded state'),
@@ -341,16 +340,17 @@ void main() {
         await tester.tap(find.byIcon(Icons.tune));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('All'));
+        await scrollFilterSheetTo(tester, find.text('All').first);
+        await tester.tap(find.text('All').first);
         await tester.pumpAndSettle();
 
-        await scrollSheetTo(tester);
+        await scrollFilterSheetTo(tester, find.text('Apply'));
         await tester.tap(find.text('Apply'));
         await tester.pumpAndSettle();
 
         final state = taskListBloc.state;
         state.maybeWhen(
-          loaded: (_, _, _, _, filter) {
+          loaded: (_, _, _, _, _, filter) {
             expect(filter.priorities, isNull);
           },
           orElse: () => fail('Expected loaded state'),
@@ -370,16 +370,17 @@ void main() {
         await tester.tap(find.byIcon(Icons.tune));
         await tester.pumpAndSettle();
 
+        await scrollFilterSheetTo(tester, find.text('Any').first);
         await tester.tap(find.text('Any').first);
         await tester.pumpAndSettle();
 
-        await scrollSheetTo(tester);
+        await scrollFilterSheetTo(tester, find.text('Apply'));
         await tester.tap(find.text('Apply'));
         await tester.pumpAndSettle();
 
         final state = taskListBloc.state;
         state.maybeWhen(
-          loaded: (_, _, _, _, filter) {
+          loaded: (_, _, _, _, _, filter) {
             expect(filter.hasDueTimeOnly, isNull);
           },
           orElse: () => fail('Expected loaded state'),
@@ -400,16 +401,17 @@ void main() {
       await tester.pumpAndSettle();
 
       final anyChips = find.text('Any');
+      await scrollFilterSheetTo(tester, anyChips.at(1));
       await tester.tap(anyChips.at(1));
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       final state = taskListBloc.state;
       state.maybeWhen(
-        loaded: (_, _, _, _, filter) {
+        loaded: (_, _, _, _, _, filter) {
           expect(filter.repeatingOnly, isNull);
         },
         orElse: () => fail('Expected loaded state'),
@@ -430,16 +432,17 @@ void main() {
         await tester.tap(find.byIcon(Icons.tune));
         await tester.pumpAndSettle();
 
-        await scrollSheetTo(tester);
+        await scrollFilterSheetTo(tester, find.text('All').last);
         await tester.tap(find.text('All').last);
         await tester.pumpAndSettle();
 
+        await scrollFilterSheetTo(tester, find.text('Apply'));
         await tester.tap(find.text('Apply'));
         await tester.pumpAndSettle();
 
         final state = taskListBloc.state;
         state.maybeWhen(
-          loaded: (_, _, _, _, filter) {
+          loaded: (_, _, _, _, _, filter) {
             expect(filter.statusFilter, TaskStatusFilter.all);
           },
           orElse: () => fail('Expected loaded state'),
@@ -464,16 +467,17 @@ void main() {
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('All'));
+      await scrollFilterSheetTo(tester, find.text('All').first);
+      await tester.tap(find.text('All').first);
       await tester.pumpAndSettle();
 
-      await scrollSheetTo(tester);
+      await scrollFilterSheetTo(tester, find.text('Apply'));
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
 
       final state = taskListBloc.state;
       state.maybeWhen(
-        loaded: (_, _, _, _, filter) {
+        loaded: (_, _, _, _, _, filter) {
           expect(filter.priorities, isNull);
           expect(filter.hasDueTimeOnly, true);
           expect(filter.repeatingOnly, false);

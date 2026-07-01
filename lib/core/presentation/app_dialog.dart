@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 class AppDialog {
@@ -21,9 +19,11 @@ class AppDialog {
     VoidCallback? onSecondaryAction,
     bool isDestructiveAction = false,
   }) {
-    final isIos = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+    final platform = Theme.of(context).platform;
+    final isApple =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
-    if (isIos) {
+    if (isApple) {
       return showCupertinoDialog<T>(
         context: context,
         builder: (context) => CupertinoAlertDialog(

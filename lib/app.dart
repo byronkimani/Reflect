@@ -7,6 +7,7 @@ import 'package:reflect/core/network/presentation/connectivity_event.dart';
 import 'package:reflect/core/presentation/connectivity_wrapper.dart';
 import 'package:reflect/core/router/app_router.dart';
 import 'package:reflect/core/presentation/theme/app_theme.dart';
+import 'package:reflect/core/startup/deferred_startup.dart';
 import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
@@ -34,7 +35,7 @@ class ReflectApp extends StatelessWidget {
                 ..add(const ConnectivityEvent.monitorStarted()),
         ),
         BlocProvider<GCalSyncCubit>(
-          create: (_) => getIt<GCalSyncCubit>()..processQueue(),
+          create: (_) => getIt<GCalSyncCubit>(),
         ),
         BlocProvider<TaskListBloc>(
           create: (_) =>
@@ -50,33 +51,35 @@ class ReflectApp extends StatelessWidget {
         ),
         BlocProvider<SettingsCubit>(create: (_) => getIt<SettingsCubit>()),
       ],
-      child: Builder(
-        builder: (context) {
-          return BlocBuilder<SettingsCubit, SettingsState>(
-            buildWhen: (prev, next) => prev.themeMode != next.themeMode,
-            builder: (context, settingsState) {
-              return MaterialApp.router(
-                title: 'Reflect',
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: AppLocalizations.supportedLocales,
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: settingsState.themeMode,
-                routerConfig: _router,
-                builder: (context, child) {
-                  return ConnectivityWrapper(
-                    child: child ?? const SizedBox.shrink(),
-                  );
-                },
-              );
-            },
-          );
-        },
+      child: DeferredStartupRunner(
+        child: Builder(
+          builder: (context) {
+            return BlocBuilder<SettingsCubit, SettingsState>(
+              buildWhen: (prev, next) => prev.themeMode != next.themeMode,
+              builder: (context, settingsState) {
+                return MaterialApp.router(
+                  title: 'Reflect',
+                  localizationsDelegates: const [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  theme: AppTheme.lightTheme,
+                  darkTheme: AppTheme.darkTheme,
+                  themeMode: settingsState.themeMode,
+                  routerConfig: _router,
+                  builder: (context, child) {
+                    return ConnectivityWrapper(
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

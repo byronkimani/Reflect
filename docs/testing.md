@@ -1,6 +1,17 @@
 # Testing guide — Reflect
 
-How we test this repo. Testing is mandatory for all new logic.
+How we test this repo. **Tests ship with every change** — see rule 1 in [`AGENTS.md`](../AGENTS.md).
+
+## Iron rule
+
+Every new or changed behavior must include tests before merge:
+
+- At least one **happy-path** and one **failure/edge** test
+- **Unit** tests for domain / data / core
+- **Widget** tests for presentation UI
+- **bloc_test** for BLoC / Cubit
+
+Filtered coverage from `make coverage` must stay **≥ 98%** (same file exclusions as CI). No exceptions without explicit approval.
 
 ## Coverage Expectations
 
@@ -15,10 +26,12 @@ How we test this repo. Testing is mandatory for all new logic.
 
 ## Commands
 
+Run lint before tests locally and in CI. `make lint` must report **zero** analyzer issues (errors, warnings, and info).
+
 ```bash
+make lint             # Static analysis (must be clean before merge)
 make test             # Run all unit and widget tests
-make coverage         # Generate lcov report
-make lint             # Run static analysis
+make coverage         # Generate lcov report (filtered ≥ 98% required)
 ```
 
 ## Mocking dependencies

@@ -7,6 +7,7 @@ import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
+import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/tasks/data/repositories/task_repository_impl.dart';
@@ -151,6 +152,54 @@ void main() {
       final list = getResult.getOrElse((l) => []);
       final t = list.where((x) => x.id == taskId).single;
       expect(t.subtasks, isEmpty);
+    });
+
+    test('updateTask upserts recurrence rule when added to task', () async {
+      final taskId = 'task-rec';
+      final task = Task(
+        id: taskId,
+        title: 'Plain task',
+        priority: TaskPriority.p4,
+        dueDate: todayStart,
+        createdAt: now,
+        updatedAt: now,
+      );
+      await repo.createTask(task);
+
+      final updated = task.copyWith(
+        recurrenceRule: const RecurrenceRule(
+          id: 'rule-1',
+          frequency: RecurrenceFrequency.WEEKLY,
+          daysOfWeek: [1, 3],
+        ),
+      );
+
+      final result = await repo.updateTask(updated);
+      expect(result.isRight(), isTrue);
+
+      final rules = await db.select(db.recurrenceRules).get();
+      expect(rules.length, 1);
+      expect(rules.single.id, 'rule-1');
+    });
+
+    test('updateTask schedules reminder when enabled with due date and time', () async {
+      final taskId = 'task-rem';
+      final task = Task(
+        id: taskId,
+        title: 'Reminder task',
+        priority: TaskPriority.p4,
+        dueDate: todayStart,
+        dueTime: '09:30',
+        hasEnabledReminder: true,
+        createdAt: now,
+        updatedAt: now,
+      );
+      await repo.createTask(task.copyWith(hasEnabledReminder: false));
+
+      final result = await repo.updateTask(task);
+      expect(result.isRight(), isTrue);
+
+      verify(() => mockNotificationScheduler.scheduleTaskReminder(task)).called(1);
     });
   });
 }

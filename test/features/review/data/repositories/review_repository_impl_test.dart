@@ -1,7 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/review/data/repositories/review_repository_impl.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
@@ -49,6 +48,26 @@ void main() {
       expect(retrieved.wentWell, 'Coding');
       expect(retrieved.couldBeBetter, 'Sleep');
       expect(retrieved.gratitude1, 'Coffee');
+    });
+
+    test('saveDailyReview returns Left when table is unavailable', () async {
+      await db.select(db.dailyReviews).get();
+      await db.executor.runCustom('DROP TABLE daily_reviews;');
+
+      final result = await repository.saveDailyReview(
+        const DailyReviewState(dayRating: 4, gratitude1: 'a', gratitude2: 'b', gratitude3: 'c'),
+      );
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('getDailyReview returns Left when table is unavailable', () async {
+      await db.select(db.dailyReviews).get();
+      await db.executor.runCustom('DROP TABLE daily_reviews;');
+
+      final result = await repository.getDailyReview(DateTime.now());
+
+      expect(result.isLeft(), isTrue);
     });
   });
 }

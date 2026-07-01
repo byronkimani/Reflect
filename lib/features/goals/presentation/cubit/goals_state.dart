@@ -35,3 +35,20 @@ class GoalsState {
     );
   }
 }
+
+bool goalsStateShouldRebuild(GoalsState previous, GoalsState current) {
+  return previous.loading != current.loading ||
+      previous.error != current.error ||
+      previous.selectedHorizon != current.selectedHorizon ||
+      !identical(previous.goalsByHorizon, current.goalsByHorizon) ||
+      !identical(previous.categories, current.categories);
+}
+
+bool goalsListShouldRebuild(
+  GoalsState previous,
+  GoalsState current,
+  GoalTimeHorizon horizon,
+) {
+  if (goalsStateShouldRebuild(previous, current)) return true;
+  return previous.goalsFor(horizon) != current.goalsFor(horizon);
+}

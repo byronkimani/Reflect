@@ -37,6 +37,12 @@ Future<void> scheduleHeartbeat(TimeOfDay time) async {
 - **Android 13+**: Requires the `POST_NOTIFICATIONS` runtime permission.
 - **iOS**: Requires standard notification permissions via APNs.
 
+## Notification tap routing
+
+Tap payloads are validated by `NotificationRoutes` before navigation. Only in-app routes are allowed (e.g. `/today/planning`, `/today/task/:id`). Legacy `/task/:id` payloads are normalized to `/today/task/:id`.
+
+Weekly/monthly heartbeat notifications currently route to `/today/planning` until dedicated routes exist.
+
 ## Open Items
 
 - Currently, tapping a notification opens the app to the default route. Deep linking into specific screens based on notification payload is planned but not fully implemented.

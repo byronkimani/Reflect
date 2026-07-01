@@ -41,7 +41,7 @@ void main() {
         endType: RecurrenceEndType.NEVER,
       );
 
-  group('applyTaskListFilterAndSort', () {
+  group('processTasks', () {
     group('default filter', () {
       test('returns all sections unchanged when filter is default and sort is statusPendingFirst', () {
         final pending = [
@@ -51,12 +51,7 @@ void main() {
         final completed = [task(id: '3', priority: TaskPriority.p4, status: TaskStatus.completed)];
         const overdue = <Task>[];
 
-        final (o, p, c) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.statusPendingFirst,
-          const TaskListFilter(),
+        final (o, p, c) = processTasks([...overdue, ...pending, ...completed], SortMode.statusPendingFirst, const TaskListFilter(),
         );
 
         expect(o, isEmpty);
@@ -69,12 +64,7 @@ void main() {
         final completed = [task(id: '2', status: TaskStatus.completed)];
         const overdue = <Task>[];
 
-        final (o, p, c) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(statusFilter: TaskStatusFilter.completedOnly),
+        final (o, p, c) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(statusFilter: TaskStatusFilter.completedOnly),
         );
 
         expect(o, isEmpty);
@@ -87,12 +77,7 @@ void main() {
         final completed = [task(id: '2', status: TaskStatus.completed)];
         const overdue = <Task>[];
 
-        final (o, p, c) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(statusFilter: TaskStatusFilter.pendingOnly),
+        final (o, p, c) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(statusFilter: TaskStatusFilter.pendingOnly),
         );
 
         expect(p.length, 1);
@@ -110,12 +95,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          TaskListFilter(priorities: {TaskPriority.p1}),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, TaskListFilter(priorities: {TaskPriority.p1}),
         );
 
         expect(p.length, 2);
@@ -131,12 +111,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          TaskListFilter(priorities: {TaskPriority.p1, TaskPriority.p2}),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, TaskListFilter(priorities: {TaskPriority.p1, TaskPriority.p2}),
         );
 
         expect(p.length, 2);
@@ -153,12 +128,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(),
         );
 
         expect(p.length, 2);
@@ -175,12 +145,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(hasDueTimeOnly: true),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(hasDueTimeOnly: true),
         );
 
         expect(p.length, 2);
@@ -195,12 +160,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(hasDueTimeOnly: false),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(hasDueTimeOnly: false),
         );
 
         expect(p.length, 1);
@@ -215,12 +175,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(),
         );
 
         expect(p.length, 2);
@@ -238,12 +193,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(repeatingOnly: true),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(repeatingOnly: true),
         );
 
         expect(p.length, 2);
@@ -259,12 +209,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(repeatingOnly: false),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(repeatingOnly: false),
         );
 
         expect(p.length, 1);
@@ -282,12 +227,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.priority,
-          const TaskListFilter(),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.priority, const TaskListFilter(),
         );
 
         expect(p.map((t) => t.priority).toList(), [TaskPriority.p1, TaskPriority.p2, TaskPriority.p4]);
@@ -304,12 +244,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.dueDateTime,
-          const TaskListFilter(),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.dueDateTime, const TaskListFilter(),
         );
 
         expect(p.length, 4);
@@ -318,6 +253,22 @@ void main() {
         expect(p[1].dueTime, '09:00');
         expect(p[2].dueTime, '14:00');
         expect(p[3].dueDate, base.add(const Duration(days: 1)));
+      });
+
+      test('SortMode.dueDateTime puts tasks with due dates before tasks without', () {
+        final base = DateTime(2025, 3, 15);
+        final pending = [
+          task(id: '1', dueDate: base, dueTime: '10:00'),
+          task(id: '2'),
+        ];
+        const completed = <Task>[];
+        const overdue = <Task>[];
+
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.dueDateTime, const TaskListFilter(),
+        );
+
+        expect(p.first.id, '1');
+        expect(p.last.id, '2');
       });
 
       test('SortMode.repeats puts repeating tasks first', () {
@@ -330,12 +281,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.repeats,
-          const TaskListFilter(),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.repeats, const TaskListFilter(),
         );
 
         expect(p.length, 3);
@@ -352,12 +298,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.statusPendingFirst,
-          const TaskListFilter(),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.statusPendingFirst, const TaskListFilter(),
         );
 
         expect(p.map((t) => t.priority).toList(), [TaskPriority.p1, TaskPriority.p2]);
@@ -375,12 +316,7 @@ void main() {
         const completed = <Task>[];
         const overdue = <Task>[];
 
-        final (_, p, _) = applyTaskListFilterAndSort(
-          overdue,
-          pending,
-          completed,
-          SortMode.dueDateTime,
-          TaskListFilter(priorities: {TaskPriority.p1}),
+        final (_, p, _) = processTasks([...overdue, ...pending, ...completed], SortMode.dueDateTime, TaskListFilter(priorities: {TaskPriority.p1}),
         );
 
         expect(p.length, 2);

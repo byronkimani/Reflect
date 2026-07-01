@@ -7,7 +7,7 @@ import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/tag.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
-int? _localDayStartMs(DateTime? dueDate) {
+int? localDayStartEpochMs(DateTime? dueDate) {
   if (dueDate == null) return null;
   return DateTime(dueDate.year, dueDate.month, dueDate.day)
       .millisecondsSinceEpoch;
@@ -71,7 +71,7 @@ extension TaskX on Task {
       title: Value(title),
       priority: Value(priority.name),
       dueDate: Value(dueDate?.millisecondsSinceEpoch),
-      dueDateLocalDayStart: Value(_localDayStartMs(dueDate)),
+      dueDateLocalDayStart: Value(localDayStartEpochMs(dueDate)),
       dueDateUtcMs: Value(_dueInstantEpochMs(this)),
       dueTime: Value(dueTime != null ? int.parse(dueTime!.split(':')[0]) * 60 + int.parse(dueTime!.split(':')[1]) : null),
       notes: Value(notes),

@@ -7,6 +7,7 @@ class SettingsState {
     this.eveningReviewEnabled = true,
     this.weeklyPlanningEnabled = true,
     this.monthlyPlanningEnabled = true,
+    this.analyticsEnabled = false,
   });
 
   final ThemeMode themeMode;
@@ -14,6 +15,7 @@ class SettingsState {
   final bool eveningReviewEnabled;
   final bool weeklyPlanningEnabled;
   final bool monthlyPlanningEnabled;
+  final bool analyticsEnabled;
 
   SettingsState copyWith({
     ThemeMode? themeMode,
@@ -21,6 +23,7 @@ class SettingsState {
     bool? eveningReviewEnabled,
     bool? weeklyPlanningEnabled,
     bool? monthlyPlanningEnabled,
+    bool? analyticsEnabled,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
@@ -31,6 +34,7 @@ class SettingsState {
           weeklyPlanningEnabled ?? this.weeklyPlanningEnabled,
       monthlyPlanningEnabled:
           monthlyPlanningEnabled ?? this.monthlyPlanningEnabled,
+      analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
     );
   }
 
@@ -40,6 +44,7 @@ class SettingsState {
         'eveningReviewEnabled': eveningReviewEnabled,
         'weeklyPlanningEnabled': weeklyPlanningEnabled,
         'monthlyPlanningEnabled': monthlyPlanningEnabled,
+        'analyticsEnabled': analyticsEnabled,
       };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
@@ -54,6 +59,17 @@ class SettingsState {
       eveningReviewEnabled: json['eveningReviewEnabled'] as bool? ?? true,
       weeklyPlanningEnabled: json['weeklyPlanningEnabled'] as bool? ?? true,
       monthlyPlanningEnabled: json['monthlyPlanningEnabled'] as bool? ?? true,
+      analyticsEnabled: json['analyticsEnabled'] as bool? ?? false,
     );
   }
+}
+
+/// Avoids rebuilding Settings UI when unrelated cubit internals change.
+bool settingsStateShouldRebuild(SettingsState previous, SettingsState current) {
+  return previous.themeMode != current.themeMode ||
+      previous.morningPlanningEnabled != current.morningPlanningEnabled ||
+      previous.eveningReviewEnabled != current.eveningReviewEnabled ||
+      previous.weeklyPlanningEnabled != current.weeklyPlanningEnabled ||
+      previous.monthlyPlanningEnabled != current.monthlyPlanningEnabled ||
+      previous.analyticsEnabled != current.analyticsEnabled;
 }

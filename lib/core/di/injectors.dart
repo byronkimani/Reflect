@@ -1,14 +1,21 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:reflect/core/config/env_config.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
+import 'package:reflect/core/observability/crash_reporter.dart';
+import 'package:reflect/core/observability/firebase_crash_reporter.dart';
+import 'package:reflect/core/network/auth_session_notifier.dart';
 import 'package:reflect/core/network/dio_client.dart';
 import 'package:reflect/core/network/network_info.dart';
+import 'package:reflect/core/storage/database/app_database.dart';
+import 'package:reflect/core/storage/database/database_key_service.dart';
+import 'package:reflect/core/storage/secure_storage_factory.dart';
 import 'package:reflect/core/storage/token_storage.dart';
 import 'package:reflect/features/post/data/post_repository.dart';
 import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
-import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/gcal/data/repositories/gcal_repository_impl.dart';
 import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
+import 'package:reflect/features/gcal/data/sources/gcal_token_storage.dart';
 import 'package:reflect/features/gcal/domain/repositories/gcal_repository.dart';
 import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/planning/presentation/planning_cubit.dart';
@@ -30,36 +37,41 @@ import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/main.dart';
 
 void setupDependencies() {
-  // 1. Secure Storage & Token Storage
-  const secureStorage = FlutterSecureStorage();
-  getIt.registerLazySingleton<TokenStorage>(() => TokenStorage(secureStorage));
+  const secureStorage = SecureStorageFactory.instance;
 
-  // 2. Network Info
+  getIt.registerLazySingleton<FlutterSecureStorage>(() => secureStorage);
+  getIt.registerLazySingleton<TokenStorage>(() => TokenStorage(secureStorage));
+  getIt.registerLazySingleton<DatabaseKeyService>(
+    () => DatabaseKeyService(secureStorage),
+  );
+  getIt.registerLazySingleton<AuthSessionNotifier>(() => AuthSessionNotifier());
+  getIt.registerLazySingleton<GCalTokenStorage>(
+    () => GCalTokenStorage(secureStorage),
+  );
+
   getIt.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(InternetConnection()),
   );
 
-  // 3. Dio Client (Injects TokenStorage)
   getIt.registerLazySingleton<DioClient>(
     () => DioClient(
       baseUrl: EnvConfig.baseUrl,
       tokenStorage: getIt<TokenStorage>(),
+      sessionNotifier: getIt<AuthSessionNotifier>(),
     ),
   );
 
-  // 4. Database
-  getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());
+  getIt.registerLazySingleton<AppDatabase>(
+    () => AppDatabase(getIt<DatabaseKeyService>()),
+  );
 
-  // 5. Posts
   getIt.registerLazySingleton<PostRepository>(
     () => PostRepository(getIt<DioClient>()),
   );
 
-  // 6. Services & Enginges
   getIt.registerLazySingleton<GCalApiService>(() => GCalApiServiceImpl());
   getIt.registerLazySingleton<RecurrenceEngine>(() => RecurrenceEngineImpl());
 
-  // 7. Repositories
   getIt.registerLazySingleton<ITaskRepository>(
     () => TaskRepositoryImpl(
       getIt<AppDatabase>(),
@@ -70,7 +82,11 @@ void setupDependencies() {
     ),
   );
   getIt.registerLazySingleton<IGCalRepository>(
-    () => GCalRepositoryImpl(getIt<AppDatabase>(), getIt<GCalApiService>()),
+    () => GCalRepositoryImpl(
+      getIt<AppDatabase>(),
+      getIt<GCalApiService>(),
+      getIt<GCalTokenStorage>(),
+    ),
   );
   getIt.registerLazySingleton<IReviewRepository>(
     () => ReviewRepositoryImpl(getIt<AppDatabase>()),
@@ -79,7 +95,6 @@ void setupDependencies() {
     () => GoalRepositoryImpl(getIt<AppDatabase>()),
   );
 
-  // 8. BLoCs / Cubits
   getIt.registerFactory<ConnectivityBloc>(
     () => ConnectivityBloc(getIt<NetworkInfo>()),
   );
@@ -90,10 +105,16 @@ void setupDependencies() {
     () => TaskListBloc(getIt<ITaskRepository>()),
   );
   getIt.registerFactory<PlanningCubit>(
-    () => PlanningCubit(getIt<ITaskRepository>()),
+    () => PlanningCubit(
+      getIt<ITaskRepository>(),
+      getIt<AppAnalyticsService>(),
+    ),
   );
   getIt.registerFactory<DailyReviewCubit>(
-    () => DailyReviewCubit(getIt<IReviewRepository>()),
+    () => DailyReviewCubit(
+      getIt<IReviewRepository>(),
+      getIt<AppAnalyticsService>(),
+    ),
   );
   getIt.registerFactory<AnalyticsBloc>(
     () => AnalyticsBloc(getIt<AppDatabase>().analyticsDao),
@@ -105,12 +126,19 @@ void setupDependencies() {
     () => TaskSelectionCubit(),
   );
 
-  // 9. Notifications
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
   getIt.registerLazySingleton<NotificationScheduler>(
     () => NotificationScheduler(getIt<NotificationService>()),
   );
+  getIt.registerLazySingleton<CrashReporter>(() => FirebaseCrashReporter());
+  getIt.registerLazySingleton<AppAnalyticsService>(
+    () => FirebaseAppAnalyticsService(),
+  );
+
   getIt.registerLazySingleton<SettingsCubit>(
-    () => SettingsCubit(getIt<NotificationScheduler>()),
+    () => SettingsCubit(
+      getIt<NotificationScheduler>(),
+      getIt<AppAnalyticsService>(),
+    ),
   );
 }

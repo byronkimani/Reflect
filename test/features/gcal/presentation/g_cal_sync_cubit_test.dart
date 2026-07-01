@@ -120,5 +120,20 @@ void main() {
         verifyNever(() => mockRepository.processQueue());
       },
     );
+
+    blocTest<GCalSyncCubit, GCalSyncState>(
+      'processQueue emits lastError on failure',
+      build: () {
+        when(() => mockRepository.processQueue()).thenAnswer(
+          (_) async => Left(ServerFailure(errorMessage: 'Sync failed')),
+        );
+        return GCalSyncCubit(mockRepository);
+      },
+      act: (cubit) => cubit.processQueue(),
+      expect: () => [
+        const GCalSyncState(isSyncing: true),
+        const GCalSyncState(isSyncing: false, lastError: 'Sync failed'),
+      ],
+    );
   });
 }

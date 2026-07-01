@@ -80,3 +80,13 @@ For unit tests, use an in-memory database:
 ```dart
 AppDatabase.forTesting(NativeDatabase.memory())
 ```
+
+## Encryption (SQLCipher)
+
+Production builds open `reflect.sqlite` with **SQLCipher**. The key is generated once and stored in secure storage via `DatabaseKeyService`.
+
+**Upgrade warning:** The first launch after encryption ships performs a **fresh-start migration** — any existing plaintext database file is deleted. Local tasks, reviews, and goals are lost on that upgrade.
+
+`main.dart` calls `applyWorkaroundToOpenSqlCipherOnOldAndroidVersions()` before opening the database.
+
+See [`security.md`](security.md) for operational guidance.

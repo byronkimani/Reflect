@@ -11,6 +11,7 @@ class GoalsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GoalsCubit, GoalsState>(
+      buildWhen: goalsStateShouldRebuild,
       builder: (context, state) {
         return DefaultTabController(
           length: 4,
@@ -78,6 +79,7 @@ class _GoalList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GoalsCubit, GoalsState>(
+      buildWhen: (p, c) => goalsListShouldRebuild(p, c, horizon),
       builder: (context, state) {
         final goals = state.goalsFor(horizon);
         if (goals.isEmpty) {

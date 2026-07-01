@@ -1,4 +1,4 @@
-.PHONY: gen test clean get lint run-dev run-prod watch coverage format fix run
+.PHONY: gen test clean get lint run-dev run-prod watch coverage format fix run prepare-env build-prod-apk deps-outdated deps-check
 
 # ----------------------------------------------------------------------
 # Code Generation
@@ -20,21 +20,21 @@ watch:
 
 # Run all unit and widget tests
 # Usage: make test
-test:
+test: prepare-env-testing
 	flutter test
 
 # Generate a coverage report (requires lcov installed)
 # Usage: make coverage
-coverage:
+coverage: prepare-env-testing
 	flutter test --coverage
-	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' -o coverage/lcov.info --ignore-errors unused
+	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
 	genhtml coverage/lcov.info -o coverage/html
 	open coverage/html/index.html
 
 # Analyze code for linting errors
 # Usage: make lint
 lint:
-	flutter analyze
+	flutter analyze --fatal-infos --fatal-warnings
 
 # Fix lint issues automatically (Great for solo devs)
 # Usage: make fix
@@ -61,6 +61,28 @@ clean:
 get:
 	flutter pub get
 
+# List packages with available updates (informational)
+# Usage: make deps-outdated
+deps-outdated:
+	dart pub outdated
+
+# Fail when direct dependencies are behind within pubspec constraints
+# Usage: make deps-check
+deps-check:
+	dart run tool/check_outdated_deps.dart
+
+# ----------------------------------------------------------------------
+# Environment
+# ----------------------------------------------------------------------
+
+prepare-env-testing:
+	chmod +x tool/prepare_env.sh
+	./tool/prepare_env.sh testing
+
+prepare-env-production:
+	chmod +x tool/prepare_env.sh
+	./tool/prepare_env.sh production
+
 # ----------------------------------------------------------------------
 # Running the App (Flavors)
 # ----------------------------------------------------------------------
@@ -71,10 +93,18 @@ run: run-dev
 
 # Run the app in Testing flavor (Default)
 # Usage: make run-dev
-run-dev:
+run-dev: prepare-env-testing
 	flutter run --dart-define=ENV=testing
 
 # Run the app in Production flavor
 # Usage: make run-prod
-run-prod:
+run-prod: prepare-env-production
 	flutter run --dart-define=ENV=production
+
+# Build obfuscated production APK
+# Usage: make build-prod-apk
+build-prod-apk: prepare-env-production
+	flutter build apk --release \
+		--obfuscate \
+		--split-debug-info=build/debug-info \
+		--dart-define=ENV=production

@@ -88,7 +88,7 @@ class NotificationScheduler {
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-      payload: '/weekly/plan',
+      payload: '/today/planning',
     );
   }
 
@@ -134,7 +134,7 @@ class NotificationScheduler {
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: '/monthly/plan',
+        payload: '/today/planning',
       );
     }
   }
@@ -220,7 +220,7 @@ class NotificationScheduler {
         iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      payload: '/task/${task.id}',
+      payload: '/today/task/${task.id}',
     );
   }
 

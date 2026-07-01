@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/errors/failure_mapper.dart';
 import 'package:reflect/core/network/network_info.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
@@ -68,87 +69,77 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   @override
   Stream<Either<Failure, List<Task>>> watchTasksForDate(DateTime date) {
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = startOfDay.add(const Duration(days: 1));
+    final dayStart = DateTime(date.year, date.month, date.day)
+        .millisecondsSinceEpoch;
 
     return (_db.select(_db.tasks)
-          ..where((t) =>
-              t.dueDate.isBetweenValues(
-                0,
-                endOfDay.millisecondsSinceEpoch - 1,
-              )))
+          ..where((t) => t.dueDateLocalDayStart.equals(dayStart)))
         .watch()
         .asyncMap((rows) async {
       try {
         final tasks = await _loadTasksWithSubtasks(rows);
         return Right(tasks);
       } catch (e) {
-        return Left(CacheFailure(errorMessage: e.toString()));
+        return Left(FailureMapper.cacheFailure(e));
       }
     });
   }
 
   @override
   Stream<Either<Failure, List<Task>>> watchBacklogTasks() {
-    final now = DateTime.now();
-    final startOfToday = DateTime(now.year, now.month, now.day);
-    final endOfToday = startOfToday.add(const Duration(days: 1));
+    final todayStart = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    ).millisecondsSinceEpoch;
     return (_db.select(_db.tasks)
           ..where((t) =>
-              t.dueDate.isNull() |
-              t.dueDate.isBetweenValues(
-                endOfToday.millisecondsSinceEpoch,
-                9223372036854775807,
-              )))
+              t.dueDateLocalDayStart.isNull() |
+              t.dueDateLocalDayStart.isBiggerThanValue(todayStart)))
         .watch()
         .asyncMap((rows) async {
       try {
         final tasks = await _loadTasksWithSubtasks(rows);
         return Right(tasks);
       } catch (e) {
-        return Left(CacheFailure(errorMessage: e.toString()));
+        return Left(FailureMapper.cacheFailure(e));
       }
     });
   }
 
   @override
   Future<Either<Failure, List<Task>>> getTasksForDate(DateTime date) async {
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = startOfDay.add(const Duration(days: 1));
+    final dayStart = DateTime(date.year, date.month, date.day)
+        .millisecondsSinceEpoch;
 
     try {
       final rows = await (_db.select(_db.tasks)
-            ..where((t) =>
-                t.dueDate.isBetweenValues(
-                  0,
-                  endOfDay.millisecondsSinceEpoch - 1,
-                )))
+            ..where((t) => t.dueDateLocalDayStart.equals(dayStart)))
           .get();
       final tasks = await _loadTasksWithSubtasks(rows);
       return Right(tasks);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
   @override
   Future<Either<Failure, List<Task>>> getBacklogTasks() async {
-    final now = DateTime.now();
-    final startOfToday = DateTime(now.year, now.month, now.day);
-    final endOfToday = startOfToday.add(const Duration(days: 1));
+    final todayStart = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    ).millisecondsSinceEpoch;
     try {
       final rows = await (_db.select(_db.tasks)
             ..where((t) =>
-                t.dueDate.isNull() |
-                t.dueDate.isBetweenValues(
-                  endOfToday.millisecondsSinceEpoch,
-                  9223372036854775807,
-                )))
+                t.dueDateLocalDayStart.isNull() |
+                t.dueDateLocalDayStart.isBiggerThanValue(todayStart)))
           .get();
       final tasks = await _loadTasksWithSubtasks(rows);
       return Right(tasks);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -183,7 +174,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       }
       return Right(task);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -218,7 +209,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       }
       return Right(task);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -259,7 +250,7 @@ class TaskRepositoryImpl implements ITaskRepository {
 
       return Right(updatedTask);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -283,7 +274,7 @@ class TaskRepositoryImpl implements ITaskRepository {
 
       return Right(updatedTask);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -295,16 +286,25 @@ class TaskRepositoryImpl implements ITaskRepository {
       
       if (taskData != null) {
         final task = taskData.toDomain();
+
+        // Drop stale CREATE/UPDATE work — the local task is being removed.
+        await (_db.delete(_db.gCalSyncQueue)
+              ..where((q) =>
+                  q.taskId.equals(id) &
+                  q.operation.isIn(['CREATE', 'UPDATE'])))
+            .go();
+
+        if (task.syncToGcal && task.gcalEventId != null) {
+          await _handleGCalSync(task, 'DELETE');
+        }
+
         await (_db.delete(_db.tasks)..where((t) => t.id.equals(id))).go();
         await _notificationScheduler.cancelTaskReminder(id);
-        if (task.syncToGcal && task.gcalEventId != null) {
-          _handleGCalSync(task, 'DELETE');
-        }
       }
       
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -318,7 +318,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       });
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -332,7 +332,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       });
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -362,7 +362,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       });
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -376,7 +376,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       });
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 

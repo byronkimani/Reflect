@@ -45,8 +45,8 @@ Pin agents to installed versions from `pubspec.yaml`.
 
 | Layer | Package / tool | Version |
 |-------|----------------|---------|
-| Framework | Flutter SDK | `^3.11.1` |
-| Language | Dart | `^3.11.1` |
+| Framework | Flutter SDK | `^3.44.4` |
+| Language | Dart | `^3.12.2` |
 | UI & Routing | GoRouter | `^17.0.0` |
 | State Management | BLoC / Cubit | `^9.1.1` |
 | Hydrated State | HydratedBloc | `^11.0.0` |
@@ -108,7 +108,7 @@ sequenceDiagram
 
 | Setting | Tool | File |
 |---------|--------|------|
-| Lint | `make lint` | [`analysis_options.yaml`](analysis_options.yaml) |
+| Lint | `make lint` (zero analyzer issues required) | [`analysis_options.yaml`](analysis_options.yaml) |
 | Format | `make format` | `dart format .` |
 | Code Gen | `make gen` | `build_runner` for Freezed, Drift, JSON |
 | CI | GitHub Actions | `.github/workflows/` |

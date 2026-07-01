@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 class AppLoadingIndicator extends StatelessWidget {
   final Color? color;
@@ -11,9 +9,11 @@ class AppLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIos = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+    final platform = Theme.of(context).platform;
+    final isApple =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
-    if (isIos) {
+    if (isApple) {
       return CupertinoActivityIndicator(color: color, radius: radius);
     }
 

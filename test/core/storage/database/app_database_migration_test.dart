@@ -323,5 +323,196 @@ CREATE TABLE tasks (
 
     await driftDb.close();
   });
+
+  test('upgrade 6→7 recreates g_cal_sync_queue without task FK', () async {
+    final raw = sqlite.sqlite3.openInMemory();
+    raw.execute('PRAGMA foreign_keys = ON');
+
+    raw.execute('''
+CREATE TABLE tasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  priority TEXT NOT NULL,
+  due_date INTEGER,
+  due_time INTEGER,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  is_overdue INTEGER NOT NULL DEFAULT 0,
+  overdue_day INTEGER NOT NULL DEFAULT 0,
+  recurrence_rule_id TEXT,
+  recurrence_parent_id TEXT,
+  has_enabled_reminder INTEGER NOT NULL DEFAULT 0,
+  gcal_event_id TEXT,
+  sync_to_gcal INTEGER NOT NULL DEFAULT 0,
+  due_date_local_day_start INTEGER,
+  due_date_utc_ms INTEGER,
+  goal_id TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute('''
+CREATE TABLE g_cal_sync_queue (
+  id TEXT NOT NULL PRIMARY KEY,
+  task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  operation TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  retry_count INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute(
+      "INSERT INTO tasks (id, title, priority, status, created_at, updated_at) "
+      "VALUES ('t1', 'Task', 'medium', 'pending', 0, 0)",
+    );
+    raw.execute(
+      "INSERT INTO g_cal_sync_queue (id, task_id, operation, payload, retry_count, created_at) "
+      "VALUES ('q1', 't1', 'CREATE', '{}', 0, 0)",
+    );
+
+    raw.userVersion = 6;
+
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.opened(raw)),
+    );
+
+    final queue = await driftDb.select(driftDb.gCalSyncQueue).get();
+    expect(queue.length, 1);
+    expect(queue.first.operation, 'CREATE');
+
+    await driftDb.close();
+  });
+
+  test('upgrade 8→9 adds task and subtask indexes', () async {
+    final raw = sqlite.sqlite3.openInMemory();
+
+    raw.execute('''
+CREATE TABLE tasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  priority TEXT NOT NULL,
+  due_date INTEGER,
+  due_time INTEGER,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  is_overdue INTEGER NOT NULL DEFAULT 0,
+  overdue_day INTEGER NOT NULL DEFAULT 0,
+  recurrence_rule_id TEXT,
+  recurrence_parent_id TEXT,
+  has_enabled_reminder INTEGER NOT NULL DEFAULT 0,
+  gcal_event_id TEXT,
+  sync_to_gcal INTEGER NOT NULL DEFAULT 0,
+  due_date_local_day_start INTEGER,
+  due_date_utc_ms INTEGER,
+  goal_id TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute('''
+CREATE TABLE subtasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  task_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  is_completed INTEGER NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+''');
+
+    raw.userVersion = 8;
+
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.opened(raw)),
+    );
+
+    final indexes = await driftDb.customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'",
+      readsFrom: const {},
+    ).get();
+
+    final indexNames = indexes.map((r) => r.read<String>('name')).toSet();
+    expect(indexNames, containsAll([
+      'idx_tasks_due_date',
+      'idx_tasks_status',
+      'idx_subtasks_task_id',
+    ]));
+
+    await driftDb.close();
+  });
+
+  test('upgrade 9→10 backfills due_date_local_day_start and adds index', () async {
+    final raw = sqlite.sqlite3.openInMemory();
+
+    raw.execute('''
+CREATE TABLE tasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  priority TEXT NOT NULL,
+  due_date INTEGER,
+  due_time INTEGER,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  is_overdue INTEGER NOT NULL DEFAULT 0,
+  overdue_day INTEGER NOT NULL DEFAULT 0,
+  recurrence_rule_id TEXT,
+  recurrence_parent_id TEXT,
+  has_enabled_reminder INTEGER NOT NULL DEFAULT 0,
+  gcal_event_id TEXT,
+  sync_to_gcal INTEGER NOT NULL DEFAULT 0,
+  due_date_local_day_start INTEGER,
+  due_date_utc_ms INTEGER,
+  goal_id TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+
+    final dueInstant = DateTime(2026, 6, 15, 9, 0).millisecondsSinceEpoch;
+    raw.execute(
+      "INSERT INTO tasks (id, title, priority, due_date, status, created_at, updated_at) "
+      "VALUES ('t1', 'Due task', 'p4', $dueInstant, 'pending', 0, 0);",
+    );
+
+    raw.userVersion = 9;
+
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.opened(raw)),
+    );
+
+    final task = await (driftDb.select(driftDb.tasks)
+          ..where((t) => t.id.equals('t1')))
+        .getSingle();
+    expect(
+      task.dueDateLocalDayStart,
+      DateTime(2026, 6, 15).millisecondsSinceEpoch,
+    );
+
+    final indexes = await driftDb.customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'index'",
+      readsFrom: const {},
+    ).get();
+    final indexNames = indexes.map((r) => r.read<String>('name')).toSet();
+    expect(indexNames, contains('idx_tasks_due_date_local'));
+
+    await driftDb.close();
+  });
+
+  test('beforeOpen sets synchronous NORMAL and cache_size pragmas', () async {
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.memory()),
+    );
+
+    final sync = await driftDb.customSelect('PRAGMA synchronous').getSingle();
+    expect(int.parse(sync.data.values.first.toString()), 1);
+
+    final cache = await driftDb.customSelect('PRAGMA cache_size').getSingle();
+    expect(int.parse(cache.data.values.first.toString()), -8000);
+
+    await driftDb.close();
+  });
 }
 

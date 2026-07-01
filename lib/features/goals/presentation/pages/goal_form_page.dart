@@ -16,10 +16,9 @@ class GoalFormPage extends StatelessWidget {
     super.key,
     this.initialGoal,
     this.timeHorizon,
-    IGoalRepository? goalRepo,
-    Stream<dynamic>? categoriesStream,
-  }) : _goalRepo = goalRepo,
-       _categoriesStream = categoriesStream;
+    this._goalRepo,
+    this._categoriesStream,
+  });
 
   final Goal? initialGoal;
   final GoalTimeHorizon? timeHorizon;

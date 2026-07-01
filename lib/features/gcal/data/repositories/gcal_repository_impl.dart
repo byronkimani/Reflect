@@ -3,16 +3,19 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/errors/failure_mapper.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
+import 'package:reflect/features/gcal/data/sources/gcal_token_storage.dart';
 import 'package:reflect/features/gcal/domain/repositories/gcal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
 class GCalRepositoryImpl implements IGCalRepository {
   final AppDatabase _db;
   final GCalApiService _apiService;
+  final GCalTokenStorage _tokenStorage;
 
-  GCalRepositoryImpl(this._db, this._apiService);
+  GCalRepositoryImpl(this._db, this._apiService, this._tokenStorage);
 
   @override
   Future<Either<Failure, String>> pushEvent(Task task) async {
@@ -28,20 +31,19 @@ class GCalRepositoryImpl implements IGCalRepository {
   Future<Either<Failure, Unit>> processQueue() async {
     try {
       final queueItems = await _db.select(_db.gCalSyncQueue).get();
-      
+
       for (final item in queueItems) {
-        if (item.retryCount >= 3) continue; // Max 3 retries policy
+        if (item.retryCount >= 3) continue;
 
         final taskJson = jsonDecode(item.payload);
         final task = Task.fromJson(taskJson);
-        
+
         late Either<Failure, dynamic> result;
         switch (item.operation) {
           case 'CREATE':
             result = await _apiService.createEvent(task);
             if (result.isRight()) {
               final gcalId = result.getOrElse((_) => '');
-              // Update task with gcalId
               await (_db.update(_db.tasks)..where((t) => t.id.equals(task.id)))
                   .write(TasksCompanion(gcalEventId: Value(gcalId)));
             }
@@ -63,14 +65,13 @@ class GCalRepositoryImpl implements IGCalRepository {
         if (result.isRight()) {
           await (_db.delete(_db.gCalSyncQueue)..where((t) => t.id.equals(item.id))).go();
         } else {
-          // Increment retry count
           await (_db.update(_db.gCalSyncQueue)..where((t) => t.id.equals(item.id)))
               .write(GCalSyncQueueCompanion(retryCount: Value(item.retryCount + 1)));
         }
       }
       return const Right(unit);
     } catch (e) {
-      return Left(CacheFailure(errorMessage: e.toString()));
+      return Left(FailureMapper.cacheFailure(e));
     }
   }
 
@@ -81,13 +82,20 @@ class GCalRepositoryImpl implements IGCalRepository {
 
   @override
   Future<Either<Failure, Unit>> signIn() async {
-    // Placeholder logic
-    return const Right(unit);
+    return const Left(
+      ServerFailure(
+        errorMessage: 'Google Calendar sign-in is not yet available.',
+      ),
+    );
   }
 
   @override
   Future<Either<Failure, Unit>> signOut() async {
-    // Placeholder logic
-    return const Right(unit);
+    try {
+      await _tokenStorage.clear();
+      return const Right(unit);
+    } catch (e) {
+      return Left(FailureMapper.cacheFailure(e));
+    }
   }
 }

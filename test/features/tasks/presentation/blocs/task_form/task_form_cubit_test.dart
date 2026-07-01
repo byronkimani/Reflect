@@ -401,4 +401,111 @@ void main() {
       expect(updated.dueDate, newDate);
     });
   });
+
+  group('TaskFormCubit additional edge cases', () {
+    test('onGoalsEmitted clears availableGoals on stream failure', () async {
+      when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+        (_) => Stream.value(
+          Left(CacheFailure(errorMessage: 'Goals stream failed')),
+        ),
+      );
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      await Future.delayed(const Duration(milliseconds: 10));
+      expect(cubit.state.availableGoals, isEmpty);
+    });
+
+    test('onGoalsEmitted clears selectedGoalId if not in new list', () async {
+      // Simulate the stream emitting a new list
+      // We will re-instantiate cubit with a goal repo that emits after delay
+      when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+        (_) => Stream.fromIterable([
+          const Right(<Goal>[]),
+        ]),
+      );
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, task(id: 't1'));
+      cubit.goalIdChanged('deleted-goal');
+      
+      // Wait for stream to process
+      await Future.delayed(const Duration(milliseconds: 10));
+      expect(cubit.state.selectedGoalId, isNull);
+    });
+
+    test('toggleRecurrenceDay adds and sorts when day is new', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.recurrenceDaysOfWeekChanged([3, 1]);
+      cubit.toggleRecurrenceDay(2);
+      expect(cubit.state.recurrenceDaysOfWeek, [1, 2, 3]);
+    });
+    
+    test('toggleRecurrenceDay removes when day exists', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.recurrenceDaysOfWeekChanged([1, 2, 3]);
+      cubit.toggleRecurrenceDay(2);
+      expect(cubit.state.recurrenceDaysOfWeek, [1, 3]);
+    });
+
+    test('isRepeatingChanged to false clears frequency', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.isRepeatingChanged(true);
+      expect(cubit.state.recurrenceFrequency, RecurrenceFrequency.DAILY);
+      cubit.isRepeatingChanged(false);
+      expect(cubit.state.recurrenceFrequency, isNull);
+    });
+
+    test('submit maps DAILY recurrence rule', () async {
+      when(() => mockRepo.createTask(any())).thenAnswer((_) async => Right(task()));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.titleChanged('Daily Task');
+      cubit.isRepeatingChanged(true);
+      cubit.recurrenceFrequencyChanged(RecurrenceFrequency.DAILY);
+      
+      await cubit.submit();
+      
+      final captured = verify(() => mockRepo.createTask(captureAny())).captured;
+      final created = captured[0] as Task;
+      expect(created.recurrenceRule, isNotNull);
+      expect(created.recurrenceRule!.frequency, RecurrenceFrequency.DAILY);
+    });
+
+    test('submit maps WEEKLY recurrence rule', () async {
+      when(() => mockRepo.createTask(any())).thenAnswer((_) async => Right(task()));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.titleChanged('Weekly Task');
+      cubit.isRepeatingChanged(true);
+      cubit.recurrenceFrequencyChanged(RecurrenceFrequency.WEEKLY);
+      cubit.recurrenceDaysOfWeekChanged([1, 5]); // Mon, Fri
+      
+      await cubit.submit();
+      
+      final captured = verify(() => mockRepo.createTask(captureAny())).captured;
+      final created = captured[0] as Task;
+      expect(created.recurrenceRule, isNotNull);
+      expect(created.recurrenceRule!.frequency, RecurrenceFrequency.WEEKLY);
+      expect(created.recurrenceRule!.daysOfWeek, [1, 5]);
+    });
+
+    test('moveToBacklog clears due date and updates task', () async {
+      final t = task(id: 'task-backlog', title: 'T', dueDate: DateTime.now());
+      when(() => mockRepo.updateTask(any())).thenAnswer((_) async => Right(t));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
+      
+      await cubit.moveToBacklog();
+      
+      final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
+      final updated = captured[0] as Task;
+      expect(updated.dueDate, isNull);
+      expect(updated.dueTime, isNull);
+      expect(cubit.state.isSuccess, isTrue);
+    });
+
+    test('moveToBacklog fails and sets error', () async {
+      final t = task(id: 'task-backlog', title: 'T', dueDate: DateTime.now());
+      when(() => mockRepo.updateTask(any())).thenAnswer((_) async => const Left(CacheFailure(errorMessage: 'err')));
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, t);
+      
+      await cubit.moveToBacklog();
+      
+      expect(cubit.state.error, 'err');
+    });
+  });
 }

@@ -18,8 +18,8 @@ Reflect is a powerful, offline-first personal task manager and wellness tool des
 
 | Layer | Technology |
 | --- | --- |
-| Framework | Flutter SDK `^3.11.1` (Targeting Android & iOS) |
-| Language | Dart `^3.11.1` |
+| Framework | Flutter SDK `^3.44.4` (Targeting Android & iOS) |
+| Language | Dart `^3.12.2` |
 | UI & Routing | Material Design, GoRouter `^17.0.0` |
 | State Management | BLoC / Cubit `^9.1.1`, HydratedBloc `^11.0.0` |
 | Dependency Injection | GetIt `^9.1.1` |
@@ -53,6 +53,22 @@ cd reflect
 flutter pub get
 ```
 
+### Local Configuration & Artifacts
+
+To run the application locally or build it, you must acquire the following artifacts and configuration files from the team lead or password manager, as they contain sensitive secrets and are not checked into source control:
+
+1. **Environment Variables (`.env` files)**:
+   Create `.env.testing` and `.env.production` in the project root. These contain API keys and external service URLs.
+   > **Note**: Never commit these files. They are already added to `.gitignore`.
+
+2. **Firebase Configuration**:
+   - **Android**: Place `google-services.json` in `android/app/`.
+   - **iOS**: Place `GoogleService-Info.plist` in `ios/Runner/`.
+
+3. **Android Keystores (For Release Builds)**:
+   - Place the upload keystore (`upload-keystore.jks`) in the `android/app/` directory.
+   - Obtain the `key.properties` file and place it in `android/` containing the store password, key password, and aliases.
+
 ### Environment modes
 
 Reflect supports different environment modes through dart defines:
@@ -61,8 +77,6 @@ Reflect supports different environment modes through dart defines:
 | --- | --- | --- |
 | Testing (Default) | `make run-dev` | Uses `.env.testing` |
 | Production | `make run-prod` | Uses `.env.production` |
-
-You will need to create the `.env.*` files locally for environment variables (API keys, etc.). Do not commit production `.env` files.
 
 ## Scripts
 
@@ -75,7 +89,7 @@ make gen              # Run build_runner to generate Drift/Freezed code
 make watch            # Watch for changes and re-generate code
 make test             # Run all unit and widget tests
 make coverage         # Generate coverage report
-make lint             # Run flutter analyze
+make lint             # Static analysis (zero issues required)
 make fix              # Apply dart fix automatically
 make format           # Format dart code
 make clean            # flutter clean && flutter pub get
@@ -92,6 +106,16 @@ Run the test suite using:
 ```bash
 make test
 ```
+
+## Installing Pre-Release Builds (App Testers)
+
+If you have been invited to test Reflect via Firebase App Distribution, follow these steps to install the app on your Android device:
+
+1. **Accept the Invite**: Open the invitation email from Firebase on your Android device and tap **Get Started** or **Accept Invitation**.
+2. **Sign In**: Sign in with your Google account when prompted.
+3. **Install Firebase App Tester**: You will be prompted to download the **Firebase App Tester** app. Download and install it. *(Note: You may need to allow your browser to "Install unknown apps" in Android Settings).*
+4. **Install Reflect**: Open the App Tester app, select **Reflect** from your available apps, and tap **Download** / **Install**.
+5. **Updates**: Whenever a new version is released, you will receive an email and can update directly through the App Tester app.
 
 ## Contributing
 

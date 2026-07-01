@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/review/domain/repositories/review_repository.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
@@ -10,17 +11,22 @@ import 'package:reflect/features/review/presentation/daily_review_state.dart';
 class MockReviewRepository extends Mock implements IReviewRepository {}
 class FakeDailyReviewState extends Fake implements DailyReviewState {}
 
+class MockAppAnalyticsService extends Mock implements AppAnalyticsService {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeDailyReviewState());
   });
 
   late MockReviewRepository mockRepository;
+  late MockAppAnalyticsService mockAnalytics;
   late DailyReviewCubit cubit;
 
   setUp(() {
     mockRepository = MockReviewRepository();
-    cubit = DailyReviewCubit(mockRepository);
+    mockAnalytics = MockAppAnalyticsService();
+    when(() => mockAnalytics.logDailyReviewSubmitted()).thenAnswer((_) async {});
+    cubit = DailyReviewCubit(mockRepository, mockAnalytics);
   });
 
   tearDown(() {
@@ -90,6 +96,7 @@ void main() {
       expect: () => [],
       verify: (_) {
         verifyNever(() => mockRepository.saveDailyReview(any()));
+        verifyNever(() => mockAnalytics.logDailyReviewSubmitted());
       },
     );
 
@@ -126,6 +133,7 @@ void main() {
       ],
       verify: (_) {
         verify(() => mockRepository.saveDailyReview(any())).called(1);
+        verify(() => mockAnalytics.logDailyReviewSubmitted()).called(1);
       },
     );
 
@@ -160,6 +168,9 @@ void main() {
           error: 'Failed to save',
         ),
       ],
+      verify: (_) {
+        verifyNever(() => mockAnalytics.logDailyReviewSubmitted());
+      },
     );
   });
 }

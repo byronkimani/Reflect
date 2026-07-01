@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import 'app_loading_indicator.dart';
 
@@ -23,9 +21,11 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIos = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+    final platform = Theme.of(context).platform;
+    final isApple =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
-    if (isIos) {
+    if (isApple) {
       return SizedBox(
         width: width ?? double.infinity,
         child: CupertinoButton.filled(

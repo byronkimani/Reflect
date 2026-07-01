@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 
 import 'settings_state.dart';
 
 class SettingsCubit extends HydratedCubit<SettingsState> {
-  SettingsCubit(this._scheduler) : super(const SettingsState()) {
-    _syncHeartbeatNotifications();
-  }
+  SettingsCubit(this._scheduler, this._analytics) : super(const SettingsState());
 
   final NotificationScheduler _scheduler;
+  final AppAnalyticsService _analytics;
+
+  /// Schedules heartbeat notifications after first frame (deferred startup).
+  Future<void> scheduleStartupSync() async {
+    _analytics.setCollectionEnabled(state.analyticsEnabled);
+    await _syncHeartbeatNotifications();
+  }
 
   void setThemeMode(ThemeMode mode) => emit(state.copyWith(themeMode: mode));
+
+  Future<void> setAnalyticsEnabled(bool enabled) async {
+    emit(state.copyWith(analyticsEnabled: enabled));
+    _analytics.setCollectionEnabled(enabled);
+  }
 
   Future<void> setMorningPlanningEnabled(bool enabled) async {
     emit(state.copyWith(morningPlanningEnabled: enabled));
@@ -35,30 +46,32 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
 
   Future<void> _syncHeartbeatNotifications() async {
     final s = state;
-    if (s.morningPlanningEnabled) {
-      await _scheduler.cancelMorningPlanning();
-      await _scheduler.scheduleMorningPlanning();
-    } else {
-      await _scheduler.cancelMorningPlanning();
-    }
-    if (s.eveningReviewEnabled) {
-      await _scheduler.cancelEveningReview();
-      await _scheduler.scheduleEveningReview();
-    } else {
-      await _scheduler.cancelEveningReview();
-    }
-    if (s.weeklyPlanningEnabled) {
-      await _scheduler.cancelWeeklyPlanning();
-      await _scheduler.scheduleWeeklyPlanning();
-    } else {
-      await _scheduler.cancelWeeklyPlanning();
-    }
-    if (s.monthlyPlanningEnabled) {
-      await _scheduler.cancelMonthlyPlanning();
-      await _scheduler.scheduleMonthlyPlanning();
-    } else {
-      await _scheduler.cancelMonthlyPlanning();
-    }
+    await Future.wait([
+      _syncMorningPlanning(s.morningPlanningEnabled),
+      _syncEveningReview(s.eveningReviewEnabled),
+      _syncWeeklyPlanning(s.weeklyPlanningEnabled),
+      _syncMonthlyPlanning(s.monthlyPlanningEnabled),
+    ]);
+  }
+
+  Future<void> _syncMorningPlanning(bool enabled) async {
+    await _scheduler.cancelMorningPlanning();
+    if (enabled) await _scheduler.scheduleMorningPlanning();
+  }
+
+  Future<void> _syncEveningReview(bool enabled) async {
+    await _scheduler.cancelEveningReview();
+    if (enabled) await _scheduler.scheduleEveningReview();
+  }
+
+  Future<void> _syncWeeklyPlanning(bool enabled) async {
+    await _scheduler.cancelWeeklyPlanning();
+    if (enabled) await _scheduler.scheduleWeeklyPlanning();
+  }
+
+  Future<void> _syncMonthlyPlanning(bool enabled) async {
+    await _scheduler.cancelMonthlyPlanning();
+    if (enabled) await _scheduler.scheduleMonthlyPlanning();
   }
 
   @override

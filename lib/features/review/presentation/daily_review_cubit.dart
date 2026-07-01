@@ -1,12 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/review/domain/repositories/review_repository.dart';
 
 import 'daily_review_state.dart';
 
 class DailyReviewCubit extends Cubit<DailyReviewState> {
   final IReviewRepository _reviewRepository;
+  final AppAnalyticsService _analytics;
 
-  DailyReviewCubit(this._reviewRepository) : super(const DailyReviewState());
+  DailyReviewCubit(this._reviewRepository, this._analytics)
+      : super(const DailyReviewState());
 
   void ratingChanged(int rating) {
     emit(state.copyWith(dayRating: rating));
@@ -36,9 +39,14 @@ class DailyReviewCubit extends Cubit<DailyReviewState> {
     emit(state.copyWith(isSubmitting: true, error: null));
     final result = await _reviewRepository.saveDailyReview(state);
     
-    result.fold(
-      (failure) => emit(state.copyWith(isSubmitting: false, error: failure.errorMessage)),
-      (_) => emit(state.copyWith(isSubmitting: false, isSuccess: true)),
+    await result.fold<Future<void>>(
+      (failure) async {
+        emit(state.copyWith(isSubmitting: false, error: failure.errorMessage));
+      },
+      (_) async {
+        await _analytics.logDailyReviewSubmitted();
+        emit(state.copyWith(isSubmitting: false, isSuccess: true));
+      },
     );
   }
 }
