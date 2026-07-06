@@ -44,7 +44,7 @@ dependencies:
   path_provider: ^2.1.5
   fpdart: ^1.1.0
   cupertino_icons: ^1.0.8
-  equatable: ^2.0.7
+  equatable: ^2.1.0
   flutter_dotenv: ^6.0.0
   collection: ^1.19.1
   internet_connection_checker_plus: ^3.0.0
