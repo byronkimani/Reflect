@@ -2,24 +2,24 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:reflect/core/network/network_info.dart';
+
 import 'package:reflect/core/storage/database/app_database.dart';
-import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
+
 import 'package:reflect/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 
-class MockNetworkInfo extends Mock implements NetworkInfo {}
-class MockGCalApiService extends Mock implements GCalApiService {}
+
+
 class MockRecurrenceEngine extends Mock implements RecurrenceEngine {}
 class MockNotificationScheduler extends Mock implements NotificationScheduler {}
 class FakeTask extends Fake implements Task {}
 
 void main() {
   late AppDatabase db;
-  late MockNetworkInfo mockNetworkInfo;
-  late MockGCalApiService mockGCalApiService;
+
+
   late MockRecurrenceEngine mockRecurrenceEngine;
   late MockNotificationScheduler mockNotificationScheduler;
   late TaskRepositoryImpl repository;
@@ -30,15 +30,14 @@ void main() {
 
   setUp(() {
     db = AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
-    mockNetworkInfo = MockNetworkInfo();
-    mockGCalApiService = MockGCalApiService();
+
+
     mockRecurrenceEngine = MockRecurrenceEngine();
     mockNotificationScheduler = MockNotificationScheduler();
 
     repository = TaskRepositoryImpl(
       db,
-      mockNetworkInfo,
-      mockGCalApiService,
+
       mockRecurrenceEngine,
       mockNotificationScheduler,
     );
@@ -258,7 +257,7 @@ void main() {
     });
     test('createTask returns left on database error', () async {
       final badDb = AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
-      final repo = TaskRepositoryImpl(badDb, mockNetworkInfo, mockGCalApiService, mockRecurrenceEngine, mockNotificationScheduler);
+      final repo = TaskRepositoryImpl(badDb, mockRecurrenceEngine, mockNotificationScheduler);
       await badDb.close(); // closing it will cause errors on queries
       
       final task = Task(id: 'err1', title: 'Error', status: TaskStatus.pending, createdAt: DateTime.now(), updatedAt: DateTime.now());
@@ -286,8 +285,6 @@ void main() {
           AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
       final localRepo = TaskRepositoryImpl(
         localDb,
-        mockNetworkInfo,
-        mockGCalApiService,
         mockRecurrenceEngine,
         mockNotificationScheduler,
       );

@@ -28,8 +28,6 @@ abstract class Task with _$Task {
     RecurrenceRule? recurrenceRule,
     String? recurrenceParentId,
     @Default([]) List<Subtask> subtasks,
-    String? gcalEventId,
-    @Default(false) bool syncToGcal,
     String? goalId,
     @Default(false) bool hasEnabledReminder,
     required DateTime createdAt,

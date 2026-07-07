@@ -61,7 +61,7 @@ class TaskFormCubit extends Cubit<TaskFormState> {
   void dueDateChanged(DateTime? value) => emit(state.copyWith(dueDate: value, isModified: true));
   void dueTimeChanged(String? value) => emit(state.copyWith(dueTime: value, isModified: true));
   void hasEnabledReminderChanged(bool value) => emit(state.copyWith(hasEnabledReminder: value, isModified: true));
-  void syncToGcalChanged(bool value) => emit(state.copyWith(syncToGcal: value, isModified: true));
+
   void goalIdChanged(String? goalId) => emit(state.copyWith(selectedGoalId: goalId, isModified: true));
 
   void isRepeatingChanged(bool value) {
@@ -181,7 +181,6 @@ class TaskFormCubit extends Cubit<TaskFormState> {
       dueTime: state.dueTime,
       hasEnabledReminder: state.hasEnabledReminder,
       subtasks: subtasks,
-      syncToGcal: state.syncToGcal,
       goalId: state.selectedGoalId,
       updatedAt: now,
     );
@@ -252,7 +251,6 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           recurrenceRule: recurrenceRule,
           recurrenceParentId: null,
           subtasks: subtasks,
-          syncToGcal: state.syncToGcal,
           goalId: goalId,
           updatedAt: now,
         ) ??
@@ -268,7 +266,6 @@ class TaskFormCubit extends Cubit<TaskFormState> {
           recurrenceParentId: null,
           notes: notes,
           subtasks: subtasks,
-          syncToGcal: state.syncToGcal,
           goalId: goalId,
           createdAt: now,
           updatedAt: now,

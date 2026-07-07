@@ -2,9 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:reflect/core/network/network_info.dart';
+
 import 'package:reflect/core/storage/database/app_database.dart';
-import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
+
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
@@ -12,9 +12,9 @@ import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
 import 'package:reflect/features/tasks/data/repositories/task_repository_impl.dart';
 
-class MockNetworkInfo extends Mock implements NetworkInfo {}
 
-class MockGCalApiService extends Mock implements GCalApiService {}
+
+
 
 class MockRecurrenceEngine extends Mock implements RecurrenceEngine {}
 
@@ -23,7 +23,7 @@ class MockNotificationScheduler extends Mock implements NotificationScheduler {}
 void main() {
   late AppDatabase db;
   late TaskRepositoryImpl repo;
-  late MockNetworkInfo mockNetworkInfo;
+
   late MockNotificationScheduler mockNotificationScheduler;
 
   final now = DateTime(2025, 3, 18, 12, 0);
@@ -37,9 +37,9 @@ void main() {
 
   setUp(() async {
     db = AppDatabase.forTesting(DatabaseConnection(NativeDatabase.memory()));
-    mockNetworkInfo = MockNetworkInfo();
+
     mockNotificationScheduler = MockNotificationScheduler();
-    when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => false);
+
     when(
       () => mockNotificationScheduler.scheduleTaskReminder(any()),
     ).thenAnswer((_) async {});
@@ -49,8 +49,7 @@ void main() {
 
     repo = TaskRepositoryImpl(
       db,
-      mockNetworkInfo,
-      MockGCalApiService(),
+
       RecurrenceEngineImpl(),
       mockNotificationScheduler,
     );

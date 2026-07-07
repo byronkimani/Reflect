@@ -9,9 +9,7 @@ import 'package:reflect/core/network/presentation/connectivity_event.dart';
 import 'package:reflect/core/network/presentation/connectivity_state.dart';
 import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/core/router/app_router.dart';
-import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_state.dart';
+
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/entities/goal_category.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -34,8 +32,7 @@ import 'package:reflect/main.dart';
 class MockConnectivityBloc extends MockBloc<ConnectivityEvent, ConnectivityState>
     implements ConnectivityBloc {}
 
-class MockGCalSyncCubit extends MockCubit<GCalSyncState>
-    implements GCalSyncCubit {}
+
 
 class MockTaskListBloc extends MockBloc<TaskListEvent, TaskListState>
     implements TaskListBloc {}
@@ -54,8 +51,7 @@ class MockSettingsCubit extends MockCubit<SettingsState>
 
 class MockGoalsCubit extends MockCubit<GoalsState> implements GoalsCubit {}
 
-class MockAnalyticsBloc extends MockBloc<AnalyticsEvent, AnalyticsState>
-    implements AnalyticsBloc {}
+
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
 
@@ -66,14 +62,14 @@ class RouterTestHarness {
   RouterTestHarness._();
 
   late MockConnectivityBloc connectivityBloc;
-  late MockGCalSyncCubit gCalSyncCubit;
+
   late MockTaskListBloc taskListBloc;
   late MockPlanningCubit planningCubit;
   late MockDailyReviewCubit dailyReviewCubit;
   late MockTaskSelectionCubit taskSelectionCubit;
   late MockSettingsCubit settingsCubit;
   late MockGoalsCubit goalsCubit;
-  late MockAnalyticsBloc analyticsBloc;
+
   late MockITaskRepository taskRepository;
   late MockIGoalRepository goalRepository;
 
@@ -89,21 +85,20 @@ class RouterTestHarness {
     await getIt.reset();
 
     connectivityBloc = MockConnectivityBloc();
-    gCalSyncCubit = MockGCalSyncCubit();
+
     taskListBloc = MockTaskListBloc();
     planningCubit = MockPlanningCubit();
     dailyReviewCubit = MockDailyReviewCubit();
     taskSelectionCubit = MockTaskSelectionCubit();
     settingsCubit = MockSettingsCubit();
     goalsCubit = MockGoalsCubit();
-    analyticsBloc = MockAnalyticsBloc();
+
     taskRepository = MockITaskRepository();
     goalRepository = MockIGoalRepository();
 
     when(() => connectivityBloc.state)
         .thenReturn(const ConnectivityState.connected());
-    when(() => gCalSyncCubit.state).thenReturn(const GCalSyncState());
-    when(() => gCalSyncCubit.processQueue()).thenAnswer((_) async {});
+
     when(() => taskListBloc.state).thenReturn(
       const TaskListState.loaded(rawTasks: [], pending: [], completed: [], overdue: []),
     );
@@ -115,11 +110,6 @@ class RouterTestHarness {
     when(() => goalsCubit.state).thenReturn(const GoalsState());
     when(() => goalsCubit.stream)
         .thenAnswer((_) => Stream.value(const GoalsState()));
-    when(() => analyticsBloc.state)
-        .thenReturn(const AnalyticsState.initial());
-    when(() => analyticsBloc.stream).thenAnswer(
-      (_) => Stream.value(const AnalyticsState.initial()),
-    );
 
     when(() => goalRepository.watchAllGoals()).thenAnswer(
       (_) => Stream.value(const Right(<Goal>[])),
@@ -132,7 +122,7 @@ class RouterTestHarness {
     getIt.registerSingleton<IGoalRepository>(goalRepository);
     getIt.registerSingleton<GoalsCubit>(goalsCubit);
     getIt.registerSingleton<AppAnalyticsService>(const NoOpAppAnalyticsService());
-    getIt.registerFactory<AnalyticsBloc>(() => analyticsBloc);
+
 
     router = createAppRouter();
   }
@@ -145,7 +135,7 @@ class RouterTestHarness {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ConnectivityBloc>.value(value: connectivityBloc),
-        BlocProvider<GCalSyncCubit>.value(value: gCalSyncCubit),
+
         BlocProvider<TaskListBloc>.value(value: taskListBloc),
         BlocProvider<PlanningCubit>.value(value: planningCubit),
         BlocProvider<DailyReviewCubit>.value(value: dailyReviewCubit),

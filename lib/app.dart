@@ -7,11 +7,10 @@ import 'package:reflect/core/network/presentation/connectivity_event.dart';
 import 'package:reflect/core/presentation/connectivity_wrapper.dart';
 import 'package:reflect/core/router/app_router.dart';
 import 'package:reflect/core/presentation/theme/app_theme.dart';
-import 'package:reflect/core/startup/deferred_startup.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
+import 'package:reflect/core/startup/deferred_startup.dart';
 import 'package:reflect/features/planning/presentation/planning_cubit.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_state.dart';
@@ -33,9 +32,6 @@ class ReflectApp extends StatelessWidget {
           create: (_) =>
               getIt<ConnectivityBloc>()
                 ..add(const ConnectivityEvent.monitorStarted()),
-        ),
-        BlocProvider<GCalSyncCubit>(
-          create: (_) => getIt<GCalSyncCubit>(),
         ),
         BlocProvider<TaskListBloc>(
           create: (_) =>

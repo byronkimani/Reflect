@@ -27,9 +27,6 @@ class Tasks extends Table {
 
   IntColumn get hasEnabledReminder => integer().withDefault(const Constant(0))();
 
-  TextColumn get gcalEventId => text().nullable()();
-  IntColumn get syncToGcal => integer().withDefault(const Constant(0))();
-
   TextColumn get goalId =>
       text().nullable().customConstraint('REFERENCES goals(id) ON DELETE SET NULL')();
 

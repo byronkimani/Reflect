@@ -11,7 +11,5 @@ void main() {
     expect(find.text('More options'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Appearance & notifications'), findsOneWidget);
-    expect(find.text('Analytics'), findsOneWidget);
-    expect(find.text('Insights and trends'), findsOneWidget);
   });
 }

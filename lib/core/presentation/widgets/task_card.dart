@@ -134,10 +134,6 @@ class TaskCard extends StatelessWidget {
                         style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
-                    if (task.syncToGcal) ...[
-                      const SizedBox(width: 12),
-                      Icon(Icons.sync, size: 16, color: colorScheme.onSurfaceVariant),
-                    ],
                     if (isOverdue) ...[
                       const Spacer(),
                       Container(

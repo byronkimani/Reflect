@@ -93,6 +93,9 @@ make lint             # Static analysis (zero issues required)
 make fix              # Apply dart fix automatically
 make format           # Format dart code
 make clean            # flutter clean && flutter pub get
+make deps-outdated    # List available package updates
+make deps-upgrade     # Upgrade packages within pubspec constraints
+make deps-check       # Fail if direct deps are behind upgradable versions
 ```
 
 **CRITICAL**: You must run `make gen` after changing any files annotated with `@freezed`, `@JsonSerializable`, `@DriftDatabase`, or `@DriftAccessor`.

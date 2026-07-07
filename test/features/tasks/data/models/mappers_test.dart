@@ -22,8 +22,7 @@ void main() {
       overdueDay: 0,
       recurrenceRuleId: null,
       recurrenceParentId: null,
-      gcalEventId: null,
-      syncToGcal: 0,
+
       goalId: null,
       hasEnabledReminder: 1,
       createdAt: now.millisecondsSinceEpoch,
@@ -58,8 +57,7 @@ void main() {
         overdueDay: 0,
         recurrenceRuleId: null,
         recurrenceParentId: null,
-        gcalEventId: null,
-        syncToGcal: 0,
+
         goalId: null,
         hasEnabledReminder: 0,
         createdAt: now.millisecondsSinceEpoch,

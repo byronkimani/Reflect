@@ -11,13 +11,7 @@ import 'package:reflect/core/storage/database/app_database.dart';
 import 'package:reflect/core/storage/database/database_key_service.dart';
 import 'package:reflect/core/storage/secure_storage_factory.dart';
 import 'package:reflect/core/storage/token_storage.dart';
-import 'package:reflect/features/post/data/post_repository.dart';
 import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
-import 'package:reflect/features/gcal/data/repositories/gcal_repository_impl.dart';
-import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
-import 'package:reflect/features/gcal/data/sources/gcal_token_storage.dart';
-import 'package:reflect/features/gcal/domain/repositories/gcal_repository.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/planning/presentation/planning_cubit.dart';
 import 'package:reflect/features/review/data/repositories/review_repository_impl.dart';
 import 'package:reflect/features/review/domain/repositories/review_repository.dart';
@@ -29,7 +23,7 @@ import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bl
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
-import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
+
 import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/features/goals/data/repositories/goal_repository_impl.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -45,9 +39,6 @@ void setupDependencies() {
     () => DatabaseKeyService(secureStorage),
   );
   getIt.registerLazySingleton<AuthSessionNotifier>(() => AuthSessionNotifier());
-  getIt.registerLazySingleton<GCalTokenStorage>(
-    () => GCalTokenStorage(secureStorage),
-  );
 
   getIt.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(InternetConnection()),
@@ -65,27 +56,13 @@ void setupDependencies() {
     () => AppDatabase(getIt<DatabaseKeyService>()),
   );
 
-  getIt.registerLazySingleton<PostRepository>(
-    () => PostRepository(getIt<DioClient>()),
-  );
-
-  getIt.registerLazySingleton<GCalApiService>(() => GCalApiServiceImpl());
   getIt.registerLazySingleton<RecurrenceEngine>(() => RecurrenceEngineImpl());
 
   getIt.registerLazySingleton<ITaskRepository>(
     () => TaskRepositoryImpl(
       getIt<AppDatabase>(),
-      getIt<NetworkInfo>(),
-      getIt<GCalApiService>(),
       getIt<RecurrenceEngine>(),
       getIt<NotificationScheduler>(),
-    ),
-  );
-  getIt.registerLazySingleton<IGCalRepository>(
-    () => GCalRepositoryImpl(
-      getIt<AppDatabase>(),
-      getIt<GCalApiService>(),
-      getIt<GCalTokenStorage>(),
     ),
   );
   getIt.registerLazySingleton<IReviewRepository>(
@@ -97,9 +74,6 @@ void setupDependencies() {
 
   getIt.registerFactory<ConnectivityBloc>(
     () => ConnectivityBloc(getIt<NetworkInfo>()),
-  );
-  getIt.registerFactory<GCalSyncCubit>(
-    () => GCalSyncCubit(getIt<IGCalRepository>()),
   );
   getIt.registerFactory<TaskListBloc>(
     () => TaskListBloc(getIt<ITaskRepository>()),
@@ -116,9 +90,7 @@ void setupDependencies() {
       getIt<AppAnalyticsService>(),
     ),
   );
-  getIt.registerFactory<AnalyticsBloc>(
-    () => AnalyticsBloc(getIt<AppDatabase>().analyticsDao),
-  );
+
   getIt.registerFactory<GoalsCubit>(
     () => GoalsCubit(getIt<IGoalRepository>()),
   );

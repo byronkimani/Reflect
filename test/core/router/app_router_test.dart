@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
-import 'package:reflect/features/analytics/domain/entities/analytics_models.dart';
-import 'package:reflect/features/analytics/presentation/bloc/analytics_bloc.dart';
+
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import '../../helpers/router_test_helpers.dart';
@@ -14,7 +13,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const TaskListEvent.loadBacklog());
     registerFallbackValue(GoalTimeHorizon.weekly);
-    registerFallbackValue(const AnalyticsEvent.load(DateRange.last7Days));
+
     registerFallbackValue(
       Task(id: '', title: '', createdAt: DateTime(2025), updatedAt: DateTime(2025)),
     );
@@ -187,17 +186,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Settings'), findsOneWidget);
-    });
-
-    testWidgets('opens analytics from more branch', (tester) async {
-      await tester.pumpWidget(harness.buildApp());
-      await tester.pumpAndSettle();
-
-      harness.router.push('/more/analytics');
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
   });
 }

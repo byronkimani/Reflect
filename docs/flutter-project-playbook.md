@@ -6,26 +6,129 @@
 
 ---
 
+
 ## Table of Contents
 
-1. [Project Scaffolding](#1-project-scaffolding)
-2. [Dependency Stack](#2-dependency-stack)
-3. [Clean Architecture Structure](#3-clean-architecture-structure)
-4. [Code Generation Setup](#4-code-generation-setup)
-5. [Environment & Secrets](#5-environment--secrets)
-6. [Makefile (Developer Shortcuts)](#6-makefile-developer-shortcuts)
-7. [Security Checklist](#7-security-checklist)
-8. [Testing Conventions](#8-testing-conventions)
-9. [CI / CD with GitHub Actions](#9-ci--cd-with-github-actions)
-10. [Firebase Setup](#10-firebase-setup)
-11. [Versioning Strategy](#11-versioning-strategy)
-12. [Documentation Framework](#12-documentation-framework)
-13. [AI Agent Rules (AGENTS.md)](#13-ai-agent-rules-agentsmd)
-14. [Production Readiness Checklist](#14-production-readiness-checklist)
+0. [The Master Bootstrap Prompt](#0-the-master-bootstrap-prompt)
+1. [AI Agent Initialization (AGENTS.md)](#1-ai-agent-initialization-agentsmd)
+2. [Architectural Decisions & Planning](#2-architectural-decisions--planning)
+3. [Project Scaffolding](#3-project-scaffolding)
+4. [Dependency Stack](#4-dependency-stack)
+5. [Clean Architecture Structure](#5-clean-architecture-structure)
+6. [Code Generation Setup](#6-code-generation-setup)
+7. [Dependency Injection Setup](#7-dependency-injection-setup)
+8. [Environment & Secrets](#8-environment--secrets)
+9. [Makefile (Developer Shortcuts)](#9-makefile-developer-shortcuts)
+10. [Security Checklist](#10-security-checklist)
+11. [Testing Conventions](#11-testing-conventions)
+12. [CI / CD with GitHub Actions](#12-ci--cd-with-github-actions)
+13. [Firebase Setup](#13-firebase-setup)
+14. [Versioning Strategy](#14-versioning-strategy)
+15. [Documentation Framework & Ways of Working](#15-documentation-framework--ways-of-working)
+16. [Production Readiness Checklist](#16-production-readiness-checklist)
 
 ---
 
-## 1. Project Scaffolding
+## 0. The Master Bootstrap Prompt
+
+To completely bootstrap a production-ready app from zero, **simply copy the prompt below and paste it to your AI agent.** 
+
+> **Goal:** I want to bootstrap a new Flutter application named `[Your App Name]`.
+> 
+> **Instructions:**
+> Please read the `docs/flutter-project-playbook.md` file and execute the entire bootstrap process in chronological order (Sections 1 through 15). 
+> 
+> - **Stop at Section 2:** You must interview me on the key architectural decisions (State Management, Storage, Networking, Routing, UI) and **wait for my answers** before scaffolding anything.
+> - **Execute completely:** Once we align on architecture, proceed through the rest of the playbook (Scaffold, Dependencies, Clean Architecture, CodeGen, Dependency Injection, Environments, Makefiles, Security, Testing, CI/CD, and Documentation). 
+> - Generate all the exact boilerplate files, workflows, and markdown docs instructed in the playbook. 
+> - **Security Check:** Ensure the agent explicitly configures `.gitignore` so that secrets (like `google-services.json`, `GoogleService-Info.plist`, and `firebase_options.dart`) are never committed by mistake.
+> - **Firebase Walkthrough:** After bootstrapping is complete, provide me with a walkthrough of the manual Firebase setup steps from Section 13. Emphasize that Firebase App Distribution (App Tester) is the first product we will use, and remind/advise me to hide any secrets (e.g., the values in `firebase_options.dart`).
+> 
+> What are your architectural questions from Section 2?
+---
+## 1. AI Agent Initialization (AGENTS.md)
+
+Create `AGENTS.md` at the project root. This file controls how AI coding assistants behave in the repository.
+
+```markdown
+# [App Name] — Agent Codex
+
+> Read this file before writing or modifying any code.
+
+## Hard Rules
+
+1. **Tests ship with every change — no exceptions.** Every new or changed behavior must include tests before merge.
+2. **No unauthorized commits.** Stage changes, show the diff, wait for approval.
+3. **Tests are mandatory.** Every new/changed function ships with happy-path and failure/edge tests.
+4. **No linter bypasses.** Never use `// ignore:` without explicit approval.
+5. **No UI without a design reference.** Confirm direction before new layouts.
+6. **Run codegen after model changes.** `@freezed`, `@JsonSerializable`, `@DriftDatabase` → run `make gen`.
+7. **Follow Clean Architecture boundaries.** Presentation → Domain ← Data.
+8. **Use BLoC/Cubit for state management.** Do not use `setState` or `ChangeNotifier`.
+9. **No raw Material widgets for app-level patterns.** Use shared widgets from `core/presentation/`.
+10. **Use typed routes.** Use GoRouter path constants.
+11. **Use GetIt for DI.** Register dependencies in `core/di/injectors.dart`.
+12. **No secrets in source.** Use `.env.*` files via `flutter_dotenv`.
+13. **Preserve official app name.** Do not rename the app unless requested.
+14. **Immutable models.** Use `@freezed` for all domain entities and state classes.
+15. **Update docs on feature changes.** Update `docs/implementation-status.md`.
+16. **Version bumping requires owner consent.** Always ask before touching the version string.
+17. **Release notes required.** Document changes for testers when shipping a new release.
+18. **Keep documentation synced.** Always keep all documentation updated as code changes are made. Any conflicts or discrepancies must be raised to the user. The playbook itself must be kept up to date with any newly introduced coding guidelines.
+19. **Ask architectural questions.** When bootstrapping a new project or feature, do not assume default technologies. Ask the user architectural questions (e.g., State Management, Storage, Networking) to determine the right stack if it isn't explicitly specified.
+
+## Pre-flight (before writing code)
+
+- [ ] Read the Hard Rules above.
+- [ ] Check `docs/implementation-status.md`.
+- [ ] If adding UI: confirm a design reference exists.
+- [ ] If changing a model: prepare to run `make gen`.
+
+## Post-flight (before handing back)
+
+- [ ] `make lint` — zero errors.
+- [ ] `make test` — all tests pass.
+- [ ] Clean Architecture boundaries intact.
+- [ ] No unauthorized `git commit`.
+- [ ] Ask for version bump approval if a feature was added/changed.
+
+## Architecture
+
+**Framework:** Flutter
+**State:** BLoC/Cubit
+**DI:** GetIt
+**Routing:** GoRouter
+**DB:** Drift (SQLite)
+
+## Environment
+
+| Command | Env |
+|---------|-----|
+| `make run-dev` | `.env.testing` |
+| `make run-prod` | `.env.production` |
+
+Never commit `.env.production`.
+```
+
+---
+
+## 2. Architectural Decisions & Planning
+
+Every project is different. Before running any commands or writing code, **always** confirm the architectural stack with the developer. Do not blindly assume the Reflect stack (BLoC + Drift) for every new project.
+
+If the developer has not provided an explicit stack, **ask them architectural questions** (or suggest they use the `/grill-me` command) to resolve the following decisions:
+
+1. **State Management:** BLoC/Cubit, Riverpod, Provider, or simply `ValueNotifier`?
+2. **Local Storage:** Drift (relational, heavy), Hive/Isar (NoSQL, fast), or just `SharedPreferences`?
+3. **Networking & API:** REST via `dio`, GraphQL, or Firebase backend?
+4. **Routing:** `go_router` (complex deep links) or standard `Navigator 2.0` / auto_route?
+5. **UI / Styling:** Custom design system, standard Material 3, or a UI kit?
+
+Once these decisions are finalized, document them in `ARCHITECTURE.md` and proceed with the scaffolding below using the agreed-upon stack.
+
+---
+
+## 3. Project Scaffolding
 
 ```bash
 # Create the project
@@ -50,6 +153,7 @@ firebase-credentials.json
 android/app/upload-keystore.jks
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
 
 # Generated code
 *.g.dart
@@ -78,7 +182,7 @@ linter:
 
 ---
 
-## 2. Dependency Stack
+## 4. Dependency Stack
 
 Below are the packages that have proven reliable. Pick the ones that fit your project — nothing here is mandatory except what your architecture requires.
 
@@ -131,7 +235,7 @@ mocktail: ^1.0.0
 
 ---
 
-## 3. Clean Architecture Structure
+## 5. Clean Architecture Structure
 
 Every feature lives in `lib/features/<feature_name>/` and is broken into three layers. Imports only flow **inward** — presentation → domain ← data.
 
@@ -172,7 +276,7 @@ lib/
 
 ---
 
-## 4. Code Generation Setup
+## 6. Code Generation Setup
 
 Three annotations drive codegen: `@freezed` (models), `@JsonSerializable` (JSON), `@DriftDatabase` (SQLite).
 
@@ -188,7 +292,31 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ---
 
-## 5. Environment & Secrets
+## 7. Dependency Injection Setup
+
+We use `get_it` as our service locator. The AI agent must automatically scaffold this pattern.
+
+1. Create `lib/core/di/injectors.dart`.
+2. Add a `setupDependencies()` function.
+3. Call `setupDependencies()` in `main.dart` before `runApp()`.
+
+**Pattern:**
+- `registerLazySingleton`: For Repositories, Services, and Databases.
+- `registerFactory`: For BLoCs/Cubits (to ensure fresh state on navigation).
+
+```dart
+import 'package:get_it/get_it.dart';
+
+final getIt = GetIt.instance;
+
+Future<void> setupDependencies() async {
+  // e.g. getIt.registerLazySingleton<AppDatabase>(() => AppDatabase());
+}
+```
+
+---
+
+## 8. Environment & Secrets
 
 ### Directory layout
 
@@ -248,7 +376,7 @@ void main() async {
 
 ---
 
-## 6. Makefile (Developer Shortcuts)
+## 9. Makefile (Developer Shortcuts)
 
 Copy this `Makefile` to the project root. Replaces long commands with memorable shortcuts.
 
@@ -266,12 +394,12 @@ test: prepare-env-testing
 
 coverage: prepare-env-testing
 	flutter test --coverage
-	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' -o coverage/lcov.info --ignore-errors unused
+	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
 	genhtml coverage/lcov.info -o coverage/html
 	open coverage/html/index.html
 
 lint:
-	flutter analyze
+	flutter analyze --fatal-infos --fatal-warnings
 
 fix:
 	dart fix --apply
@@ -285,6 +413,15 @@ clean:
 
 get:
 	flutter pub get
+
+deps-outdated:
+	dart pub outdated
+
+deps-upgrade:
+	dart pub upgrade
+
+deps-check:
+	dart run tool/check_outdated_deps.dart
 
 prepare-env-testing:
 	chmod +x tool/prepare_env.sh
@@ -311,7 +448,7 @@ build-prod-apk: prepare-env-production
 
 ---
 
-## 7. Security Checklist
+## 10. Security Checklist
 
 ### Secrets
 
@@ -375,7 +512,7 @@ NativeDatabase.createInBackground(
 
 ---
 
-## 8. Testing Conventions
+## 11. Testing Conventions
 
 ### Philosophy
 
@@ -462,12 +599,12 @@ AppDatabase createTestDatabase() {
 
 ### Coverage Threshold
 
-- Target: **≥ 60%** overall (enforced in CI).
-- Exclude generated files: `*.g.dart`, `*.freezed.dart`, `*/di/*`, `*/l10n/*`.
+- Target: **≥ 98%** overall (enforced in CI).
+- Exclude generated files: `*.g.dart`, `*.freezed.dart`, `*/tables/*`, `*firebase_options.dart`, `*/di/*`, `*/l10n/*`, `*app_theme.dart`, `*/main.dart`.
 
 ---
 
-## 9. CI / CD with GitHub Actions
+## 12. CI / CD with GitHub Actions
 
 ### Workflow structure
 
@@ -513,14 +650,13 @@ jobs:
 
       - name: Filter Generated Files from Coverage
         run: |
-          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' \
-            '*/di/*' '*/l10n/*' -o coverage/lcov.info --ignore-errors unused
+          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
 
-      - name: Check Coverage Threshold (60%)
+      - name: Check Coverage Threshold (98%)
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: coverage/lcov.info
-          min_coverage: 60
+          min_coverage: 98
 
       - uses: actions/upload-artifact@v4
         with:
@@ -549,7 +685,7 @@ jobs:
         run: |
           echo "${{ secrets.ENV_PRODUCTION_BASE64 }}" | base64 --decode > .env.production
           echo "${{ secrets.KEYSTORE_BASE64 }}"       | base64 --decode > android/app/upload-keystore.jks
-          echo "${{ secrets.FIREBASE_CREDS_BASE64 }}" | base64 --decode > firebase-credentials.json
+          echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 --decode > firebase-credentials.json
           chmod +x tool/prepare_env.sh
           ./tool/prepare_env.sh production
 
@@ -583,7 +719,7 @@ jobs:
       - name: Cleanup Secrets
         if: always()
         run: |
-          rm -f .env.production android/app/upload-keystore.jks firebase-credentials.json
+          rm -f .env.production env/active.env android/app/upload-keystore.jks firebase-credentials.json
 ```
 
 ### GitHub Secrets to configure
@@ -595,12 +731,12 @@ jobs:
 | `KEYSTORE_PASSWORD` | Keystore password |
 | `KEY_ALIAS` | Key alias |
 | `KEY_PASSWORD` | Key password |
-| `FIREBASE_CREDS_BASE64` | `base64 -i firebase-credentials.json` |
+| `FIREBASE_CREDENTIALS_BASE64` | `base64 -i firebase-credentials.json` |
 | `FIREBASE_APP_ID` | Firebase App ID (from console) |
 
 ---
 
-## 10. Firebase Setup
+## 13. Firebase Setup
 
 ### 10.1 Firebase App Distribution (Beta delivery to testers)
 
@@ -670,7 +806,7 @@ firebase_analytics: ^11.0.0
 
 ---
 
-## 11. Versioning Strategy
+## 14. Versioning Strategy
 
 ### Format: `MAJOR.MINOR.PATCH+BUILD`
 
@@ -695,88 +831,29 @@ version: 1.2.0+1     # MAJOR.MINOR.PATCH+BUILD (BUILD is a placeholder)
 
 ---
 
-## 12. Documentation Framework
+## 15. Documentation Framework & Ways of Working
 
-Maintain a `docs/` directory. Create these files at project start:
+The AI agent must generate a full `docs/` directory upon bootstrap. We follow a **Continuous Documenting Process** where documentation and spec are updated alongside every feature.
 
-| File | Purpose |
-|------|---------|
-| `README.md` (root) | Project overview, setup instructions, commands |
-| `ARCHITECTURE.md` (root) | System boundaries, layer diagram, tech choices |
-| `AGENTS.md` (root) | AI agent coding rules |
-| `docs/README.md` | Documentation index |
-| `docs/implementation-status.md` | Shipped / in-progress / planned tracker |
-| `docs/testing.md` | Testing conventions and commands |
-| `docs/security.md` | Secrets, encryption, release security |
-| `docs/versioning.md` | Version bump rules |
-| `docs/state-management.md` | BLoC/Cubit conventions |
-| `docs/database.md` | Schema, migrations, DAO conventions |
-| `docs/routing.md` | GoRouter setup and path constants |
-| `docs/production-readiness.md` | Pre-launch checklist |
+### Base Files to Generate at Bootstrap:
 
-**Rule:** Any time you add or remove a significant feature, update `docs/implementation-status.md`.
+1. **`README.md` (root)** — App overview, architecture summary, and setup/run instructions.
+2. **`ARCHITECTURE.md` (root)** — Layer diagram (Clean Architecture), boundaries, and the tech stack agreed upon in Section 2.
+3. **`docs/README.md`** — A central index linking to all other docs.
+4. **`docs/agent-map.md`** — A mental map/index to help AI agents quickly look up where domain models, screens, and configs live without searching.
+5. **`docs/implementation-status.md`** — A strict tracker of features marked as `Shipped`, `In-Progress`, or `Planned`.
+6. **`docs/collaboration-framework.md`** — Rules governing the AI-User brainstorm process (e.g. "No code before spec", "Offline-first alignment").
+7. **`docs/di.md`** — Documentation on how `get_it` is structured in the app.
+8. **`docs/state-management.md`, `docs/database.md`, `docs/routing.md`** — Brief summaries of conventions for each domain based on Section 2's answers.
 
----
+### Continuous Documenting Process (Agent Rule)
 
-## 13. AI Agent Rules (AGENTS.md)
-
-Create `AGENTS.md` at the project root. This file controls how AI coding assistants behave in the repository.
-
-```markdown
-# [App Name] — Agent Codex
-
-> Read this file before writing or modifying any code.
-
-## Hard Rules
-
-1. **No unauthorized commits.** Stage changes, show the diff, wait for approval.
-2. **Tests are mandatory.** Every new/changed function ships with happy-path and failure/edge tests.
-3. **No linter bypasses.** Never use `// ignore:` without explicit approval.
-4. **No UI without a design reference.** Confirm direction before new layouts.
-5. **Run codegen after model changes.** `@freezed`, `@JsonSerializable`, `@DriftDatabase` → run `make gen`.
-6. **Follow Clean Architecture boundaries.** Presentation → Domain ← Data.
-7. **Immutable models.** Use `@freezed` for all domain entities and state classes.
-8. **No secrets in source.** Use `.env.*` files via `flutter_dotenv`.
-9. **Update docs on feature changes.** Update `docs/implementation-status.md`.
-10. **Version bumping requires owner consent.** Always ask before touching the version string.
-11. **Release notes required.** Document changes for testers when shipping a new release.
-
-## Pre-flight (before writing code)
-
-- [ ] Read the Hard Rules above.
-- [ ] Check `docs/implementation-status.md`.
-- [ ] If adding UI: confirm a design reference exists.
-- [ ] If changing a model: prepare to run `make gen`.
-
-## Post-flight (before handing back)
-
-- [ ] `make lint` — zero errors.
-- [ ] `make test` — all tests pass.
-- [ ] Clean Architecture boundaries intact.
-- [ ] No unauthorized `git commit`.
-- [ ] Ask for version bump approval if a feature was added/changed.
-
-## Architecture
-
-**Framework:** Flutter
-**State:** BLoC/Cubit
-**DI:** GetIt
-**Routing:** GoRouter
-**DB:** Drift (SQLite)
-
-## Environment
-
-| Command | Env |
-|---------|-----|
-| `make run-dev` | `.env.testing` |
-| `make run-prod` | `.env.production` |
-
-Never commit `.env.production`.
-```
+- The agent must operate in a **Spec-First** manner. Code is not written until a markdown spec is reviewed.
+- Whenever the agent adds a new feature or alters a database schema, it **must proactively update all related documents** (especially `implementation-status.md` and `ARCHITECTURE.md`).
 
 ---
 
-## 14. Production Readiness Checklist
+## 16. Production Readiness Checklist
 
 Use this before submitting to the App Store or Google Play.
 
@@ -784,7 +861,7 @@ Use this before submitting to the App Store or Google Play.
 
 - [ ] All tests pass (`make test`)
 - [ ] Lint is clean (`make lint`)
-- [ ] Code coverage ≥ 60%
+- [ ] Code coverage ≥ 98%
 - [ ] No hardcoded secrets — all via `flutter_dotenv`
 - [ ] Release APK built with `--obfuscate --split-debug-info`
 - [ ] Debug symbols uploaded as CI artifact

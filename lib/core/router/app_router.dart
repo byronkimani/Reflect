@@ -10,7 +10,6 @@ import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
 import 'package:reflect/features/goals/presentation/pages/goal_form_page.dart';
 import 'package:reflect/features/review/presentation/pages/daily_review_page.dart';
-import 'package:reflect/features/analytics/presentation/pages/insights_page.dart';
 import 'package:reflect/features/more/presentation/pages/more_options_page.dart';
 import 'package:reflect/features/settings/presentation/pages/settings_page.dart';
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
@@ -135,11 +134,6 @@ GoRouter createAppRouter() {
                     path: 'settings',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const SettingsPage(),
-                  ),
-                  GoRoute(
-                    path: 'analytics',
-                    parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) => const InsightsPage(),
                   ),
                 ],
               ),

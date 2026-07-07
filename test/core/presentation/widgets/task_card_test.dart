@@ -148,16 +148,7 @@ void main() {
       expect(find.byIcon(Icons.repeat), findsOneWidget);
     });
 
-    testWidgets('shows sync icon when task syncs to Google Calendar', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        buildWidget(buildTask().copyWith(syncToGcal: true)),
-      );
-      await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.sync), findsOneWidget);
-    });
 
     testWidgets('shows OVERDUE badge for overdue pending tasks', (tester) async {
       await tester.pumpWidget(

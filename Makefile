@@ -1,4 +1,4 @@
-.PHONY: gen test clean get lint run-dev run-prod watch coverage format fix run prepare-env build-prod-apk deps-outdated deps-check
+.PHONY: gen test clean get lint run-dev run-prod watch coverage format fix run prepare-env build-prod-apk deps-outdated deps-check deps-upgrade
 
 # ----------------------------------------------------------------------
 # Code Generation
@@ -65,6 +65,13 @@ get:
 # Usage: make deps-outdated
 deps-outdated:
 	dart pub outdated
+
+# Upgrade direct dependencies to the latest versions allowed by pubspec.yaml
+# Usage: make deps-upgrade
+deps-upgrade:
+	dart pub upgrade
+	@echo ""
+	@echo "Upgraded packages in pubspec.lock. Next: make gen (if codegen deps changed), make lint, make test"
 
 # Fail when direct dependencies are behind within pubspec constraints
 # Usage: make deps-check

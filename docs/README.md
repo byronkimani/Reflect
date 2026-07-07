@@ -29,6 +29,5 @@ Source-of-truth specs for product behavior and engineering conventions. Structur
 | Spec | Status | Notes |
 |------|--------|-------|
 | [`notifications.md`](notifications.md) | Active | Local notifications, scheduling, permissions |
-| [`gcal-sync.md`](gcal-sync.md) | Active | Background sync, outbox pattern, Google Calendar API |
 
 *(More feature specs will be added as product areas like Planning, Reviews, and Analytics are detailed.)*

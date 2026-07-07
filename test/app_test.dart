@@ -6,8 +6,7 @@ import 'package:reflect/app.dart';
 import 'package:reflect/core/network/presentation/connectivity_bloc.dart';
 import 'package:reflect/core/network/presentation/connectivity_event.dart';
 import 'package:reflect/core/network/presentation/connectivity_state.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_state.dart';
+
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
@@ -23,7 +22,7 @@ import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/main.dart'; // for getIt
 
 class MockConnectivityBloc extends MockBloc<ConnectivityEvent, ConnectivityState> implements ConnectivityBloc {}
-class MockGCalSyncCubit extends MockCubit<GCalSyncState> implements GCalSyncCubit {}
+
 class MockTaskListBloc extends MockBloc<TaskListEvent, TaskListState> implements TaskListBloc {}
 class MockPlanningCubit extends MockCubit<PlanningState> implements PlanningCubit {}
 class MockDailyReviewCubit extends MockCubit<DailyReviewState> implements DailyReviewCubit {}
@@ -33,7 +32,7 @@ class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
   late MockConnectivityBloc mockConnectivityBloc;
-  late MockGCalSyncCubit mockGCalSyncCubit;
+
   late MockTaskListBloc mockTaskListBloc;
   late MockPlanningCubit mockPlanningCubit;
   late MockDailyReviewCubit mockDailyReviewCubit;
@@ -45,7 +44,7 @@ void main() {
     getIt.reset();
     
     mockConnectivityBloc = MockConnectivityBloc();
-    mockGCalSyncCubit = MockGCalSyncCubit();
+
     mockTaskListBloc = MockTaskListBloc();
     mockPlanningCubit = MockPlanningCubit();
     mockDailyReviewCubit = MockDailyReviewCubit();
@@ -54,19 +53,19 @@ void main() {
     mockNotificationService = MockNotificationService();
 
     when(() => mockConnectivityBloc.state).thenReturn(const ConnectivityState.connected());
-    when(() => mockGCalSyncCubit.state).thenReturn(const GCalSyncState());
+
     when(() => mockTaskListBloc.state).thenReturn(const TaskListState.loaded(rawTasks: [], pending: [], completed: [], overdue: []));
     when(() => mockPlanningCubit.state).thenReturn(const PlanningState());
     when(() => mockDailyReviewCubit.state).thenReturn(const DailyReviewState());
     when(() => mockTaskSelectionCubit.state).thenReturn(const TaskSelectionState());
     when(() => mockSettingsCubit.state).thenReturn(const SettingsState());
 
-    when(() => mockGCalSyncCubit.processQueue()).thenAnswer((_) async {});
+
     when(() => mockSettingsCubit.scheduleStartupSync()).thenAnswer((_) async {});
     when(() => mockNotificationService.init()).thenAnswer((_) async {});
     when(() => mockNotificationService.requestPermissions()).thenAnswer((_) async => true);
     when(() => mockConnectivityBloc.stream).thenAnswer((_) => const Stream.empty());
-    when(() => mockGCalSyncCubit.stream).thenAnswer((_) => const Stream.empty());
+
     when(() => mockTaskListBloc.stream).thenAnswer((_) => const Stream.empty());
     when(() => mockPlanningCubit.stream).thenAnswer((_) => const Stream.empty());
     when(() => mockDailyReviewCubit.stream).thenAnswer((_) => const Stream.empty());
@@ -74,7 +73,7 @@ void main() {
     when(() => mockSettingsCubit.stream).thenAnswer((_) => const Stream.empty());
 
     getIt.registerSingleton<ConnectivityBloc>(mockConnectivityBloc);
-    getIt.registerSingleton<GCalSyncCubit>(mockGCalSyncCubit);
+
     getIt.registerSingleton<TaskListBloc>(mockTaskListBloc);
     getIt.registerSingleton<PlanningCubit>(mockPlanningCubit);
     getIt.registerSingleton<DailyReviewCubit>(mockDailyReviewCubit);

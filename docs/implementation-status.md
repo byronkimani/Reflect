@@ -17,11 +17,6 @@ Legend: **Shipped** | **In Progress** | **Planned** | **Deferred**
 | Product analytics (Firebase) | ✅ | — | ✅ Settings opt-in | Opt-in; `task_created`, `daily_review_submitted`, `planning_completed` |
 | Settings (theme, heartbeat) | ✅ | HydratedBloc | ✅ SettingsCubit | Shipped |
 | Local notifications | — | ✅ | — | Shipped |
-| GCal sync outbox | — | ✅ | ✅ GCalSyncCubit | In Progress |
-| Insights | ✅ | — | — | In Progress |
-| Weekly/Monthly reviews | — | Partial | — | Planned |
-| Profile | — | — | — | Planned |
-| Posts | — | ✅ PostRepository | — | Planned |
 
 ## Core Infrastructure
 

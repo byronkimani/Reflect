@@ -2,21 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reflect/features/gcal/presentation/g_cal_sync_cubit.dart';
 import 'package:reflect/features/notifications/notification_service.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/main.dart';
 
-/// Non-critical startup: notifications, heartbeat sync, and GCal queue processing.
 Future<void> runDeferredStartup({
   required NotificationService notifications,
   required SettingsCubit settings,
-  required GCalSyncCubit gcalSync,
 }) async {
   await notifications.init();
   await notifications.requestPermissions();
   await settings.scheduleStartupSync();
-  unawaited(gcalSync.processQueue());
 }
 
 /// Runs [runDeferredStartup] after the first frame so [runApp] is not blocked.
@@ -45,7 +41,6 @@ class _DeferredStartupRunnerState extends State<DeferredStartupRunner> {
     await runDeferredStartup(
       notifications: getIt<NotificationService>(),
       settings: context.read<SettingsCubit>(),
-      gcalSync: context.read<GCalSyncCubit>(),
     );
   }
 

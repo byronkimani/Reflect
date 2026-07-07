@@ -15,9 +15,15 @@ Production builds (`--dart-define=ENV=production`) fail fast at startup when req
 
 ## Supply chain
 
-- **Dependabot** (`.github/dependabot.yml`) opens weekly PRs for `pub` and GitHub Actions updates.
-- **Local check:** `make deps-outdated` lists available updates; `make deps-check` fails when direct dependencies lag within pubspec constraints.
-- **CI:** PR and push workflows run `make deps-check` after `flutter pub get` (see [Firebase App Distribution](../.github/workflows/firebase_distribution.yml)).
+Dependency updates are **manual** (no Dependabot):
+
+| Command | Purpose |
+|---------|---------|
+| `make deps-outdated` | List available updates (human-readable) |
+| `make deps-upgrade` | Apply upgrades within `pubspec.yaml` constraints (`pubspec.lock`) |
+| `make deps-check` | Optional gate — fails when direct deps lag behind upgradable versions |
+
+After `make deps-upgrade`, run `make gen` if codegen packages changed, then `make lint` and `make test`. For major-version bumps, edit `pubspec.yaml` or use `dart pub upgrade --major-versions`, then repeat the same checks.
 
 ## Local database encryption
 
