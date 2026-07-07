@@ -160,8 +160,8 @@ void main() {
       cubit.hasEnabledReminderChanged(true);
       expect(cubit.state.hasEnabledReminder, true);
       
-      cubit.syncToGcalChanged(true);
-      expect(cubit.state.syncToGcal, true);
+      cubit.hasEnabledReminderChanged(true);
+      expect(cubit.state.hasEnabledReminder, true);
       
       cubit.isRepeatingChanged(true);
       expect(cubit.state.isRepeating, true);

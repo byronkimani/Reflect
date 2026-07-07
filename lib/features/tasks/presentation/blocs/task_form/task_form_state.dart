@@ -25,7 +25,6 @@ abstract class TaskFormState with _$TaskFormState {
     @Default(false) bool isRepeating,
     RecurrenceFrequency? recurrenceFrequency,
     @Default([]) List<int> recurrenceDaysOfWeek,
-    @Default(false) bool syncToGcal,
     @Default(false) bool isSubmitting,
     @Default(false) bool isSuccess,
     String? error,
@@ -67,7 +66,6 @@ abstract class TaskFormState with _$TaskFormState {
       isRepeating: task?.recurrenceRule != null,
       recurrenceFrequency: freq,
       recurrenceDaysOfWeek: days.isNotEmpty ? days : weekdaysPreset,
-      syncToGcal: task?.syncToGcal ?? false,
       initialTask: task,
       selectedGoalId: task?.goalId,
     );

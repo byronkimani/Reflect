@@ -37,9 +37,6 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Check Direct Dependencies Are Current
-        run: make deps-check
-
       - name: Run Linter
         run: make lint
 

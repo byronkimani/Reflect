@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
+
 
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
 import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:reflect/core/errors/failure.dart';
 import 'package:reflect/core/errors/failure_mapper.dart';
-import 'package:reflect/core/network/network_info.dart';
+
 import 'package:reflect/core/storage/database/app_database.dart';
-import 'package:reflect/features/gcal/data/sources/gcal_api_service.dart';
 import 'package:reflect/features/tasks/data/models/mappers.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
@@ -18,15 +17,11 @@ import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 
 class TaskRepositoryImpl implements ITaskRepository {
   final AppDatabase _db;
-  final NetworkInfo _networkInfo;
-  final GCalApiService _gcalApiService;
   final RecurrenceEngine _recurrenceEngine;
   final NotificationScheduler _notificationScheduler;
-
   TaskRepositoryImpl(
     this._db,
-    this._networkInfo,
-    this._gcalApiService,
+
     this._recurrenceEngine,
     this._notificationScheduler,
   );
@@ -164,9 +159,6 @@ class TaskRepositoryImpl implements ITaskRepository {
         }
       });
 
-      if (task.syncToGcal) {
-        _handleGCalSync(task, 'CREATE');
-      }
       if (task.hasEnabledReminder && task.dueDate != null && task.dueTime != null) {
         await _notificationScheduler.scheduleTaskReminder(task);
       } else {
@@ -199,9 +191,6 @@ class TaskRepositoryImpl implements ITaskRepository {
         await _db.update(_db.tasks).replace(task.toCompanion());
       });
 
-      if (task.syncToGcal) {
-        _handleGCalSync(task, 'UPDATE');
-      }
       if (task.hasEnabledReminder && task.dueDate != null && task.dueTime != null) {
         await _notificationScheduler.scheduleTaskReminder(task);
       } else {
@@ -243,10 +232,7 @@ class TaskRepositoryImpl implements ITaskRepository {
         }
       }
 
-      // 3. GCal Sync
-      if (task.syncToGcal) {
-        _handleGCalSync(updatedTask, 'UPDATE');
-      }
+      // 3. (Removed GCal Sync)
 
       return Right(updatedTask);
     } catch (e) {
@@ -268,10 +254,6 @@ class TaskRepositoryImpl implements ITaskRepository {
       );
       await _db.update(_db.tasks).replace(updatedTask.toCompanion());
 
-      if (task.syncToGcal) {
-        _handleGCalSync(updatedTask, 'UPDATE');
-      }
-
       return Right(updatedTask);
     } catch (e) {
       return Left(FailureMapper.cacheFailure(e));
@@ -285,18 +267,6 @@ class TaskRepositoryImpl implements ITaskRepository {
       final taskData = await query.getSingleOrNull();
       
       if (taskData != null) {
-        final task = taskData.toDomain();
-
-        // Drop stale CREATE/UPDATE work — the local task is being removed.
-        await (_db.delete(_db.gCalSyncQueue)
-              ..where((q) =>
-                  q.taskId.equals(id) &
-                  q.operation.isIn(['CREATE', 'UPDATE'])))
-            .go();
-
-        if (task.syncToGcal && task.gcalEventId != null) {
-          await _handleGCalSync(task, 'DELETE');
-        }
 
         await (_db.delete(_db.tasks)..where((t) => t.id.equals(id))).go();
         await _notificationScheduler.cancelTaskReminder(id);
@@ -354,10 +324,6 @@ class TaskRepositoryImpl implements ITaskRepository {
           
           await _db.update(_db.tasks).replace(updatedTask.toCompanion());
           await _notificationScheduler.cancelTaskReminder(id);
-          
-          if (task.syncToGcal) {
-            _handleGCalSync(updatedTask, 'UPDATE');
-          }
         }
       });
       return const Right(unit);
@@ -378,50 +344,5 @@ class TaskRepositoryImpl implements ITaskRepository {
     } catch (e) {
       return Left(FailureMapper.cacheFailure(e));
     }
-  }
-
-  Future<void> _handleGCalSync(Task task, String operation) async {
-    final isConnected = await _networkInfo.isConnected;
-    
-    if (isConnected) {
-      late Either<Failure, dynamic> result;
-      switch (operation) {
-        case 'CREATE':
-          result = await _gcalApiService.createEvent(task);
-          if (result.isRight()) {
-            final gcalId = result.getOrElse((_) => '');
-            await _db.update(_db.tasks).replace(
-              task.copyWith(gcalEventId: gcalId).toCompanion(),
-            );
-          }
-          break;
-        case 'UPDATE':
-          result = await _gcalApiService.updateEvent(task);
-          break;
-        case 'DELETE':
-          if (task.gcalEventId != null) {
-            result = await _gcalApiService.deleteEvent(task.gcalEventId!);
-          }
-          break;
-      }
-      
-      if (result.isLeft()) {
-        _enqueueGCalSync(task, operation);
-      }
-    } else {
-      _enqueueGCalSync(task, operation);
-    }
-  }
-
-  Future<void> _enqueueGCalSync(Task task, String operation) async {
-    final payload = jsonEncode(task.toJson());
-    await _db.into(_db.gCalSyncQueue).insert(
-      GCalSyncQueueCompanion.insert(
-        taskId: task.id,
-        operation: operation,
-        payload: payload,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-    );
   }
 }

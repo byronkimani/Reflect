@@ -60,7 +60,7 @@ Future<void> main() async {
   }
 
   if (outdatedDirect.isNotEmpty) {
-    stderr.writeln('Outdated direct dependencies (run `dart pub upgrade`):');
+    stderr.writeln('Outdated direct dependencies (run `make deps-upgrade`):');
     for (final line in outdatedDirect) {
       stderr.writeln('  - $line');
     }

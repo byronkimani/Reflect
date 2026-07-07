@@ -16,10 +16,7 @@ void main() {
             path: '/more/settings',
             builder: (_, _) => const Scaffold(body: Text('Settings screen')),
           ),
-          GoRoute(
-            path: '/more/analytics',
-            builder: (_, _) => const Scaffold(body: Text('Analytics screen')),
-          ),
+
         ],
       ),
     );
@@ -35,13 +32,5 @@ void main() {
     expect(find.text('Settings screen'), findsOneWidget);
   });
 
-  testWidgets('Analytics row navigates to analytics route', (tester) async {
-    await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Analytics'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Analytics screen'), findsOneWidget);
-  });
 }

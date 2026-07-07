@@ -8,9 +8,8 @@ import 'package:uuid/uuid.dart';
 
 import 'tables/task_tables.dart';
 import 'tables/review_tables.dart';
-import 'tables/sync_tables.dart';
 import 'tables/goal_tables.dart';
-import 'package:reflect/features/analytics/data/daos/analytics_dao.dart';
+
 import 'package:reflect/core/storage/database/database_key_service.dart';
 import 'package:reflect/core/storage/database/sqlcipher_key.dart';
 import 'package:reflect/core/storage/database/sqlite_migration.dart';
@@ -25,17 +24,9 @@ part 'app_database.g.dart';
     TaskTags,
     RecurrenceRules,
     DailyReviews,
-    WeeklyPlans,
-    WeeklyReviews,
-    WeeklyGoals,
-    MonthlyPlans,
-    MonthlyReviews,
-    MonthlyGoals,
     GoalCategories,
     Goals,
-    GCalSyncQueue,
   ],
-  daos: [AnalyticsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(DatabaseKeyService keyService) : super(_openConnection(keyService));

@@ -27,9 +27,13 @@ Future<void> bootstrapReflectApp({
   await (initEnv ?? EnvConfig.init)();
 
   await (initFirebase ??
-      () => Firebase.initializeApp(
+      () async {
+        if (Firebase.apps.isEmpty) {
+          await Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform,
-          ))();
+          );
+        }
+      })();
 
   HydratedBloc.storage = await (buildHydratedStorage ??
       () async => HydratedStorage.build(

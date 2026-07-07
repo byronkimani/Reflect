@@ -7,11 +7,14 @@ class FirebaseCrashReporter implements CrashReporter {
   FirebaseCrashReporter({
     FirebaseCrashlytics? crashlytics,
     @visibleForTesting bool? enabled,
-  })  : _crashlytics = crashlytics ?? FirebaseCrashlytics.instance,
+  })  : _injectedCrashlytics = crashlytics,
         _enabled = enabled ?? !kDebugMode;
 
-  final FirebaseCrashlytics _crashlytics;
+  final FirebaseCrashlytics? _injectedCrashlytics;
   final bool _enabled;
+
+  FirebaseCrashlytics get _crashlytics =>
+      _injectedCrashlytics ?? FirebaseCrashlytics.instance;
 
   @override
   Future<void> recordFlutterError(FlutterErrorDetails details) async {

@@ -36,8 +36,6 @@ _Task _$TaskFromJson(Map<String, dynamic> json) => _Task(
           ?.map((e) => Subtask.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
-  gcalEventId: json['gcalEventId'] as String?,
-  syncToGcal: json['syncToGcal'] as bool? ?? false,
   goalId: json['goalId'] as String?,
   hasEnabledReminder: json['hasEnabledReminder'] as bool? ?? false,
   createdAt: DateTime.parse(json['createdAt'] as String),
@@ -58,8 +56,6 @@ Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
   'recurrenceRule': instance.recurrenceRule,
   'recurrenceParentId': instance.recurrenceParentId,
   'subtasks': instance.subtasks,
-  'gcalEventId': instance.gcalEventId,
-  'syncToGcal': instance.syncToGcal,
   'goalId': instance.goalId,
   'hasEnabledReminder': instance.hasEnabledReminder,
   'createdAt': instance.createdAt.toIso8601String(),

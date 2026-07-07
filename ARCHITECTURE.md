@@ -32,8 +32,6 @@ Machine-readable map of the system: versions, boundaries, and where rules live i
 | Planning | `/today/planning` | Drift | TBD |
 | Review | `/today/review`, `/reflect` | Drift | TBD |
 | Goals | `/goals` | Drift | TBD |
-| Analytics | `/more/analytics` | Drift (AnalyticsDao) | TBD |
-| GCal Sync | N/A (background) | Drift + GCal API | [`docs/gcal-sync.md`](docs/gcal-sync.md) |
 | Settings | `/more/settings` | HydratedBloc | TBD |
 | Notifications | N/A (background) | Local Notifications | [`docs/notifications.md`](docs/notifications.md) |
 

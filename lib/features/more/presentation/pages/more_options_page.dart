@@ -22,13 +22,6 @@ class MoreOptionsPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/more/settings'),
           ),
-          ListTile(
-            leading: Icon(Icons.insights_outlined, color: colorScheme.primary),
-            title: const Text('Analytics'),
-            subtitle: const Text('Insights and trends'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/more/analytics'),
-          ),
         ],
       ),
     );
