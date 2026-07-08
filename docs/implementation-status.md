@@ -7,6 +7,7 @@ Legend: **Shipped** | **In Progress** | **Planned** | **Deferred**
 | Feature | UI | Data Layer | BLoC/Cubit | Status |
 |---------|-----|-----------|------------|--------|
 | Task CRUD | ✅ | ✅ Drift | ✅ TaskListBloc | Shipped |
+| UI refresh (Today + New Task + Goals + Review) | ✅ | — | — | Shipped — sage-teal design system in [`design/design-system.md`](design/design-system.md) |
 | Backlog | ✅ | ✅ Drift | ✅ TaskListBloc | Shipped |
 | Recurrence engine | ✅ | ✅ | ✅ | Shipped |
 | Daily planning | ✅ | ✅ | ✅ PlanningCubit | Shipped |

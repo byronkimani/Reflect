@@ -6,6 +6,7 @@ import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
+import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/entities/goal_category.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -25,14 +26,15 @@ void main() {
     String title = 'Test goal',
     String? description,
     GoalTimeHorizon timeHorizon = GoalTimeHorizon.weekly,
-  }) => Goal(
-    id: id,
-    title: title,
-    description: description,
-    timeHorizon: timeHorizon,
-    createdAt: now,
-    updatedAt: now,
-  );
+  }) =>
+      Goal(
+        id: id,
+        title: title,
+        description: description,
+        timeHorizon: timeHorizon,
+        createdAt: now,
+        updatedAt: now,
+      );
 
   Widget buildTestWidget({
     Goal? initialGoal,
@@ -64,9 +66,8 @@ void main() {
 
   setUp(() {
     mockRepo = MockIGoalRepository();
-    when(
-      () => mockRepo.watchCategories(),
-    ).thenAnswer((_) => emptyCategoriesStream);
+    when(() => mockRepo.watchCategories())
+        .thenAnswer((_) => emptyCategoriesStream);
   });
 
   setUpAll(() {
@@ -82,15 +83,15 @@ void main() {
   });
 
   group('GoalFormPage', () {
-    testWidgets('new goal shows title "New Goal" and Save button', (
+    testWidgets('new goal shows title "New Goal" and Create button', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('New Goal'), findsOneWidget);
-      expect(find.byType(FloatingActionButton), findsOneWidget);
-      expect(find.text('Title *'), findsOneWidget);
+      expect(find.text('Create Goal'), findsOneWidget);
+      expect(find.text('What do you want to achieve?'), findsOneWidget);
     });
 
     testWidgets('edit goal shows title "Edit Goal" and prefilled title', (
@@ -104,40 +105,44 @@ void main() {
       expect(find.text('My existing goal'), findsOneWidget);
     });
 
-    testWidgets('new goal shows time frame section', (tester) async {
+    testWidgets('new goal shows time frame pills', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Time Frame'), findsOneWidget);
+      expect(find.text('TIME FRAME'), findsOneWidget);
+      expect(find.text('Weekly'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('edit goal does not show time frame section', (tester) async {
       await tester.pumpWidget(buildTestWidget(initialGoal: goal()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Time Frame'), findsNothing);
+      expect(find.text('TIME FRAME'), findsNothing);
     });
 
-    testWidgets('shows KPI measurable section with Yes selected by default', (tester) async {
+    testWidgets('KPI section is collapsed by default', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Is the KPI measurable?'), findsOneWidget);
-      expect(find.text('KPI being tracked (optional)'), findsOneWidget);
+      expect(find.text('Track a KPI'), findsOneWidget);
+      expect(find.text('KPI description'), findsNothing);
+    });
+
+    testWidgets('expanding KPI section shows KPI fields', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -200));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Track a KPI'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.widgetWithText(TextFormField, 'What KPI measures progress?'),
+        findsOneWidget,
+      );
       expect(find.text('Start value'), findsOneWidget);
       expect(find.text('Target value'), findsOneWidget);
-    });
-
-    testWidgets('hides KPI fields when KPI measurable is set to No', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('No'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('KPI being tracked (optional)'), findsNothing);
-      expect(find.text('Start value'), findsNothing);
-      expect(find.text('Target value'), findsNothing);
     });
 
     testWidgets('tap Save with empty title shows error snackbar', (
@@ -146,100 +151,70 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text('Create Goal'));
       await tester.pumpAndSettle();
 
       expect(find.text('Title is required'), findsOneWidget);
     });
 
     testWidgets('enter title and tap Save calls createGoal', (tester) async {
-      when(
-        () => mockRepo.createGoal(any()),
-      ).thenAnswer((_) async => Right(goal(id: 'new-id', title: 'New goal')));
+      when(() => mockRepo.createGoal(any()))
+          .thenAnswer((_) async => Right(goal(id: 'new-id', title: 'New goal')));
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'My new goal');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'What do you want to achieve?'),
+        'My new goal',
+      );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.byType(ReflectPrimaryButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
       verify(() => mockRepo.createGoal(any())).called(1);
     });
 
-    testWidgets('edit goal and Save calls updateGoal', (tester) async {
-      final g = goal(id: 'existing', title: 'Original');
-      when(
-        () => mockRepo.updateGoal(any()),
-      ).thenAnswer((inv) async => Right(inv.positionalArguments[0] as Goal));
-      await tester.pumpWidget(buildTestWidget(initialGoal: g));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField).first, 'Updated title');
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
-
-      final captured = verify(() => mockRepo.updateGoal(captureAny())).captured;
-      expect(captured.length, 1);
-      expect((captured[0] as Goal).title, 'Updated title');
-      expect((captured[0] as Goal).id, 'existing');
-    });
-
-    testWidgets('shows priority and urgency sections', (tester) async {
+    testWidgets('shows Importance accordion section', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Priority (optional)'), findsOneWidget);
-      expect(find.text('Urgency (optional)'), findsOneWidget);
+      expect(find.text('Importance'), findsOneWidget);
     });
 
-    testWidgets('shows category selector and Manage categories', (
-      tester,
-    ) async {
+    testWidgets('shows category chips and Manage categories', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Category (optional)'), findsOneWidget);
+      expect(find.text('CATEGORY'), findsOneWidget);
       expect(find.text('Manage categories'), findsOneWidget);
     });
 
-    testWidgets('shows check-in frequency chips', (tester) async {
+    testWidgets('Timeline section shows date pills and check-in', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Check-in frequency (optional)'), findsOneWidget);
-      expect(find.text('None'), findsAtLeastNWidgets(1));
-      expect(find.text('Weekly'), findsAtLeastNWidgets(1));
-      expect(find.text('Monthly'), findsAtLeastNWidgets(1));
-    });
-
-    testWidgets('shows Start date and Target date pickers', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Start date (optional)'), findsOneWidget);
-      expect(find.text('Target date (optional)'), findsOneWidget);
-      expect(find.text('Pick start date'), findsOneWidget);
-      expect(find.text('Pick target date'), findsOneWidget);
+      expect(find.text('Timeline'), findsOneWidget);
+      expect(find.text('Start date'), findsOneWidget);
+      expect(find.text('Target date'), findsOneWidget);
+      expect(find.text('CHECK-IN'), findsOneWidget);
     });
 
     testWidgets('successful save calls createGoal and does not show error', (
       tester,
     ) async {
-      when(
-        () => mockRepo.createGoal(any()),
-      ).thenAnswer((_) async => Right(goal(id: 'new-id', title: 'Goal title')));
+      when(() => mockRepo.createGoal(any()))
+          .thenAnswer((_) async => Right(goal(id: 'new-id', title: 'Goal title')));
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'Goal title');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'What do you want to achieve?'),
+        'Goal title',
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.byType(ReflectPrimaryButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -257,7 +232,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('categories stream emits list and dropdown shows categories', (
+    testWidgets('categories stream emits list and chips show categories', (
       tester,
     ) async {
       final categories = [
@@ -275,9 +250,6 @@ void main() {
       when(() => mockRepo.watchCategories()).thenAnswer((_) => stream);
 
       await tester.pumpWidget(buildTestWidget(categoriesStream: stream));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(DropdownButtonFormField<String?>));
       await tester.pumpAndSettle();
 
       expect(find.text('Category One'), findsOneWidget);

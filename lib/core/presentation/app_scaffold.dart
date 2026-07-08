@@ -1,55 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
-  /// The navigation shell and container for the branch Navigators.
   final StatefulNavigationShell navigationShell;
 
   const ScaffoldWithNavBar({required this.navigationShell, Key? key})
-    : super(key: key ?? const ValueKey<String>('ScaffoldWithNavBar'));
+      : super(key: key ?? const ValueKey<String>('ScaffoldWithNavBar'));
+
+  static const _destinations = [
+    (icon: Icons.today_outlined, selectedIcon: Icons.today, label: 'Today'),
+    (
+      icon: Icons.inventory_2_outlined,
+      selectedIcon: Icons.inventory_2,
+      label: 'Backlog',
+    ),
+    (icon: Icons.flag_outlined, selectedIcon: Icons.flag, label: 'Goals'),
+    (
+      icon: Icons.auto_awesome_mosaic_outlined,
+      selectedIcon: Icons.auto_awesome_mosaic,
+      label: 'Reflect',
+    ),
+    (icon: Icons.more_horiz, selectedIcon: Icons.more_horiz, label: 'More'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (int index) => _onTap(context, index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.today_outlined),
-            selectedIcon: Icon(Icons.today),
-            label: 'Today',
+      bottomNavigationBar: Material(
+        color: ReflectColors.cardSurface,
+        elevation: 8,
+        child: SafeArea(
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: List.generate(_destinations.length, (index) {
+                final dest = _destinations[index];
+                final selected = navigationShell.currentIndex == index;
+                return Expanded(
+                  child: _NavItem(
+                    icon: selected ? dest.selectedIcon : dest.icon,
+                    label: dest.label,
+                    selected: selected,
+                    onTap: () => _onTap(context, index),
+                  ),
+                );
+              }),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2),
-            label: 'Backlog',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.flag_outlined),
-            selectedIcon: Icon(Icons.flag),
-            label: 'Goals',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.auto_awesome_mosaic_outlined),
-            selectedIcon: Icon(Icons.auto_awesome_mosaic),
-            label: 'Reflect',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.more_horiz),
-            selectedIcon: Icon(Icons.more_horiz),
-            label: 'More',
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  /// Navigate to the current location of the branch at the provided index.
   void _onTap(BuildContext context, int index) {
     final switchingTab = index != navigationShell.currentIndex;
     if (switchingTab) {
@@ -62,9 +69,56 @@ class ScaffoldWithNavBar extends StatelessWidget {
     }
     navigationShell.goBranch(
       index,
-      // A common pattern when clicking the bottom bar:
-      // if you're already in this branch, navigate to the root of the branch.
       initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected
+        ? ReflectColors.accentPrimary
+        : ReflectColors.textSecondary;
+
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: selected
+                ? BoxDecoration(
+                    color: ReflectColors.accentSoft,
+                    borderRadius: BorderRadius.circular(20),
+                  )
+                : null,
+            child: Icon(icon, size: 22, color: color),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

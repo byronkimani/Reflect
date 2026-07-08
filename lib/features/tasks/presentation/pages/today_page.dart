@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/core/presentation/utils/adaptive_dialog.dart';
-import 'package:reflect/core/presentation/widgets/section_header.dart';
+import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
+import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
+import 'package:reflect/core/presentation/widgets/reflect_progress_bar.dart';
+import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
 import 'package:reflect/core/presentation/widgets/task_card.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
@@ -17,7 +21,6 @@ class TodayPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -29,130 +32,140 @@ class TodayPage extends StatelessWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (message) => Center(child: Text('Error: $message')),
             loaded: (rawTasks, pending, completed, overdue, sortMode, filter) {
-              final displayedOverdue = overdue;
-              final displayedPending = pending;
-              final displayedCompleted = completed;
-
+              final allTasks = [...pending, ...completed];
+              final allDisplayableTaskIds = [
+                ...overdue.map((t) => t.id),
+                ...allTasks.map((t) => t.id),
+              ];
               final now = DateTime.now();
-              final hour = now.hour;
+              final totalToday = pending.length + completed.length;
+              final doneToday = completed.length;
+              final progress = totalToday == 0 ? 0.0 : doneToday / totalToday;
+
               String greeting = 'Good morning';
+              final hour = now.hour;
               if (hour >= 12 && hour < 17) {
                 greeting = 'Good afternoon';
               } else if (hour >= 17) {
                 greeting = 'Good evening';
               }
 
-              // Single list: pending first, then completed at bottom (no separate COMPLETED section).
-              final allTasks = [...displayedPending, ...displayedCompleted];
-              final allDisplayableTaskIds = [
-                ...displayedOverdue.map((t) => t.id),
-                ...allTasks.map((t) => t.id),
-              ];
-
               return Stack(
                 children: [
                   CustomScrollView(
                     slivers: [
-                      SliverAppBar.large(
-                        expandedHeight: 180.0,
-                        backgroundColor: colorScheme.surface,
-                        elevation: 0,
-                        scrolledUnderElevation: 0,
-                        surfaceTintColor: Colors.transparent,
-                        flexibleSpace: FlexibleSpaceBar(
-                          title: Column(
-                            mainAxisSize: MainAxisSize.min,
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 56, 16, 8),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                greeting,
-                                style: textTheme.titleMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          greeting,
+                                          style: textTheme.titleMedium
+                                              ?.copyWith(
+                                            color: ReflectColors.textSecondary,
+                                          ),
+                                        ),
+                                        Text(
+                                          DateFormat('EEEE, MMM d').format(now),
+                                          style: textTheme.headlineMedium,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ReflectIconButton(
+                                    icon: Icons.tune,
+                                    tooltip: 'Filter',
+                                    onPressed: () => showTaskListFilterSheet(
+                                      context,
+                                      context.read<TaskListBloc>(),
+                                      filter,
+                                    ),
+                                  ),
+                                  ReflectIconButton(
+                                    icon: Icons.sort_by_alpha,
+                                    tooltip: 'Sort',
+                                    onPressed: () => showTaskListSortMenu(
+                                      context,
+                                      context.read<TaskListBloc>(),
+                                      sortMode,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (totalToday > 0) ...[
+                                const SizedBox(height: 12),
+                                ReflectProgressBar(
+                                  progress: progress,
+                                  label: '$doneToday of $totalToday done today',
                                 ),
-                              ),
-                              Text(
-                                DateFormat('EEEE, MMM d').format(now),
-                                style: textTheme.headlineMedium,
-                              ),
+                              ],
                             ],
-                          ),
-                          centerTitle: false,
-                          titlePadding: const EdgeInsetsDirectional.only(
-                            start: 16,
-                            bottom: 10,
                           ),
                         ),
                       ),
-                      if (displayedOverdue.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: SectionHeader(
+                      if (overdue.isNotEmpty) ...[
+                        const SliverToBoxAdapter(
+                          child: ReflectSectionLabel(
                             title: 'OVERDUE',
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            color: ReflectColors.overdue,
                           ),
                         ),
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) =>
-                                TaskCard(task: displayedOverdue[index]),
-                            childCount: displayedOverdue.length,
+                                TaskCard(task: overdue[index]),
+                            childCount: overdue.length,
                           ),
                         ),
                       ],
-                      // TASKS title and filter/sort on same row so they stay together when scrolling.
-                      SliverToBoxAdapter(
+                      const SliverToBoxAdapter(
+                        child: ReflectSectionLabel(
+                          title: 'TODAY',
+                          color: ReflectColors.accentPrimary,
+                        ),
+                      ),
+                      const SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'TASKS',
-                                  style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.tune),
-                                onPressed: () => showTaskListFilterSheet(
-                                  context,
-                                  context.read<TaskListBloc>(),
-                                  filter,
-                                ),
-                                tooltip: 'Filter',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.sort_by_alpha),
-                                onPressed: () => showTaskListSortMenu(
-                                  context,
-                                  context.read<TaskListBloc>(),
-                                  sortMode,
-                                ),
-                                tooltip: 'Sort',
-                              ),
-                            ],
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: Text(
+                            'TASKS',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                              color: ReflectColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
                       if (allTasks.isEmpty)
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.all(32.0),
+                            padding: const EdgeInsets.all(32),
                             child: Center(
                               child: Column(
                                 children: [
                                   Icon(
                                     Icons.done_all,
                                     size: 48,
-                                    color: colorScheme.outlineVariant,
+                                    color: ReflectColors.textSecondary
+                                        .withValues(alpha: 0.5),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     'No tasks for today. Plus some rest?',
                                     style: textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.outline,
+                                      color: ReflectColors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -180,10 +193,9 @@ class TodayPage extends StatelessWidget {
       floatingActionButton: BlocBuilder<TaskSelectionCubit, TaskSelectionState>(
         builder: (context, selectionState) {
           if (selectionState.isSelectionMode) return const SizedBox.shrink();
-          return FloatingActionButton(
+          return ReflectFab(
             heroTag: 'today_fab',
             onPressed: () => context.go('/today/task/new'),
-            child: const Icon(Icons.add),
           );
         },
       ),
@@ -214,11 +226,12 @@ class _SelectionOverlay extends StatelessWidget {
           child: SafeArea(
             child: Card(
               elevation: 8,
-              shadowColor: Colors.black45,
               color: colorScheme.secondaryContainer,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -231,20 +244,20 @@ class _SelectionOverlay extends StatelessWidget {
                             if (isAllSelected) {
                               context.read<TaskSelectionCubit>().clearSelection();
                             } else {
-                              context.read<TaskSelectionCubit>().selectAll(allTaskIds);
+                              context.read<TaskSelectionCubit>().selectAll(
+                                    allTaskIds,
+                                  );
                             }
                           },
                         ),
                         Text(
                           '$selectedCount selected',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                color: colorScheme.onSecondaryContainer,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () => context.read<TaskSelectionCubit>().clearSelection(),
+                          onPressed: () =>
+                              context.read<TaskSelectionCubit>().clearSelection(),
                           child: const Text('Cancel'),
                         ),
                       ],
@@ -294,20 +307,20 @@ class _SelectionOverlay extends StatelessWidget {
                           label: 'Delete',
                           isDestructive: true,
                           onTap: () async {
-                            final confirmed = await showAdaptiveConfirmationDialog(
+                            final confirmed =
+                                await showAdaptiveConfirmationDialog(
                               context: context,
                               title: 'Delete Tasks',
-                              message: 'Are you sure you want to delete $selectedCount tasks?',
+                              message:
+                                  'Are you sure you want to delete $selectedCount tasks?',
                             );
-                            if (confirmed == true) {
-                              if (context.mounted) {
-                                context.read<TaskListBloc>().add(
-                                      TaskListEvent.bulkDeleteTasks(
-                                        state.selectedTaskIds.toList(),
-                                      ),
-                                    );
-                                context.read<TaskSelectionCubit>().clearSelection();
-                              }
+                            if (confirmed == true && context.mounted) {
+                              context.read<TaskListBloc>().add(
+                                    TaskListEvent.bulkDeleteTasks(
+                                      state.selectedTaskIds.toList(),
+                                    ),
+                                  );
+                              context.read<TaskSelectionCubit>().clearSelection();
                             }
                           },
                         ),
@@ -339,26 +352,21 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final color = isDestructive ? colorScheme.error : colorScheme.onSecondaryContainer;
+    final color = isDestructive
+        ? Theme.of(context).colorScheme.error
+        : ReflectColors.textPrimary;
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
+            Text(label, style: Theme.of(context).textTheme.labelSmall),
           ],
         ),
       ),

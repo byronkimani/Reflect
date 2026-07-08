@@ -20,7 +20,8 @@ Fast task-to-file lookup. Read [`../AGENTS.md`](../AGENTS.md) first, then [`../A
 | Analytics / charts | — | `lib/features/analytics/` | `test/features/analytics/` |
 | GCal sync | `gcal-sync.md` | `lib/features/gcal/` | `test/features/gcal/` |
 | Notifications | `notifications.md` | `lib/features/notifications/` | — |
-| Settings / theme | — | `lib/features/settings/`, `lib/core/theme/` | — |
+| Settings / theme | — | `lib/features/settings/`, `lib/core/presentation/theme/` | — |
+| UI refresh / design system | `design/design-system.md` | `lib/core/presentation/theme/`, `lib/core/presentation/widgets/` | `test/core/presentation/` |
 | Database schema / migrations | `database.md` | `lib/core/storage/database/` | `test/core/` |
 | DI / service registration | `di.md` | `lib/core/di/injectors.dart` | — |
 | Routing | `routing.md` | `lib/core/router/app_router.dart` | — |

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/goals/presentation/cubit/goal_form_state.dart';
+import 'package:reflect/features/goals/presentation/utils/goal_importance.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
 class GoalFormCubit extends Cubit<GoalFormState> {
@@ -21,7 +22,7 @@ class GoalFormCubit extends Cubit<GoalFormState> {
           targetDate: initialGoal?.targetDate,
           checkInFrequency: initialGoal?.checkInFrequency,
           timeHorizon: timeHorizon ?? initialGoal?.timeHorizon ?? GoalTimeHorizon.weekly,
-          isMeasurable: initialGoal?.isMeasurable ?? true,
+          isMeasurable: initialGoal?.isMeasurable ?? false,
         ));
 
   final IGoalRepository _repo;
@@ -46,6 +47,32 @@ class GoalFormCubit extends Cubit<GoalFormState> {
   void timeHorizonChanged(GoalTimeHorizon value) =>
       emit(state.copyWith(timeHorizon: value, isModified: true));
   void isMeasurableChanged(bool value) => emit(state.copyWith(isMeasurable: value, isModified: true));
+
+  void toggleKpiExpanded() {
+    emit(state.copyWith(isMeasurable: !state.isMeasurable, isModified: true));
+  }
+
+  void importanceChanged(GoalImportance? level) {
+    final (priority, urgency) = GoalImportanceMapper.toPriorities(level);
+    emit(
+      state.copyWith(
+        priority: priority,
+        urgency: urgency,
+        clearPriority: priority == null,
+        clearUrgency: urgency == null,
+        isModified: true,
+      ),
+    );
+  }
+
+  void clearStartDate() =>
+      emit(state.copyWith(clearStartDate: true, isModified: true));
+
+  void clearTargetDate() =>
+      emit(state.copyWith(clearTargetDate: true, isModified: true));
+
+  GoalImportance? get importance =>
+      GoalImportanceMapper.fromPriorities(state.priority, state.urgency);
 
   Future<void> submit() async {
     if (state.title.trim().isEmpty) {

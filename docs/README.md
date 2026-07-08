@@ -30,4 +30,15 @@ Source-of-truth specs for product behavior and engineering conventions. Structur
 |------|--------|-------|
 | [`notifications.md`](notifications.md) | Active | Local notifications, scheduling, permissions |
 
+## UI / Design
+
+| Spec | Status | Notes |
+|------|--------|-------|
+| [`design/README.md`](design/README.md) | Active | Index of approved screen specs and mock assets |
+| [`design/today-screen.md`](design/today-screen.md) | **Approved** | Today list, cards, expand, tokens |
+| [`design/new-task-screen.md`](design/new-task-screen.md) | **Approved** | B Quick Capture + C schedule/repeats hybrid |
+| [`design/new-goal-screen.md`](design/new-goal-screen.md) | **Approved** | Accordion form + Importance control |
+| [`design/daily-review-screen.md`](design/daily-review-screen.md) | **Approved** | C Compact Cards + mood icons |
+| [`design/design-tokens.md`](design/design-tokens.md) | Active | Sage-teal accent, priority lozenges |
+
 *(More feature specs will be added as product areas like Planning, Reviews, and Analytics are detailed.)*

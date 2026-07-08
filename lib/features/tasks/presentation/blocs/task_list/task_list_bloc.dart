@@ -66,6 +66,8 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     on<BulkDeleteTasks>(_onBulkDeleteTasks);
     on<SortChanged>(_onSortChanged);
     on<FilterChanged>(_onFilterChanged);
+    on<ToggleSubtask>(_onToggleSubtask);
+    on<RescheduleTask>(_onRescheduleTask);
   }
 
   Future<void> _onLoadTasksForDate(
@@ -284,6 +286,46 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     Emitter<TaskListState> emit,
   ) async {
     final result = await _taskRepository.deleteTasks(event.ids);
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null,
+    );
+  }
+
+  Future<void> _onToggleSubtask(
+    ToggleSubtask event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final result = await _taskRepository.toggleSubtask(
+      event.taskId,
+      event.subtaskId,
+    );
+    result.fold(
+      (failure) => emit(TaskListState.error(failure.errorMessage)),
+      (_) => null,
+    );
+  }
+
+  Future<void> _onRescheduleTask(
+    RescheduleTask event,
+    Emitter<TaskListState> emit,
+  ) async {
+    final task = state.maybeWhen(
+      loaded: (rawTasks, _, _, _, _, _) {
+        for (final t in rawTasks) {
+          if (t.id == event.taskId) return t;
+        }
+        return null;
+      },
+      orElse: () => null,
+    );
+    if (task == null) return;
+
+    final updated = task.copyWith(
+      dueDate: event.newDueDate,
+      updatedAt: DateTime.now(),
+    );
+    final result = await _taskRepository.updateTask(updated);
     result.fold(
       (failure) => emit(TaskListState.error(failure.errorMessage)),
       (_) => null,

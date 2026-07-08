@@ -68,6 +68,8 @@ class GoalFormState {
     bool clearCategoryId = false,
     bool clearPriority = false,
     bool clearUrgency = false,
+    bool clearStartDate = false,
+    bool clearTargetDate = false,
   }) {
     return GoalFormState(
       title: title ?? this.title,
@@ -79,8 +81,8 @@ class GoalFormState {
       priority: clearPriority ? null : (priority ?? this.priority),
       urgency: clearUrgency ? null : (urgency ?? this.urgency),
       why: why ?? this.why,
-      startDate: startDate ?? this.startDate,
-      targetDate: targetDate ?? this.targetDate,
+      startDate: clearStartDate ? null : (startDate ?? this.startDate),
+      targetDate: clearTargetDate ? null : (targetDate ?? this.targetDate),
       checkInFrequency: checkInFrequency ?? this.checkInFrequency,
       timeHorizon: timeHorizon ?? this.timeHorizon,
       isMeasurable: isMeasurable ?? this.isMeasurable,

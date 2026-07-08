@@ -17,4 +17,12 @@ class TaskListEvent with _$TaskListEvent {
   const factory TaskListEvent.bulkDeleteTasks(List<String> ids) = BulkDeleteTasks;
   const factory TaskListEvent.sortChanged(SortMode sortMode) = SortChanged;
   const factory TaskListEvent.filterChanged(TaskListFilter filter) = FilterChanged;
+  const factory TaskListEvent.toggleSubtask({
+    required String taskId,
+    required String subtaskId,
+  }) = ToggleSubtask;
+  const factory TaskListEvent.rescheduleTask({
+    required String taskId,
+    required DateTime newDueDate,
+  }) = RescheduleTask;
 }

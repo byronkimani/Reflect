@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/widgets/mood_rating_row.dart';
+import 'package:reflect/core/presentation/widgets/reflect_form_card.dart';
+import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
+import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
+import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
 
-class DailyReviewPage extends StatelessWidget {
+class DailyReviewPage extends StatefulWidget {
   const DailyReviewPage({super.key});
+
+  @override
+  State<DailyReviewPage> createState() => _DailyReviewPageState();
+}
+
+class _DailyReviewPageState extends State<DailyReviewPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DailyReviewCubit>().initializeForToday();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,95 +33,156 @@ class DailyReviewPage extends StatelessWidget {
       listener: (context, state) {
         if (state.isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Daily Review saved!'), backgroundColor: Colors.green),
+            SnackBar(
+              content: const Text('Daily Review saved!'),
+              backgroundColor: ReflectColors.accentPrimary,
+            ),
           );
           context.pop();
         }
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error!), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(state.error!),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
           );
         }
       },
       builder: (context, state) {
+        final dateLabel = DateFormat('EEEE, MMM d').format(DateTime.now());
+
         return Scaffold(
+          backgroundColor: ReflectColors.pageBackground,
           appBar: AppBar(
             title: const Text('Daily Review'),
+            backgroundColor: ReflectColors.pageBackground,
+            elevation: 0,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('How was your day?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Center(
-                  child: SegmentedButton<int>(
-                    segments: const [
-                      ButtonSegment(value: 1, label: Text('1')),
-                      ButtonSegment(value: 2, label: Text('2')),
-                      ButtonSegment(value: 3, label: Text('3')),
-                      ButtonSegment(value: 4, label: Text('4')),
-                      ButtonSegment(value: 5, label: Text('5')),
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: Text(
+                          dateLabel,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: ReflectColors.textSecondary,
+                              ),
+                        ),
+                      ),
+                      if (state.showTaskChip)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: ReflectPill(
+                            label:
+                                '${state.tasksCompletedToday} of ${state.tasksTotalToday} tasks done today',
+                            selected: false,
+                          ),
+                        ),
+                      ReflectFormCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'How was your day?',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 16),
+                            MoodRatingRow(
+                              selectedRating: state.dayRating,
+                              onRatingChanged: (rating) => context
+                                  .read<DailyReviewCubit>()
+                                  .ratingChanged(rating),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ReflectFormCard(
+                        title: 'Wins & Growth',
+                        child: Column(
+                          children: [
+                            ReflectSoftField(
+                              labelText: 'What went well?',
+                              hintText: 'A win from today…',
+                              maxLines: 2,
+                              onChanged: (value) => context
+                                  .read<DailyReviewCubit>()
+                                  .wentWellChanged(value),
+                            ),
+                            const SizedBox(height: 16),
+                            ReflectSoftField(
+                              labelText: 'What could be better?',
+                              hintText: 'One thing to improve…',
+                              maxLines: 2,
+                              onChanged: (value) => context
+                                  .read<DailyReviewCubit>()
+                                  .couldBeBetterChanged(value),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ReflectFormCard(
+                        title: 'Gratitude',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Share up to 3 things',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: ReflectColors.textSecondary),
+                            ),
+                            const SizedBox(height: 12),
+                            for (var i = 0; i < state.gratitudeFieldCount; i++) ...[
+                              if (i > 0) const SizedBox(height: 12),
+                              _GratitudeField(
+                                index: i,
+                                onChanged: (text) => context
+                                    .read<DailyReviewCubit>()
+                                    .gratitudeChanged(i, text),
+                              ),
+                            ],
+                            if (state.gratitudeFieldCount < 3) ...[
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                onPressed: () => context
+                                    .read<DailyReviewCubit>()
+                                    .addGratitudeField(),
+                                icon: const Icon(Icons.add, size: 18),
+                                label: const Text('Add another'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: ReflectColors.accentPrimary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 80),
                     ],
-                    selected: {state.dayRating},
-                    onSelectionChanged: (value) => context.read<DailyReviewCubit>().ratingChanged(value.first),
                   ),
                 ),
-                const SizedBox(height: 32),
-                const Text('What went well?', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextField(
-                  onChanged: (value) => context.read<DailyReviewCubit>().wentWellChanged(value),
-                  maxLines: 2,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Reflect on your wins...'),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: ReflectPrimaryButton(
+                  label: 'Save Review',
+                  isLoading: state.isSubmitting,
+                  onPressed: state.canSubmit && !state.isSubmitting
+                      ? () => context.read<DailyReviewCubit>().submitReview()
+                      : null,
                 ),
-                const SizedBox(height: 24),
-                const Text('What could be better?', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextField(
-                  onChanged: (value) => context.read<DailyReviewCubit>().couldBeBetterChanged(value),
-                  maxLines: 2,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Potential improvements?'),
-                ),
-                const SizedBox(height: 32),
-                const Text('Gratitude (3 mandatory)', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                _GratitudeField(
-                  index: 0,
-                  label: '1. I am grateful for...',
-                  initialValue: state.gratitude1,
-                  onChanged: (text) => context.read<DailyReviewCubit>().gratitudeChanged(0, text),
-                ),
-                const SizedBox(height: 12),
-                _GratitudeField(
-                  index: 1,
-                  label: '2. I am grateful for...',
-                  initialValue: state.gratitude2,
-                  onChanged: (text) => context.read<DailyReviewCubit>().gratitudeChanged(1, text),
-                ),
-                const SizedBox(height: 12),
-                _GratitudeField(
-                  index: 2,
-                  label: '3. I am grateful for...',
-                  initialValue: state.gratitude3,
-                  onChanged: (text) => context.read<DailyReviewCubit>().gratitudeChanged(2, text),
-                ),
-                const SizedBox(height: 48),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: FilledButton(
-                    onPressed: state.canSubmit && !state.isSubmitting
-                        ? () => context.read<DailyReviewCubit>().submitReview()
-                        : null,
-                    child: state.isSubmitting
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Save Review'),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -110,26 +191,43 @@ class DailyReviewPage extends StatelessWidget {
 }
 
 class _GratitudeField extends StatelessWidget {
-  final int index;
-  final String label;
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
   const _GratitudeField({
     required this.index,
-    required this.label,
-    required this.initialValue,
     required this.onChanged,
   });
+
+  final int index;
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       onChanged: onChanged,
       decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.favorite, color: Colors.pink, size: 20),
+        hintText: 'I am grateful for…',
+        filled: true,
+        fillColor: ReflectColors.inputSurface,
+        prefixIcon: const Icon(
+          Icons.favorite_border,
+          color: ReflectColors.accentPrimary,
+          size: 20,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: ReflectColors.accentPrimary,
+            width: 1.5,
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
     );
   }

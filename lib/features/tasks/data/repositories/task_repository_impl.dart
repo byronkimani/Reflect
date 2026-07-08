@@ -203,6 +203,32 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   @override
+  Future<Either<Failure, Task>> toggleSubtask(
+    String taskId,
+    String subtaskId,
+  ) async {
+    try {
+      final query = _db.select(_db.tasks)..where((t) => t.id.equals(taskId));
+      final taskData = await query.getSingle();
+      final tasks = await _loadTasksWithSubtasks([taskData]);
+      final task = tasks.first;
+      final updatedSubtasks = task.subtasks.map((s) {
+        if (s.id == subtaskId) {
+          return s.copyWith(isCompleted: !s.isCompleted);
+        }
+        return s;
+      }).toList();
+      final updatedTask = task.copyWith(
+        subtasks: updatedSubtasks,
+        updatedAt: DateTime.now(),
+      );
+      return updateTask(updatedTask);
+    } catch (e) {
+      return Left(FailureMapper.cacheFailure(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, Task>> completeTask(String id) async {
     try {
       final query = _db.select(_db.tasks)..where((t) => t.id.equals(id));
@@ -210,14 +236,12 @@ class TaskRepositoryImpl implements ITaskRepository {
       final tasks = await _loadTasksWithSubtasks([taskData]);
       final task = tasks.first;
 
-      // 1. Update Drift
       final updatedTask = task.copyWith(
         status: TaskStatus.completed,
         updatedAt: DateTime.now(),
       );
       await _db.update(_db.tasks).replace(updatedTask.toCompanion());
 
-      // 2. Handle Recurrence
       if (task.recurrenceRule != null) {
         final nextDate = _recurrenceEngine.getNextOccurrence(task);
         if (nextDate != null) {
@@ -231,8 +255,6 @@ class TaskRepositoryImpl implements ITaskRepository {
           await _db.into(_db.tasks).insert(nextTask.toCompanion());
         }
       }
-
-      // 3. (Removed GCal Sync)
 
       return Right(updatedTask);
     } catch (e) {

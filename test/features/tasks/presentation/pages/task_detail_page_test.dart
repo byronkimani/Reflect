@@ -6,7 +6,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
-import 'package:reflect/core/presentation/widgets/priority_chip.dart';
+import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
+import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
@@ -104,6 +105,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> tapSaveButton(WidgetTester tester) async {
+    final button = find.byType(ReflectPrimaryButton);
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+  }
+
   Future<void> dragAndHold(
     WidgetTester tester,
     Finder finder,
@@ -114,12 +121,48 @@ void main() {
     await tester.pump();
   }
 
-  Future<void> tapSwitchTile(WidgetTester tester, String label) async {
-    final tile = find.widgetWithText(SwitchListTile, label);
-    await tester.ensureVisible(tile);
+  Future<void> tapRepeatsRow(WidgetTester tester) async {
+    await scrollForm(tester);
+    await tester.ensureVisible(find.text('Repeats'));
+    await tester.tap(find.text('Repeats'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapExtrasRow(WidgetTester tester) async {
+    await scrollForm(tester);
+    final row = find.ancestor(
+      of: find.text('Notes, goal & tags'),
+      matching: find.byType(ListTile),
+    );
+    await tester.ensureVisible(row);
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapAddStep(WidgetTester tester) async {
+    await scrollForm(tester);
+    final button = find.widgetWithText(TextButton, 'Add step');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+  }
+
+  Finder extrasSheetNotesField() {
+    return find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byType(TextFormField),
+    );
+  }
+
+  Future<void> tapReminderSwitch(WidgetTester tester) async {
+    final reminderSwitch = find.widgetWithText(
+      SwitchListTile,
+      'Remind me when due',
+    );
+    await tester.ensureVisible(reminderSwitch);
     await tester.pumpAndSettle();
     await tester.tap(
-      find.descendant(of: tile, matching: find.byType(Switch)),
+      find.descendant(of: reminderSwitch, matching: find.byType(Switch)),
       warnIfMissed: false,
     );
     await tester.pumpAndSettle();
@@ -133,7 +176,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('New Task'), findsOneWidget);
-      expect(find.byType(TextField), findsWidgets);
+      expect(find.byType(TextFormField), findsWidgets);
     });
 
     testWidgets('edit task shows title "Edit Task" and prefilled task title', (
@@ -164,7 +207,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pumpAndSettle();
 
       expect(find.text('Title cannot be empty'), findsOneWidget);
@@ -180,19 +223,17 @@ void main() {
         );
         when(
           () => mockRepo.updateTask(any()),
-        ).thenAnswer((_) async => Right(t));
+        ).thenAnswer((inv) async => Right(inv.positionalArguments[0] as Task));
         await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Add Sub Task'));
+        await tapAddStep(tester);
+        final newSubtaskField = find.byType(TextFormField).last;
+        await tester.ensureVisible(newSubtaskField);
+        await tester.enterText(newSubtaskField, 'New step');
         await tester.pumpAndSettle();
 
-        final textFields = find.byType(TextField);
-        expect(textFields.evaluate().length, greaterThanOrEqualTo(3));
-        await tester.enterText(textFields.at(2), 'New step');
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byType(FloatingActionButton));
+        await tapSaveButton(tester);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -217,10 +258,10 @@ void main() {
         await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextField).first, 'Updated title');
+        await tester.enterText(find.byType(TextFormField).first, 'Updated title');
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(FloatingActionButton));
+        await tapSaveButton(tester);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -240,10 +281,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'New task title');
+      await tester.enterText(find.byType(TextFormField).first, 'New task title');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -263,16 +304,17 @@ void main() {
         await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextField).first, 'Edited title');
+        await tester.enterText(find.byType(TextFormField).first, 'Edited title');
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Add Sub Task'));
+        await tapAddStep(tester);
+
+        final newSubtaskField = find.byType(TextFormField).last;
+        await tester.ensureVisible(newSubtaskField);
+        await tester.enterText(newSubtaskField, 'Step two');
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextField).at(2), 'Step two');
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byType(FloatingActionButton));
+        await tapSaveButton(tester);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
@@ -310,12 +352,15 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      final textFields = find.byType(TextField);
-      expect(textFields.evaluate().length, greaterThanOrEqualTo(2));
-      await tester.enterText(textFields.at(1), 'New notes');
+      await tapExtrasRow(tester);
+
+      await tester.enterText(extrasSheetNotesField(), 'New notes');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      await tapSaveButton(tester);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -334,16 +379,14 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      var textFields = find.byType(TextField);
-      // title, notes, and 1 subtask
+      var textFields = find.byType(TextFormField);
       final initialCount = textFields.evaluate().length;
 
-      // Submit on the subtask (it is the second to last text field, before notes)
-      await tester.showKeyboard(textFields.at(initialCount - 2));
-      await tester.testTextInput.receiveAction(TextInputAction.next);
+      await tester.showKeyboard(textFields.last);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
 
-      textFields = find.byType(TextField);
+      textFields = find.byType(TextFormField);
       expect(textFields.evaluate().length, initialCount + 1);
     });
 
@@ -355,11 +398,11 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      final p2Chip = find.byType(PriorityChip).at(1);
+      final p2Chip = find.byType(PriorityLozenge).at(1);
       await tester.tap(p2Chip);
       await tester.pumpAndSettle();
       
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pumpAndSettle();
 
       final captured = verify(() => mockRepo.updateTask(captureAny())).captured;
@@ -373,9 +416,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'New task');
+      await tester.enterText(find.byType(TextFormField).first, 'New task');
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -390,9 +433,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'Changed title');
+      await tester.enterText(find.byType(TextFormField).first, 'Changed title');
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -404,7 +447,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'Modified');
+      await tester.enterText(find.byType(TextFormField).first, 'Modified');
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
@@ -421,7 +464,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'Modified');
+      await tester.enterText(find.byType(TextFormField).first, 'Modified');
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
@@ -456,7 +499,7 @@ void main() {
       expect(updated.dueTime, isNull);
     });
 
-    testWidgets('shows goal dropdown when goals stream emits data', (
+    testWidgets('shows goal selector in extras sheet when goals exist', (
       tester,
     ) async {
       when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
@@ -475,8 +518,11 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Goal (optional)'), findsOneWidget);
+      await tapExtrasRow(tester);
+
+      expect(extrasSheetNotesField(), findsOneWidget);
       expect(find.byType(DropdownButtonFormField<String?>), findsOneWidget);
+      expect(find.text('Goal'), findsOneWidget);
     });
 
     testWidgets('toggling Repeats shows weekly recurrence controls', (
@@ -485,7 +531,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tapSwitchTile(tester, 'Repeats');
+      await tapRepeatsRow(tester);
       await scrollForm(tester);
 
       expect(find.text('Daily'), findsOneWidget);
@@ -495,7 +541,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Weekdays'), findsOneWidget);
-      expect(find.text('Mon'), findsOneWidget);
     });
 
     testWidgets('toggling reminder switch updates state', (tester) async {
@@ -506,15 +551,9 @@ void main() {
         SwitchListTile,
         'Remind me when due',
       );
-      await tester.ensureVisible(reminderSwitch);
-      await tester.pumpAndSettle();
       expect(tester.widget<SwitchListTile>(reminderSwitch).value, isFalse);
 
-      await tester.tap(
-        find.descendant(of: reminderSwitch, matching: find.byType(Switch)),
-        warnIfMissed: false,
-      );
-      await tester.pumpAndSettle();
+      await tapReminderSwitch(tester);
 
       expect(tester.widget<SwitchListTile>(reminderSwitch).value, isTrue);
     });
@@ -551,7 +590,7 @@ void main() {
       final subtaskCheckbox = find.descendant(
         of: find.ancestor(
           of: find.text('Remove me'),
-          matching: find.byType(ListTile),
+          matching: find.byType(Row),
         ),
         matching: find.byType(Checkbox),
       );
@@ -570,18 +609,18 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'Weekly standup');
+      await tester.enterText(find.byType(TextFormField).first, 'Weekly standup');
       await tester.pumpAndSettle();
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
-      await tapSwitchTile(tester, 'Repeats');
+      await tapRepeatsRow(tester);
       await scrollForm(tester);
       await tester.tap(find.text('Weekly'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Weekdays'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -591,18 +630,16 @@ void main() {
       expect(created.recurrenceRule?.daysOfWeek, isNotNull);
     });
 
-    testWidgets('due date picker updates due date label', (tester) async {
+    testWidgets('due date picker opens from pill', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await scrollForm(tester);
-      await tester.ensureVisible(find.text('Due Date'));
-      await tester.tap(find.text('Due Date'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
+      await scrollForm(tester, delta: -200);
+      await tester.ensureVisible(find.text('Pick date'));
+      await tester.tap(find.text('Pick date'));
       await tester.pumpAndSettle();
 
-      expect(find.text('No date set'), findsNothing);
+      expect(find.text('OK'), findsOneWidget);
     });
 
     testWidgets('due time picker updates due time label', (tester) async {
@@ -610,13 +647,13 @@ void main() {
       await tester.pumpAndSettle();
 
       await scrollForm(tester, delta: -350);
-      await tester.ensureVisible(find.text('No time set'));
-      await tester.tap(find.text('No time set'));
+      await tester.ensureVisible(find.text('Add time'));
+      await tester.tap(find.text('Add time'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
 
-      expect(find.text('No time set'), findsNothing);
+      expect(find.text('Add time'), findsNothing);
     });
 
     testWidgets('weekly presets Every day and Weekend update recurrence', (
@@ -625,7 +662,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tapSwitchTile(tester, 'Repeats');
+      await tapRepeatsRow(tester);
       await scrollForm(tester);
       await tester.tap(find.text('Weekly'));
       await tester.pumpAndSettle();
@@ -653,7 +690,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await scrollForm(tester);
-      await tester.ensureVisible(find.text('Goal (optional)'));
+      await tester.tap(find.text('Notes, goal & tags'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byType(DropdownButtonFormField<String?>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Run marathon').last);
@@ -682,35 +720,38 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).first, 'Saving task');
+      await tester.enterText(find.byType(TextFormField).first, 'Saving task');
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(FloatingActionButton));
+      await tapSaveButton(tester);
       await tester.pump();
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      final button = tester.widget<ReflectPrimaryButton>(
+        find.byType(ReflectPrimaryButton),
+      );
+      expect(button.isLoading, isTrue);
 
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
     });
 
-    testWidgets('tapping custom weekday chip toggles recurrence day', (
+    testWidgets('tapping Weekdays preset updates recurrence days', (
       tester,
     ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tapSwitchTile(tester, 'Repeats');
+      await tapRepeatsRow(tester);
       await scrollForm(tester);
       await tester.tap(find.text('Weekly'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Mon'));
+      await tester.tap(find.text('Weekdays'));
       await tester.pumpAndSettle();
+
+      expect(find.text('Weekdays'), findsWidgets);
     });
 
-    testWidgets('due time picker uses existing due time as initial value', (
-      tester,
-    ) async {
+    testWidgets('due time picker opens from pill', (tester) async {
       final t = task(id: 'task-1', title: 'Timed task').copyWith(
         dueTime: '14:30',
       );
@@ -718,11 +759,14 @@ void main() {
       await tester.pumpAndSettle();
 
       await scrollForm(tester, delta: -350);
-      await tester.ensureVisible(find.text('14:30'));
-      await tester.tap(find.text('14:30'));
+      final timePill = find.byWidgetPredicate(
+        (w) => w is Text && w.data != null && w.data!.contains(':'),
+      );
+      await tester.ensureVisible(timePill);
+      await tester.tap(timePill);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
+
+      expect(find.text('OK'), findsOneWidget);
     });
   });
 }

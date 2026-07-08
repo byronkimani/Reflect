@@ -87,6 +87,7 @@ void setupDependencies() {
   getIt.registerFactory<DailyReviewCubit>(
     () => DailyReviewCubit(
       getIt<IReviewRepository>(),
+      getIt<ITaskRepository>(),
       getIt<AppAnalyticsService>(),
     ),
   );

@@ -7,6 +7,7 @@ import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_state.dart';
 import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
+import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 
 class MockGoalsCubit extends Mock implements GoalsCubit {}
 
@@ -175,13 +176,13 @@ void main() {
     await tester.pumpWidget(buildPage());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byType(ReflectFab));
     await tester.pumpAndSettle();
 
     expect(find.text('New goal GoalTimeHorizon.quarterly'), findsOneWidget);
   });
 
-  testWidgets('GoalsPage edit button navigates to goal form', (tester) async {
+  testWidgets('GoalsPage tapping goal card navigates to goal form', (tester) async {
     final goal = Goal(
       id: 'g-edit',
       title: 'Editable Goal',
@@ -199,7 +200,7 @@ void main() {
     await tester.pumpWidget(buildPage());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.tap(find.text('Editable Goal'));
     await tester.pumpAndSettle();
 
     expect(find.text('Edit goal g-edit'), findsOneWidget);

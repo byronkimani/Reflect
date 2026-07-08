@@ -10,6 +10,7 @@ import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_st
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_state.dart';
+import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/features/tasks/presentation/pages/backlog_page.dart';
 
 class MockTaskListBloc extends MockBloc<TaskListEvent, TaskListState>
@@ -97,7 +98,7 @@ void main() {
       filter: TaskListFilter(),
     ));
     await tester.pumpWidget(buildPage());
-    expect(find.text('No tasks in backlog.'), findsOneWidget);
+    expect(find.text('Backlog is empty'), findsOneWidget);
   });
 
   testWidgets('BacklogPage shows tasks from pending and completed', (tester) async {
@@ -179,7 +180,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byType(ReflectFab));
     await tester.pumpAndSettle();
 
     expect(find.text('New backlog task'), findsOneWidget);

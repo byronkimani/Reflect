@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_state.dart';
 
@@ -8,12 +10,12 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
+      backgroundColor: ReflectColors.pageBackground,
       appBar: AppBar(
         title: const Text('Settings'),
+        backgroundColor: ReflectColors.pageBackground,
+        elevation: 0,
       ),
       body: BlocBuilder<SettingsCubit, SettingsState>(
         buildWhen: settingsStateShouldRebuild,
@@ -21,16 +23,7 @@ class SettingsPage extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text(
-                  'Appearance',
-                  style: textTheme.titleSmall?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              const ReflectSectionLabel(title: 'Appearance'),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: SegmentedButton<ThemeMode>(
@@ -59,16 +52,7 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 28, 16, 8),
-                child: Text(
-                  'Notifications',
-                  style: textTheme.titleSmall?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              const ReflectSectionLabel(title: 'Notifications'),
               SwitchListTile(
                 title: const Text('Morning planning'),
                 subtitle: const Text('Daily reminder to plan your day'),
@@ -97,16 +81,7 @@ class SettingsPage extends StatelessWidget {
                 onChanged: (v) =>
                     context.read<SettingsCubit>().setMonthlyPlanningEnabled(v),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 28, 16, 8),
-                child: Text(
-                  'Privacy',
-                  style: textTheme.titleSmall?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              const ReflectSectionLabel(title: 'Privacy'),
               SwitchListTile(
                 title: const Text('Usage analytics'),
                 subtitle: const Text(
@@ -121,9 +96,9 @@ class SettingsPage extends StatelessWidget {
                 child: Text(
                   'Task due reminders are controlled per task when you enable '
                   '"Remind me when due".',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: ReflectColors.textSecondary,
+                      ),
                 ),
               ),
             ],

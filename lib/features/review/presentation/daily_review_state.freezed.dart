@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DailyReviewState {
 
- int get dayRating; String get wentWell; String get couldBeBetter; String get gratitude1; String get gratitude2; String get gratitude3; double get taskCompletionRate; bool get isSubmitting; bool get isSuccess; String? get error;
+ int get dayRating; String get wentWell; String get couldBeBetter; String get gratitude1; String get gratitude2; String get gratitude3; int get gratitudeFieldCount; double get taskCompletionRate; int get tasksCompletedToday; int get tasksTotalToday; bool get isSubmitting; bool get isSuccess; String? get error;
 /// Create a copy of DailyReviewState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $DailyReviewStateCopyWith<DailyReviewState> get copyWith => _$DailyReviewStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyReviewState&&(identical(other.dayRating, dayRating) || other.dayRating == dayRating)&&(identical(other.wentWell, wentWell) || other.wentWell == wentWell)&&(identical(other.couldBeBetter, couldBeBetter) || other.couldBeBetter == couldBeBetter)&&(identical(other.gratitude1, gratitude1) || other.gratitude1 == gratitude1)&&(identical(other.gratitude2, gratitude2) || other.gratitude2 == gratitude2)&&(identical(other.gratitude3, gratitude3) || other.gratitude3 == gratitude3)&&(identical(other.taskCompletionRate, taskCompletionRate) || other.taskCompletionRate == taskCompletionRate)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyReviewState&&(identical(other.dayRating, dayRating) || other.dayRating == dayRating)&&(identical(other.wentWell, wentWell) || other.wentWell == wentWell)&&(identical(other.couldBeBetter, couldBeBetter) || other.couldBeBetter == couldBeBetter)&&(identical(other.gratitude1, gratitude1) || other.gratitude1 == gratitude1)&&(identical(other.gratitude2, gratitude2) || other.gratitude2 == gratitude2)&&(identical(other.gratitude3, gratitude3) || other.gratitude3 == gratitude3)&&(identical(other.gratitudeFieldCount, gratitudeFieldCount) || other.gratitudeFieldCount == gratitudeFieldCount)&&(identical(other.taskCompletionRate, taskCompletionRate) || other.taskCompletionRate == taskCompletionRate)&&(identical(other.tasksCompletedToday, tasksCompletedToday) || other.tasksCompletedToday == tasksCompletedToday)&&(identical(other.tasksTotalToday, tasksTotalToday) || other.tasksTotalToday == tasksTotalToday)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dayRating,wentWell,couldBeBetter,gratitude1,gratitude2,gratitude3,taskCompletionRate,isSubmitting,isSuccess,error);
+int get hashCode => Object.hash(runtimeType,dayRating,wentWell,couldBeBetter,gratitude1,gratitude2,gratitude3,gratitudeFieldCount,taskCompletionRate,tasksCompletedToday,tasksTotalToday,isSubmitting,isSuccess,error);
 
 @override
 String toString() {
-  return 'DailyReviewState(dayRating: $dayRating, wentWell: $wentWell, couldBeBetter: $couldBeBetter, gratitude1: $gratitude1, gratitude2: $gratitude2, gratitude3: $gratitude3, taskCompletionRate: $taskCompletionRate, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error)';
+  return 'DailyReviewState(dayRating: $dayRating, wentWell: $wentWell, couldBeBetter: $couldBeBetter, gratitude1: $gratitude1, gratitude2: $gratitude2, gratitude3: $gratitude3, gratitudeFieldCount: $gratitudeFieldCount, taskCompletionRate: $taskCompletionRate, tasksCompletedToday: $tasksCompletedToday, tasksTotalToday: $tasksTotalToday, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $DailyReviewStateCopyWith<$Res>  {
   factory $DailyReviewStateCopyWith(DailyReviewState value, $Res Function(DailyReviewState) _then) = _$DailyReviewStateCopyWithImpl;
 @useResult
 $Res call({
- int dayRating, String wentWell, String couldBeBetter, String gratitude1, String gratitude2, String gratitude3, double taskCompletionRate, bool isSubmitting, bool isSuccess, String? error
+ int dayRating, String wentWell, String couldBeBetter, String gratitude1, String gratitude2, String gratitude3, int gratitudeFieldCount, double taskCompletionRate, int tasksCompletedToday, int tasksTotalToday, bool isSubmitting, bool isSuccess, String? error
 });
 
 
@@ -62,7 +62,7 @@ class _$DailyReviewStateCopyWithImpl<$Res>
 
 /// Create a copy of DailyReviewState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? dayRating = null,Object? wentWell = null,Object? couldBeBetter = null,Object? gratitude1 = null,Object? gratitude2 = null,Object? gratitude3 = null,Object? taskCompletionRate = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? dayRating = null,Object? wentWell = null,Object? couldBeBetter = null,Object? gratitude1 = null,Object? gratitude2 = null,Object? gratitude3 = null,Object? gratitudeFieldCount = null,Object? taskCompletionRate = null,Object? tasksCompletedToday = null,Object? tasksTotalToday = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
 dayRating: null == dayRating ? _self.dayRating : dayRating // ignore: cast_nullable_to_non_nullable
 as int,wentWell: null == wentWell ? _self.wentWell : wentWell // ignore: cast_nullable_to_non_nullable
@@ -70,8 +70,11 @@ as String,couldBeBetter: null == couldBeBetter ? _self.couldBeBetter : couldBeBe
 as String,gratitude1: null == gratitude1 ? _self.gratitude1 : gratitude1 // ignore: cast_nullable_to_non_nullable
 as String,gratitude2: null == gratitude2 ? _self.gratitude2 : gratitude2 // ignore: cast_nullable_to_non_nullable
 as String,gratitude3: null == gratitude3 ? _self.gratitude3 : gratitude3 // ignore: cast_nullable_to_non_nullable
-as String,taskCompletionRate: null == taskCompletionRate ? _self.taskCompletionRate : taskCompletionRate // ignore: cast_nullable_to_non_nullable
-as double,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
+as String,gratitudeFieldCount: null == gratitudeFieldCount ? _self.gratitudeFieldCount : gratitudeFieldCount // ignore: cast_nullable_to_non_nullable
+as int,taskCompletionRate: null == taskCompletionRate ? _self.taskCompletionRate : taskCompletionRate // ignore: cast_nullable_to_non_nullable
+as double,tasksCompletedToday: null == tasksCompletedToday ? _self.tasksCompletedToday : tasksCompletedToday // ignore: cast_nullable_to_non_nullable
+as int,tasksTotalToday: null == tasksTotalToday ? _self.tasksTotalToday : tasksTotalToday // ignore: cast_nullable_to_non_nullable
+as int,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
 as bool,isSuccess: null == isSuccess ? _self.isSuccess : isSuccess // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -159,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int dayRating,  String wentWell,  String couldBeBetter,  String gratitude1,  String gratitude2,  String gratitude3,  double taskCompletionRate,  bool isSubmitting,  bool isSuccess,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int dayRating,  String wentWell,  String couldBeBetter,  String gratitude1,  String gratitude2,  String gratitude3,  int gratitudeFieldCount,  double taskCompletionRate,  int tasksCompletedToday,  int tasksTotalToday,  bool isSubmitting,  bool isSuccess,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DailyReviewState() when $default != null:
-return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitude1,_that.gratitude2,_that.gratitude3,_that.taskCompletionRate,_that.isSubmitting,_that.isSuccess,_that.error);case _:
+return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitude1,_that.gratitude2,_that.gratitude3,_that.gratitudeFieldCount,_that.taskCompletionRate,_that.tasksCompletedToday,_that.tasksTotalToday,_that.isSubmitting,_that.isSuccess,_that.error);case _:
   return orElse();
 
 }
@@ -180,10 +183,10 @@ return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int dayRating,  String wentWell,  String couldBeBetter,  String gratitude1,  String gratitude2,  String gratitude3,  double taskCompletionRate,  bool isSubmitting,  bool isSuccess,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int dayRating,  String wentWell,  String couldBeBetter,  String gratitude1,  String gratitude2,  String gratitude3,  int gratitudeFieldCount,  double taskCompletionRate,  int tasksCompletedToday,  int tasksTotalToday,  bool isSubmitting,  bool isSuccess,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _DailyReviewState():
-return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitude1,_that.gratitude2,_that.gratitude3,_that.taskCompletionRate,_that.isSubmitting,_that.isSuccess,_that.error);case _:
+return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitude1,_that.gratitude2,_that.gratitude3,_that.gratitudeFieldCount,_that.taskCompletionRate,_that.tasksCompletedToday,_that.tasksTotalToday,_that.isSubmitting,_that.isSuccess,_that.error);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +203,10 @@ return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int dayRating,  String wentWell,  String couldBeBetter,  String gratitude1,  String gratitude2,  String gratitude3,  double taskCompletionRate,  bool isSubmitting,  bool isSuccess,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int dayRating,  String wentWell,  String couldBeBetter,  String gratitude1,  String gratitude2,  String gratitude3,  int gratitudeFieldCount,  double taskCompletionRate,  int tasksCompletedToday,  int tasksTotalToday,  bool isSubmitting,  bool isSuccess,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _DailyReviewState() when $default != null:
-return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitude1,_that.gratitude2,_that.gratitude3,_that.taskCompletionRate,_that.isSubmitting,_that.isSuccess,_that.error);case _:
+return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitude1,_that.gratitude2,_that.gratitude3,_that.gratitudeFieldCount,_that.taskCompletionRate,_that.tasksCompletedToday,_that.tasksTotalToday,_that.isSubmitting,_that.isSuccess,_that.error);case _:
   return null;
 
 }
@@ -215,7 +218,7 @@ return $default(_that.dayRating,_that.wentWell,_that.couldBeBetter,_that.gratitu
 
 
 class _DailyReviewState extends DailyReviewState {
-  const _DailyReviewState({this.dayRating = 0, this.wentWell = '', this.couldBeBetter = '', this.gratitude1 = '', this.gratitude2 = '', this.gratitude3 = '', this.taskCompletionRate = 0.0, this.isSubmitting = false, this.isSuccess = false, this.error}): super._();
+  const _DailyReviewState({this.dayRating = 0, this.wentWell = '', this.couldBeBetter = '', this.gratitude1 = '', this.gratitude2 = '', this.gratitude3 = '', this.gratitudeFieldCount = 1, this.taskCompletionRate = 0.0, this.tasksCompletedToday = 0, this.tasksTotalToday = 0, this.isSubmitting = false, this.isSuccess = false, this.error}): super._();
   
 
 @override@JsonKey() final  int dayRating;
@@ -224,7 +227,10 @@ class _DailyReviewState extends DailyReviewState {
 @override@JsonKey() final  String gratitude1;
 @override@JsonKey() final  String gratitude2;
 @override@JsonKey() final  String gratitude3;
+@override@JsonKey() final  int gratitudeFieldCount;
 @override@JsonKey() final  double taskCompletionRate;
+@override@JsonKey() final  int tasksCompletedToday;
+@override@JsonKey() final  int tasksTotalToday;
 @override@JsonKey() final  bool isSubmitting;
 @override@JsonKey() final  bool isSuccess;
 @override final  String? error;
@@ -239,16 +245,16 @@ _$DailyReviewStateCopyWith<_DailyReviewState> get copyWith => __$DailyReviewStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyReviewState&&(identical(other.dayRating, dayRating) || other.dayRating == dayRating)&&(identical(other.wentWell, wentWell) || other.wentWell == wentWell)&&(identical(other.couldBeBetter, couldBeBetter) || other.couldBeBetter == couldBeBetter)&&(identical(other.gratitude1, gratitude1) || other.gratitude1 == gratitude1)&&(identical(other.gratitude2, gratitude2) || other.gratitude2 == gratitude2)&&(identical(other.gratitude3, gratitude3) || other.gratitude3 == gratitude3)&&(identical(other.taskCompletionRate, taskCompletionRate) || other.taskCompletionRate == taskCompletionRate)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyReviewState&&(identical(other.dayRating, dayRating) || other.dayRating == dayRating)&&(identical(other.wentWell, wentWell) || other.wentWell == wentWell)&&(identical(other.couldBeBetter, couldBeBetter) || other.couldBeBetter == couldBeBetter)&&(identical(other.gratitude1, gratitude1) || other.gratitude1 == gratitude1)&&(identical(other.gratitude2, gratitude2) || other.gratitude2 == gratitude2)&&(identical(other.gratitude3, gratitude3) || other.gratitude3 == gratitude3)&&(identical(other.gratitudeFieldCount, gratitudeFieldCount) || other.gratitudeFieldCount == gratitudeFieldCount)&&(identical(other.taskCompletionRate, taskCompletionRate) || other.taskCompletionRate == taskCompletionRate)&&(identical(other.tasksCompletedToday, tasksCompletedToday) || other.tasksCompletedToday == tasksCompletedToday)&&(identical(other.tasksTotalToday, tasksTotalToday) || other.tasksTotalToday == tasksTotalToday)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.isSuccess, isSuccess) || other.isSuccess == isSuccess)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dayRating,wentWell,couldBeBetter,gratitude1,gratitude2,gratitude3,taskCompletionRate,isSubmitting,isSuccess,error);
+int get hashCode => Object.hash(runtimeType,dayRating,wentWell,couldBeBetter,gratitude1,gratitude2,gratitude3,gratitudeFieldCount,taskCompletionRate,tasksCompletedToday,tasksTotalToday,isSubmitting,isSuccess,error);
 
 @override
 String toString() {
-  return 'DailyReviewState(dayRating: $dayRating, wentWell: $wentWell, couldBeBetter: $couldBeBetter, gratitude1: $gratitude1, gratitude2: $gratitude2, gratitude3: $gratitude3, taskCompletionRate: $taskCompletionRate, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error)';
+  return 'DailyReviewState(dayRating: $dayRating, wentWell: $wentWell, couldBeBetter: $couldBeBetter, gratitude1: $gratitude1, gratitude2: $gratitude2, gratitude3: $gratitude3, gratitudeFieldCount: $gratitudeFieldCount, taskCompletionRate: $taskCompletionRate, tasksCompletedToday: $tasksCompletedToday, tasksTotalToday: $tasksTotalToday, isSubmitting: $isSubmitting, isSuccess: $isSuccess, error: $error)';
 }
 
 
@@ -259,7 +265,7 @@ abstract mixin class _$DailyReviewStateCopyWith<$Res> implements $DailyReviewSta
   factory _$DailyReviewStateCopyWith(_DailyReviewState value, $Res Function(_DailyReviewState) _then) = __$DailyReviewStateCopyWithImpl;
 @override @useResult
 $Res call({
- int dayRating, String wentWell, String couldBeBetter, String gratitude1, String gratitude2, String gratitude3, double taskCompletionRate, bool isSubmitting, bool isSuccess, String? error
+ int dayRating, String wentWell, String couldBeBetter, String gratitude1, String gratitude2, String gratitude3, int gratitudeFieldCount, double taskCompletionRate, int tasksCompletedToday, int tasksTotalToday, bool isSubmitting, bool isSuccess, String? error
 });
 
 
@@ -276,7 +282,7 @@ class __$DailyReviewStateCopyWithImpl<$Res>
 
 /// Create a copy of DailyReviewState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? dayRating = null,Object? wentWell = null,Object? couldBeBetter = null,Object? gratitude1 = null,Object? gratitude2 = null,Object? gratitude3 = null,Object? taskCompletionRate = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? dayRating = null,Object? wentWell = null,Object? couldBeBetter = null,Object? gratitude1 = null,Object? gratitude2 = null,Object? gratitude3 = null,Object? gratitudeFieldCount = null,Object? taskCompletionRate = null,Object? tasksCompletedToday = null,Object? tasksTotalToday = null,Object? isSubmitting = null,Object? isSuccess = null,Object? error = freezed,}) {
   return _then(_DailyReviewState(
 dayRating: null == dayRating ? _self.dayRating : dayRating // ignore: cast_nullable_to_non_nullable
 as int,wentWell: null == wentWell ? _self.wentWell : wentWell // ignore: cast_nullable_to_non_nullable
@@ -284,8 +290,11 @@ as String,couldBeBetter: null == couldBeBetter ? _self.couldBeBetter : couldBeBe
 as String,gratitude1: null == gratitude1 ? _self.gratitude1 : gratitude1 // ignore: cast_nullable_to_non_nullable
 as String,gratitude2: null == gratitude2 ? _self.gratitude2 : gratitude2 // ignore: cast_nullable_to_non_nullable
 as String,gratitude3: null == gratitude3 ? _self.gratitude3 : gratitude3 // ignore: cast_nullable_to_non_nullable
-as String,taskCompletionRate: null == taskCompletionRate ? _self.taskCompletionRate : taskCompletionRate // ignore: cast_nullable_to_non_nullable
-as double,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
+as String,gratitudeFieldCount: null == gratitudeFieldCount ? _self.gratitudeFieldCount : gratitudeFieldCount // ignore: cast_nullable_to_non_nullable
+as int,taskCompletionRate: null == taskCompletionRate ? _self.taskCompletionRate : taskCompletionRate // ignore: cast_nullable_to_non_nullable
+as double,tasksCompletedToday: null == tasksCompletedToday ? _self.tasksCompletedToday : tasksCompletedToday // ignore: cast_nullable_to_non_nullable
+as int,tasksTotalToday: null == tasksTotalToday ? _self.tasksTotalToday : tasksTotalToday // ignore: cast_nullable_to_non_nullable
+as int,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
 as bool,isSuccess: null == isSuccess ? _self.isSuccess : isSuccess // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,

@@ -24,7 +24,7 @@ class MockTaskSelectionCubit extends MockCubit<TaskSelectionState>
 void main() {
   late MockTaskListBloc mockTaskListBloc;
   late MockTaskSelectionCubit mockSelectionCubit;
-  final now = DateTime(2025, 6, 30, 12);
+  late DateTime now;
 
   Task buildTask({
     String id = 'task-1',
@@ -33,12 +33,13 @@ void main() {
     bool isOverdue = false,
     RecurrenceRule? recurrenceRule,
     String? dueTime,
+    DateTime? dueDate,
   }) => Task(
     id: id,
     title: title,
     status: status,
     isOverdue: isOverdue,
-    dueDate: now,
+    dueDate: dueDate ?? now,
     dueTime: dueTime,
     recurrenceRule: recurrenceRule,
     createdAt: now,
@@ -78,6 +79,7 @@ void main() {
   });
 
   setUp(() {
+    now = DateTime.now();
     mockTaskListBloc = MockTaskListBloc();
     mockSelectionCubit = MockTaskSelectionCubit();
     when(() => mockTaskListBloc.state).thenReturn(const TaskListState.initial());
@@ -112,12 +114,15 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('navigates to task detail on tap', (tester) async {
+    testWidgets('navigates to task detail via Edit after expand', (tester) async {
       final task = buildTask();
       await tester.pumpWidget(buildWidget(task));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Buy groceries'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Edit'));
+      await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
       expect(find.text('Detail task-1'), findsOneWidget);
@@ -150,13 +155,18 @@ void main() {
 
 
 
-    testWidgets('shows OVERDUE badge for overdue pending tasks', (tester) async {
+    testWidgets('shows overdue relative label for overdue pending tasks', (tester) async {
       await tester.pumpWidget(
-        buildWidget(buildTask(isOverdue: true)),
+        buildWidget(
+          buildTask(
+            isOverdue: true,
+            dueDate: now.subtract(const Duration(days: 1)),
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('OVERDUE'), findsOneWidget);
+      expect(find.text('Yesterday'), findsOneWidget);
     });
 
     testWidgets('checkbox toggles selection in selection mode', (tester) async {

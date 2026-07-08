@@ -50,11 +50,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Settings'), findsOneWidget);
-    expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text('APPEARANCE'), findsOneWidget);
+    expect(find.text('NOTIFICATIONS'), findsOneWidget);
     expect(find.text('Morning planning'), findsOneWidget);
     expect(find.text('Evening review'), findsOneWidget);
-    expect(find.text('Privacy'), findsOneWidget);
+    expect(find.text('PRIVACY'), findsOneWidget);
     expect(find.text('Usage analytics'), findsOneWidget);
   });
 }

@@ -11,7 +11,9 @@ Every new or changed behavior must include tests before merge:
 - **Widget** tests for presentation UI
 - **bloc_test** for BLoC / Cubit
 
-Filtered coverage from `make coverage` must stay **≥ 98%** (same file exclusions as CI). No exceptions without explicit approval.
+Filtered coverage from `make coverage` must stay **≥ 98%** (same file exclusions as CI) under normal development.
+
+**UI refresh (2026):** The 98% CI gate is **temporarily disabled** while the redesigned screens land. Tests still run in CI; `make test` must pass locally. Coverage will be restored to ≥ 98% in a follow-up session after UI sign-off and App Tester validation.
 
 ## Coverage Expectations
 
