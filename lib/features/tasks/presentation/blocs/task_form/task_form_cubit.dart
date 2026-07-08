@@ -62,6 +62,34 @@ class TaskFormCubit extends Cubit<TaskFormState> {
   void dueTimeChanged(String? value) => emit(state.copyWith(dueTime: value, isModified: true));
   void hasEnabledReminderChanged(bool value) => emit(state.copyWith(hasEnabledReminder: value, isModified: true));
 
+  void setDueToday() {
+    final now = DateTime.now();
+    emit(state.copyWith(
+      dueDate: DateTime(now.year, now.month, now.day),
+      isModified: true,
+    ));
+  }
+
+  void setDueTomorrow() {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    emit(state.copyWith(
+      dueDate: DateTime(tomorrow.year, tomorrow.month, tomorrow.day),
+      isModified: true,
+    ));
+  }
+
+  void clearDueDate() => emit(state.copyWith(dueDate: null, isModified: true));
+
+  void clearDueTime() => emit(state.copyWith(dueTime: null, isModified: true));
+
+  void toggleRepeatsExpanded() {
+    if (state.isRepeating) {
+      isRepeatingChanged(false);
+    } else {
+      isRepeatingChanged(true);
+    }
+  }
+
   void goalIdChanged(String? goalId) => emit(state.copyWith(selectedGoalId: goalId, isModified: true));
 
   void isRepeatingChanged(bool value) {

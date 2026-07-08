@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reflect/core/presentation/app_scaffold.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
 
-class FakeStatefulNavigationShell extends StatefulWidget implements StatefulNavigationShell {
+class FakeStatefulNavigationShell extends StatefulWidget
+    implements StatefulNavigationShell {
   final int mockCurrentIndex;
   final void Function(int, {bool initialLocation}) mockGoBranch;
 
@@ -19,7 +20,8 @@ class FakeStatefulNavigationShell extends StatefulWidget implements StatefulNavi
   });
 
   @override
-  State<FakeStatefulNavigationShell> createState() => _FakeStatefulNavigationShellState();
+  State<FakeStatefulNavigationShell> createState() =>
+      _FakeStatefulNavigationShellState();
 
   @override
   int get currentIndex => mockCurrentIndex;
@@ -33,7 +35,8 @@ class FakeStatefulNavigationShell extends StatefulWidget implements StatefulNavi
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class _FakeStatefulNavigationShellState extends State<FakeStatefulNavigationShell> {
+class _FakeStatefulNavigationShellState
+    extends State<FakeStatefulNavigationShell> {
   @override
   Widget build(BuildContext context) => const SizedBox.shrink();
 }
@@ -57,18 +60,21 @@ void main() {
     calledInitialLocation = false;
     mockTaskListBloc = MockTaskListBloc();
 
-    when(() => mockTaskListBloc.state).thenReturn(const TaskListState.initial());
-    when(() => mockTaskListBloc.stream).thenAnswer((_) => Stream.value(const TaskListState.initial()));
-    when(() => mockTaskListBloc.close()).thenAnswer((_) async => Future<void>.value());
+    when(() => mockTaskListBloc.state)
+        .thenReturn(const TaskListState.initial());
+    when(() => mockTaskListBloc.stream)
+        .thenAnswer((_) => Stream.value(const TaskListState.initial()));
+    when(() => mockTaskListBloc.close())
+        .thenAnswer((_) async => Future<void>.value());
   });
 
-  Widget buildWidget() {
+  Widget buildWidget({int currentIndex = 0}) {
     return MaterialApp(
       home: BlocProvider<TaskListBloc>.value(
         value: mockTaskListBloc,
         child: ScaffoldWithNavBar(
           navigationShell: FakeStatefulNavigationShell(
-            mockCurrentIndex: 0,
+            mockCurrentIndex: currentIndex,
             mockGoBranch: (index, {bool initialLocation = false}) {
               calledIndex = index;
               calledInitialLocation = initialLocation;
@@ -90,10 +96,11 @@ void main() {
       expect(find.text('More'), findsOneWidget);
     });
 
-    testWidgets('tapping Today when already selected does not reload TaskListBloc', (tester) async {
+    testWidgets('tapping Today when already selected does not reload TaskListBloc',
+        (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      await tester.tap(find.byType(NavigationDestination).at(0));
+      await tester.tap(find.text('Today'));
       await tester.pumpAndSettle();
 
       verifyNever(() => mockTaskListBloc.add(any()));
@@ -102,38 +109,26 @@ void main() {
     });
 
     testWidgets('tapping Today from another tab reloads TaskListBloc', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<TaskListBloc>.value(
-            value: mockTaskListBloc,
-            child: ScaffoldWithNavBar(
-              navigationShell: FakeStatefulNavigationShell(
-                mockCurrentIndex: 1,
-                mockGoBranch: (index, {bool initialLocation = false}) {
-                  calledIndex = index;
-                  calledInitialLocation = initialLocation;
-                },
-              ),
-            ),
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildWidget(currentIndex: 1));
 
-      await tester.tap(find.byType(NavigationDestination).at(0));
+      await tester.tap(find.text('Today'));
       await tester.pumpAndSettle();
 
-      verify(() => mockTaskListBloc.add(any(that: isA<LoadTasksForDate>()))).called(1);
+      verify(() => mockTaskListBloc.add(any(that: isA<LoadTasksForDate>())))
+          .called(1);
       expect(calledIndex, 0);
       expect(calledInitialLocation, false);
     });
 
-    testWidgets('tapping Backlog destination calls TaskListBloc and goBranch', (tester) async {
+    testWidgets('tapping Backlog destination calls TaskListBloc and goBranch',
+        (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      await tester.tap(find.byType(NavigationDestination).at(1));
+      await tester.tap(find.text('Backlog'));
       await tester.pumpAndSettle();
 
-      verify(() => mockTaskListBloc.add(const TaskListEvent.loadBacklog())).called(1);
+      verify(() => mockTaskListBloc.add(const TaskListEvent.loadBacklog()))
+          .called(1);
       expect(calledIndex, 1);
       expect(calledInitialLocation, false);
     });
@@ -141,7 +136,7 @@ void main() {
     testWidgets('tapping Goals destination calls goBranch', (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      await tester.tap(find.byType(NavigationDestination).at(2));
+      await tester.tap(find.text('Goals'));
       await tester.pumpAndSettle();
 
       expect(calledIndex, 2);

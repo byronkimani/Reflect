@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
+import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
+import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_state.dart';
@@ -13,57 +18,68 @@ class GoalsPage extends StatelessWidget {
     return BlocBuilder<GoalsCubit, GoalsState>(
       buildWhen: goalsStateShouldRebuild,
       builder: (context, state) {
-        return DefaultTabController(
-          length: 4,
-          initialIndex: state.selectedHorizon.index,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('My Goals'),
-              bottom: TabBar(
-                onTap: (index) {
-                  context.read<GoalsCubit>().setHorizon(
-                    GoalTimeHorizon.values[index],
-                  );
-                },
-                tabs: const [
-                  Tab(text: 'Weekly'),
-                  Tab(text: 'Monthly'),
-                  Tab(text: 'Quarterly'),
-                  Tab(text: 'Yearly'),
-                ],
-              ),
-            ),
-            body: state.error != null
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        state.error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+        return Scaffold(
+          backgroundColor: ReflectColors.pageBackground,
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    'My Goals',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: ReflectColors.textPrimary,
                         ),
-                      ),
-                    ),
-                  )
-                : TabBarView(
-                    children: [
-                      _GoalList(horizon: GoalTimeHorizon.weekly),
-                      _GoalList(horizon: GoalTimeHorizon.monthly),
-                      _GoalList(horizon: GoalTimeHorizon.quarterly),
-                      _GoalList(horizon: GoalTimeHorizon.yearly),
-                    ],
                   ),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'goals_fab',
-              onPressed: () {
-                final horizon = context
-                    .read<GoalsCubit>()
-                    .state
-                    .selectedHorizon;
-                context.push('/goals/new', extra: horizon);
-              },
-              child: const Icon(Icons.add),
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: GoalTimeHorizon.values.map((horizon) {
+                      final selected = state.selectedHorizon == horizon;
+                      final label = horizon.name[0].toUpperCase() +
+                          horizon.name.substring(1);
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ReflectPill(
+                          label: label,
+                          selected: selected,
+                          onTap: () => context
+                              .read<GoalsCubit>()
+                              .setHorizon(horizon),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: state.error != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              state.error!,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        )
+                      : _GoalList(horizon: state.selectedHorizon),
+                ),
+              ],
             ),
+          ),
+          floatingActionButton: ReflectFab(
+            heroTag: 'goals_fab',
+            onPressed: () {
+              final horizon = context.read<GoalsCubit>().state.selectedHorizon;
+              context.push('/goals/new', extra: horizon);
+            },
           ),
         );
       },
@@ -87,37 +103,25 @@ class _GoalList extends StatelessWidget {
             child: Text(
               'No ${horizon.name} goals yet.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: ReflectColors.textSecondary,
+                  ),
             ),
           );
         }
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           itemCount: goals.length,
           itemBuilder: (context, index) {
             final goal = goals[index];
-            return ListTile(
-              title: Text(goal.title),
-              subtitle: goal.description != null
-                  ? Text(
-                      goal.description!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  : null,
-              trailing: IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () => context.push('/goals/${goal.id}', extra: goal),
+            return _GoalCard(
+              goal: goal,
+              onTap: () => context.push('/goals/${goal.id}', extra: goal),
+              onDelete: () => _confirmDelete(
+                context,
+                goal.id,
+                goal.title,
+                context.read<GoalsCubit>(),
               ),
-              onLongPress: () {
-                _confirmDelete(
-                  context,
-                  goal.id,
-                  goal.title,
-                  context.read<GoalsCubit>(),
-                );
-              },
             );
           },
         );
@@ -149,6 +153,76 @@ class _GoalList extends StatelessWidget {
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GoalCard extends StatelessWidget {
+  const _GoalCard({
+    required this.goal,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  final Goal goal;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onDelete,
+        borderRadius: BorderRadius.circular(ReflectSpacing.cardRadius),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      goal.title,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (goal.priority != null)
+                    PriorityLozenge(priority: goal.priority!),
+                ],
+              ),
+              if (goal.description != null &&
+                  goal.description!.trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  goal.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: ReflectColors.textSecondary,
+                  ),
+                ),
+              ],
+              if (goal.targetDate != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Target ${DateFormat.yMMMd().format(goal.targetDate!)}',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: ReflectColors.textSecondary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

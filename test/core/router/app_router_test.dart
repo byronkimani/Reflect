@@ -113,7 +113,7 @@ void main() {
       harness.router.push('/today/planning');
       await tester.pumpAndSettle();
 
-      expect(find.text('Morning Planning Page'), findsOneWidget);
+      expect(find.text('Morning Planning'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('opens daily review from today branch', (tester) async {

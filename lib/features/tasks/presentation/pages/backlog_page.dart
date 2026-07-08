@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
+import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
+import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
 import 'package:reflect/core/presentation/widgets/task_card.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
@@ -11,7 +15,6 @@ class BacklogPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -23,82 +26,57 @@ class BacklogPage extends StatelessWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (message) => Center(child: Text('Error: $message')),
             loaded: (rawTasks, pending, completed, overdue, sortMode, filter) {
-              final displayedPending = pending;
-              final displayedCompleted = completed;
-              final allTasks = [...displayedPending, ...displayedCompleted];
+              final allTasks = [...pending, ...completed];
 
               return CustomScrollView(
                 slivers: [
-                  SliverAppBar.large(
-                    expandedHeight: 120.0,
-                    backgroundColor: colorScheme.surface,
-                    elevation: 0,
-                    scrolledUnderElevation: 0,
-                    surfaceTintColor: Colors.transparent,
-                    title: Text(
-                      'Backlog',
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 0, 8),
+                      padding: const EdgeInsets.fromLTRB(16, 56, 16, 8),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
-                              'TASKS',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
+                              'Backlog',
+                              style: textTheme.headlineMedium,
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.tune),
+                          ReflectIconButton(
+                            icon: Icons.tune,
+                            tooltip: 'Filter',
                             onPressed: () => showTaskListFilterSheet(
                               context,
                               context.read<TaskListBloc>(),
                               filter,
                             ),
-                            tooltip: 'Filter',
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.sort_by_alpha),
+                          ReflectIconButton(
+                            icon: Icons.sort_by_alpha,
+                            tooltip: 'Sort',
                             onPressed: () => showTaskListSortMenu(
                               context,
                               context.read<TaskListBloc>(),
                               sortMode,
                             ),
-                            tooltip: 'Sort',
                           ),
                         ],
                       ),
                     ),
                   ),
+                  const SliverToBoxAdapter(
+                    child: ReflectSectionLabel(title: 'TASKS'),
+                  ),
                   if (allTasks.isEmpty)
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.all(32.0),
+                        padding: const EdgeInsets.all(32),
                         child: Center(
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.inventory_2_outlined,
-                                size: 48,
-                                color: colorScheme.outlineVariant,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No tasks in backlog.',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.outline,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            'Backlog is empty',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: ReflectColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
@@ -120,10 +98,9 @@ class BacklogPage extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: ReflectFab(
         heroTag: 'backlog_fab',
         onPressed: () => context.go('/backlog/task/new'),
-        child: const Icon(Icons.add),
       ),
     );
   }

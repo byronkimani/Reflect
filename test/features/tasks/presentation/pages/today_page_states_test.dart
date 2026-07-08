@@ -9,6 +9,7 @@ import 'package:reflect/features/tasks/domain/repositories/task_repository.dart'
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
+import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/features/tasks/presentation/pages/today_page.dart';
 
 class MockTaskListBloc extends Mock implements TaskListBloc {}
@@ -137,7 +138,7 @@ void main() {
     await tester.pumpWidget(buildWidget());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(FloatingActionButton));
+    await tester.tap(find.byType(ReflectFab));
     await tester.pumpAndSettle();
 
     expect(find.text('New task form'), findsOneWidget);

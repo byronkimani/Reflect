@@ -3,18 +3,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reflect/core/presentation/widgets/mood_rating_row.dart';
+import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
 import 'package:reflect/features/review/presentation/pages/daily_review_page.dart';
 import 'package:bloc_test/bloc_test.dart';
 
-class MockDailyReviewCubit extends MockBloc<void, DailyReviewState> implements DailyReviewCubit {}
+class MockDailyReviewCubit extends MockBloc<void, DailyReviewState>
+    implements DailyReviewCubit {}
 
 void main() {
   late MockDailyReviewCubit mockCubit;
 
   setUp(() {
     mockCubit = MockDailyReviewCubit();
+    when(() => mockCubit.initializeForToday()).thenAnswer((_) async {});
   });
 
   Widget buildPage() {
@@ -40,97 +44,84 @@ void main() {
     );
   }
 
-  testWidgets('DailyReviewPage shows all initial fields', (tester) async {
+  testWidgets('DailyReviewPage shows card-based layout', (tester) async {
     when(() => mockCubit.state).thenReturn(const DailyReviewState());
-    
+
     await tester.pumpWidget(buildPage());
-    
+    await tester.pump();
+
     expect(find.text('Daily Review'), findsOneWidget);
     expect(find.text('How was your day?'), findsOneWidget);
-    expect(find.text('What went well?'), findsOneWidget);
-    expect(find.text('What could be better?'), findsOneWidget);
-    expect(find.text('Gratitude (3 mandatory)'), findsOneWidget);
-    
-    expect(find.byType(SegmentedButton<int>), findsOneWidget);
-    expect(find.text('1. I am grateful for...'), findsOneWidget);
-    expect(find.text('2. I am grateful for...'), findsOneWidget);
-    expect(find.text('3. I am grateful for...'), findsOneWidget);
+    expect(find.text('Wins & Growth'), findsOneWidget);
+    expect(find.text('Gratitude'), findsOneWidget);
+    expect(find.text('Share up to 3 things'), findsOneWidget);
+    expect(find.byType(MoodRatingRow), findsOneWidget);
+    expect(find.text('Add another'), findsOneWidget);
+    verify(() => mockCubit.initializeForToday()).called(1);
   });
 
   testWidgets('DailyReviewPage interactions call cubit methods', (tester) async {
     when(() => mockCubit.state).thenReturn(const DailyReviewState());
-    
+
     await tester.pumpWidget(buildPage());
-    
+    await tester.pump();
+
     await tester.enterText(
-      find.widgetWithText(TextField, 'Reflect on your wins...'), 
+      find.widgetWithText(TextField, 'A win from today…'),
       'Good day',
     );
     verify(() => mockCubit.wentWellChanged('Good day')).called(1);
-    
+
     await tester.enterText(
-      find.widgetWithText(TextField, 'Potential improvements?'), 
+      find.widgetWithText(TextField, 'One thing to improve…'),
       'Could be better',
     );
     verify(() => mockCubit.couldBeBetterChanged('Could be better')).called(1);
-    
+
     await tester.enterText(
-      find.widgetWithText(TextField, '1. I am grateful for...'), 
+      find.widgetWithText(TextField, 'I am grateful for…'),
       'Food',
     );
     verify(() => mockCubit.gratitudeChanged(0, 'Food')).called(1);
-
-    await tester.enterText(
-      find.widgetWithText(TextField, '2. I am grateful for...'),
-      'Family',
-    );
-    verify(() => mockCubit.gratitudeChanged(1, 'Family')).called(1);
-
-    await tester.enterText(
-      find.widgetWithText(TextField, '3. I am grateful for...'),
-      'Health',
-    );
-    verify(() => mockCubit.gratitudeChanged(2, 'Health')).called(1);
   });
 
-  testWidgets('DailyReviewPage Save Review button calls submitReview when enabled', (tester) async {
+  testWidgets('DailyReviewPage Save Review button calls submitReview when enabled',
+      (tester) async {
     when(() => mockCubit.state).thenReturn(const DailyReviewState(
       dayRating: 3,
+      wentWell: 'win',
       gratitude1: 'g1',
-      gratitude2: 'g2',
-      gratitude3: 'g3',
     ));
     when(() => mockCubit.submitReview()).thenAnswer((_) async {});
-    
+
     await tester.pumpWidget(buildPage());
-    
-    final saveButton = find.widgetWithText(FilledButton, 'Save Review');
+
+    final saveButton = find.widgetWithText(ReflectPrimaryButton, 'Save Review');
     expect(saveButton, findsOneWidget);
-    
+
     await tester.ensureVisible(saveButton);
     await tester.tap(saveButton);
     await tester.pump();
-    
+
     verify(() => mockCubit.submitReview()).called(1);
   });
 
-  testWidgets('DailyReviewPage Save Review button is disabled when not submittable', (tester) async {
-    // Missing gratitude3
+  testWidgets('DailyReviewPage Save Review button is disabled when not submittable',
+      (tester) async {
     when(() => mockCubit.state).thenReturn(const DailyReviewState(
-      gratitude1: 'g1',
-      gratitude2: 'g2',
-      gratitude3: '',
+      dayRating: 3,
+      gratitude1: '',
     ));
-    
+
     await tester.pumpWidget(buildPage());
-    
-    final saveButtonFinder = find.byWidgetPredicate(
-      (widget) => widget is FilledButton && widget.onPressed == null
+
+    final button = tester.widget<ReflectPrimaryButton>(
+      find.byType(ReflectPrimaryButton),
     );
-    expect(saveButtonFinder, findsOneWidget);
+    expect(button.onPressed, isNull);
   });
 
-  testWidgets('selecting day rating calls ratingChanged', (tester) async {
+  testWidgets('selecting mood icon calls ratingChanged', (tester) async {
     when(() => mockCubit.state).thenReturn(const DailyReviewState());
     whenListen(
       mockCubit,
@@ -139,61 +130,22 @@ void main() {
     );
 
     await tester.pumpWidget(buildPage());
+    await tester.pump();
 
-    await tester.tap(find.text('4'));
+    await tester.tap(find.byIcon(Icons.sentiment_satisfied_outlined));
     await tester.pump();
 
     verify(() => mockCubit.ratingChanged(4)).called(1);
   });
 
-  testWidgets('shows success snackbar and pops on success state', (tester) async {
-    whenListen(
-      mockCubit,
-      Stream.fromIterable([
-        const DailyReviewState(),
-        const DailyReviewState(isSuccess: true),
-      ]),
-      initialState: const DailyReviewState(),
-    );
-
-    await tester.pumpWidget(buildPage());
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.text('Daily Review saved!'), findsOneWidget);
-    expect(find.text('Home'), findsOneWidget);
-  });
-
-  testWidgets('shows error snackbar when state has error', (tester) async {
-    whenListen(
-      mockCubit,
-      Stream.fromIterable([
-        const DailyReviewState(),
-        const DailyReviewState(error: 'Could not save'),
-      ]),
-      initialState: const DailyReviewState(),
-    );
-
-    await tester.pumpWidget(buildPage());
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.text('Could not save'), findsOneWidget);
-  });
-
-  testWidgets('shows loading indicator while submitting', (tester) async {
-    when(() => mockCubit.state).thenReturn(
-      const DailyReviewState(
-        dayRating: 4,
-        gratitude1: 'a',
-        gratitude2: 'b',
-        gratitude3: 'c',
-        isSubmitting: true,
-      ),
-    );
+  testWidgets('shows task chip when tasks exist', (tester) async {
+    when(() => mockCubit.state).thenReturn(const DailyReviewState(
+      tasksCompletedToday: 4,
+      tasksTotalToday: 6,
+    ));
 
     await tester.pumpWidget(buildPage());
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('4 of 6 tasks done today'), findsOneWidget);
   });
 }

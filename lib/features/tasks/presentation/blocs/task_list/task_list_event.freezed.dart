@@ -55,7 +55,7 @@ extension TaskListEventPatterns on TaskListEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadTasksForDate value)?  loadTasksForDate,TResult Function( LoadBacklog value)?  loadBacklog,TResult Function( CompleteTask value)?  completeTask,TResult Function( ReopenTask value)?  reopenTask,TResult Function( PushToTomorrow value)?  pushToTomorrow,TResult Function( DeleteTask value)?  deleteTask,TResult Function( BulkCompleteTasks value)?  bulkCompleteTasks,TResult Function( BulkReopenTasks value)?  bulkReopenTasks,TResult Function( BulkMoveToBacklog value)?  bulkMoveToBacklog,TResult Function( BulkDeleteTasks value)?  bulkDeleteTasks,TResult Function( SortChanged value)?  sortChanged,TResult Function( FilterChanged value)?  filterChanged,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LoadTasksForDate value)?  loadTasksForDate,TResult Function( LoadBacklog value)?  loadBacklog,TResult Function( CompleteTask value)?  completeTask,TResult Function( ReopenTask value)?  reopenTask,TResult Function( PushToTomorrow value)?  pushToTomorrow,TResult Function( DeleteTask value)?  deleteTask,TResult Function( BulkCompleteTasks value)?  bulkCompleteTasks,TResult Function( BulkReopenTasks value)?  bulkReopenTasks,TResult Function( BulkMoveToBacklog value)?  bulkMoveToBacklog,TResult Function( BulkDeleteTasks value)?  bulkDeleteTasks,TResult Function( SortChanged value)?  sortChanged,TResult Function( FilterChanged value)?  filterChanged,TResult Function( ToggleSubtask value)?  toggleSubtask,TResult Function( RescheduleTask value)?  rescheduleTask,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
@@ -70,7 +70,9 @@ return bulkReopenTasks(_that);case BulkMoveToBacklog() when bulkMoveToBacklog !=
 return bulkMoveToBacklog(_that);case BulkDeleteTasks() when bulkDeleteTasks != null:
 return bulkDeleteTasks(_that);case SortChanged() when sortChanged != null:
 return sortChanged(_that);case FilterChanged() when filterChanged != null:
-return filterChanged(_that);case _:
+return filterChanged(_that);case ToggleSubtask() when toggleSubtask != null:
+return toggleSubtask(_that);case RescheduleTask() when rescheduleTask != null:
+return rescheduleTask(_that);case _:
   return orElse();
 
 }
@@ -88,7 +90,7 @@ return filterChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadTasksForDate value)  loadTasksForDate,required TResult Function( LoadBacklog value)  loadBacklog,required TResult Function( CompleteTask value)  completeTask,required TResult Function( ReopenTask value)  reopenTask,required TResult Function( PushToTomorrow value)  pushToTomorrow,required TResult Function( DeleteTask value)  deleteTask,required TResult Function( BulkCompleteTasks value)  bulkCompleteTasks,required TResult Function( BulkReopenTasks value)  bulkReopenTasks,required TResult Function( BulkMoveToBacklog value)  bulkMoveToBacklog,required TResult Function( BulkDeleteTasks value)  bulkDeleteTasks,required TResult Function( SortChanged value)  sortChanged,required TResult Function( FilterChanged value)  filterChanged,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LoadTasksForDate value)  loadTasksForDate,required TResult Function( LoadBacklog value)  loadBacklog,required TResult Function( CompleteTask value)  completeTask,required TResult Function( ReopenTask value)  reopenTask,required TResult Function( PushToTomorrow value)  pushToTomorrow,required TResult Function( DeleteTask value)  deleteTask,required TResult Function( BulkCompleteTasks value)  bulkCompleteTasks,required TResult Function( BulkReopenTasks value)  bulkReopenTasks,required TResult Function( BulkMoveToBacklog value)  bulkMoveToBacklog,required TResult Function( BulkDeleteTasks value)  bulkDeleteTasks,required TResult Function( SortChanged value)  sortChanged,required TResult Function( FilterChanged value)  filterChanged,required TResult Function( ToggleSubtask value)  toggleSubtask,required TResult Function( RescheduleTask value)  rescheduleTask,}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate():
@@ -103,7 +105,9 @@ return bulkReopenTasks(_that);case BulkMoveToBacklog():
 return bulkMoveToBacklog(_that);case BulkDeleteTasks():
 return bulkDeleteTasks(_that);case SortChanged():
 return sortChanged(_that);case FilterChanged():
-return filterChanged(_that);case _:
+return filterChanged(_that);case ToggleSubtask():
+return toggleSubtask(_that);case RescheduleTask():
+return rescheduleTask(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -120,7 +124,7 @@ return filterChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadTasksForDate value)?  loadTasksForDate,TResult? Function( LoadBacklog value)?  loadBacklog,TResult? Function( CompleteTask value)?  completeTask,TResult? Function( ReopenTask value)?  reopenTask,TResult? Function( PushToTomorrow value)?  pushToTomorrow,TResult? Function( DeleteTask value)?  deleteTask,TResult? Function( BulkCompleteTasks value)?  bulkCompleteTasks,TResult? Function( BulkReopenTasks value)?  bulkReopenTasks,TResult? Function( BulkMoveToBacklog value)?  bulkMoveToBacklog,TResult? Function( BulkDeleteTasks value)?  bulkDeleteTasks,TResult? Function( SortChanged value)?  sortChanged,TResult? Function( FilterChanged value)?  filterChanged,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LoadTasksForDate value)?  loadTasksForDate,TResult? Function( LoadBacklog value)?  loadBacklog,TResult? Function( CompleteTask value)?  completeTask,TResult? Function( ReopenTask value)?  reopenTask,TResult? Function( PushToTomorrow value)?  pushToTomorrow,TResult? Function( DeleteTask value)?  deleteTask,TResult? Function( BulkCompleteTasks value)?  bulkCompleteTasks,TResult? Function( BulkReopenTasks value)?  bulkReopenTasks,TResult? Function( BulkMoveToBacklog value)?  bulkMoveToBacklog,TResult? Function( BulkDeleteTasks value)?  bulkDeleteTasks,TResult? Function( SortChanged value)?  sortChanged,TResult? Function( FilterChanged value)?  filterChanged,TResult? Function( ToggleSubtask value)?  toggleSubtask,TResult? Function( RescheduleTask value)?  rescheduleTask,}){
 final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
@@ -135,7 +139,9 @@ return bulkReopenTasks(_that);case BulkMoveToBacklog() when bulkMoveToBacklog !=
 return bulkMoveToBacklog(_that);case BulkDeleteTasks() when bulkDeleteTasks != null:
 return bulkDeleteTasks(_that);case SortChanged() when sortChanged != null:
 return sortChanged(_that);case FilterChanged() when filterChanged != null:
-return filterChanged(_that);case _:
+return filterChanged(_that);case ToggleSubtask() when toggleSubtask != null:
+return toggleSubtask(_that);case RescheduleTask() when rescheduleTask != null:
+return rescheduleTask(_that);case _:
   return null;
 
 }
@@ -152,7 +158,7 @@ return filterChanged(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( DateTime date)?  loadTasksForDate,TResult Function()?  loadBacklog,TResult Function( String id)?  completeTask,TResult Function( String id)?  reopenTask,TResult Function( String id)?  pushToTomorrow,TResult Function( String id)?  deleteTask,TResult Function( List<String> ids)?  bulkCompleteTasks,TResult Function( List<String> ids)?  bulkReopenTasks,TResult Function( List<String> ids)?  bulkMoveToBacklog,TResult Function( List<String> ids)?  bulkDeleteTasks,TResult Function( SortMode sortMode)?  sortChanged,TResult Function( TaskListFilter filter)?  filterChanged,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( DateTime date)?  loadTasksForDate,TResult Function()?  loadBacklog,TResult Function( String id)?  completeTask,TResult Function( String id)?  reopenTask,TResult Function( String id)?  pushToTomorrow,TResult Function( String id)?  deleteTask,TResult Function( List<String> ids)?  bulkCompleteTasks,TResult Function( List<String> ids)?  bulkReopenTasks,TResult Function( List<String> ids)?  bulkMoveToBacklog,TResult Function( List<String> ids)?  bulkDeleteTasks,TResult Function( SortMode sortMode)?  sortChanged,TResult Function( TaskListFilter filter)?  filterChanged,TResult Function( String taskId,  String subtaskId)?  toggleSubtask,TResult Function( String taskId,  DateTime newDueDate)?  rescheduleTask,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that.date);case LoadBacklog() when loadBacklog != null:
@@ -166,7 +172,9 @@ return bulkReopenTasks(_that.ids);case BulkMoveToBacklog() when bulkMoveToBacklo
 return bulkMoveToBacklog(_that.ids);case BulkDeleteTasks() when bulkDeleteTasks != null:
 return bulkDeleteTasks(_that.ids);case SortChanged() when sortChanged != null:
 return sortChanged(_that.sortMode);case FilterChanged() when filterChanged != null:
-return filterChanged(_that.filter);case _:
+return filterChanged(_that.filter);case ToggleSubtask() when toggleSubtask != null:
+return toggleSubtask(_that.taskId,_that.subtaskId);case RescheduleTask() when rescheduleTask != null:
+return rescheduleTask(_that.taskId,_that.newDueDate);case _:
   return orElse();
 
 }
@@ -184,7 +192,7 @@ return filterChanged(_that.filter);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( DateTime date)  loadTasksForDate,required TResult Function()  loadBacklog,required TResult Function( String id)  completeTask,required TResult Function( String id)  reopenTask,required TResult Function( String id)  pushToTomorrow,required TResult Function( String id)  deleteTask,required TResult Function( List<String> ids)  bulkCompleteTasks,required TResult Function( List<String> ids)  bulkReopenTasks,required TResult Function( List<String> ids)  bulkMoveToBacklog,required TResult Function( List<String> ids)  bulkDeleteTasks,required TResult Function( SortMode sortMode)  sortChanged,required TResult Function( TaskListFilter filter)  filterChanged,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( DateTime date)  loadTasksForDate,required TResult Function()  loadBacklog,required TResult Function( String id)  completeTask,required TResult Function( String id)  reopenTask,required TResult Function( String id)  pushToTomorrow,required TResult Function( String id)  deleteTask,required TResult Function( List<String> ids)  bulkCompleteTasks,required TResult Function( List<String> ids)  bulkReopenTasks,required TResult Function( List<String> ids)  bulkMoveToBacklog,required TResult Function( List<String> ids)  bulkDeleteTasks,required TResult Function( SortMode sortMode)  sortChanged,required TResult Function( TaskListFilter filter)  filterChanged,required TResult Function( String taskId,  String subtaskId)  toggleSubtask,required TResult Function( String taskId,  DateTime newDueDate)  rescheduleTask,}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate():
 return loadTasksForDate(_that.date);case LoadBacklog():
@@ -198,7 +206,9 @@ return bulkReopenTasks(_that.ids);case BulkMoveToBacklog():
 return bulkMoveToBacklog(_that.ids);case BulkDeleteTasks():
 return bulkDeleteTasks(_that.ids);case SortChanged():
 return sortChanged(_that.sortMode);case FilterChanged():
-return filterChanged(_that.filter);case _:
+return filterChanged(_that.filter);case ToggleSubtask():
+return toggleSubtask(_that.taskId,_that.subtaskId);case RescheduleTask():
+return rescheduleTask(_that.taskId,_that.newDueDate);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,7 +225,7 @@ return filterChanged(_that.filter);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( DateTime date)?  loadTasksForDate,TResult? Function()?  loadBacklog,TResult? Function( String id)?  completeTask,TResult? Function( String id)?  reopenTask,TResult? Function( String id)?  pushToTomorrow,TResult? Function( String id)?  deleteTask,TResult? Function( List<String> ids)?  bulkCompleteTasks,TResult? Function( List<String> ids)?  bulkReopenTasks,TResult? Function( List<String> ids)?  bulkMoveToBacklog,TResult? Function( List<String> ids)?  bulkDeleteTasks,TResult? Function( SortMode sortMode)?  sortChanged,TResult? Function( TaskListFilter filter)?  filterChanged,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( DateTime date)?  loadTasksForDate,TResult? Function()?  loadBacklog,TResult? Function( String id)?  completeTask,TResult? Function( String id)?  reopenTask,TResult? Function( String id)?  pushToTomorrow,TResult? Function( String id)?  deleteTask,TResult? Function( List<String> ids)?  bulkCompleteTasks,TResult? Function( List<String> ids)?  bulkReopenTasks,TResult? Function( List<String> ids)?  bulkMoveToBacklog,TResult? Function( List<String> ids)?  bulkDeleteTasks,TResult? Function( SortMode sortMode)?  sortChanged,TResult? Function( TaskListFilter filter)?  filterChanged,TResult? Function( String taskId,  String subtaskId)?  toggleSubtask,TResult? Function( String taskId,  DateTime newDueDate)?  rescheduleTask,}) {final _that = this;
 switch (_that) {
 case LoadTasksForDate() when loadTasksForDate != null:
 return loadTasksForDate(_that.date);case LoadBacklog() when loadBacklog != null:
@@ -229,7 +239,9 @@ return bulkReopenTasks(_that.ids);case BulkMoveToBacklog() when bulkMoveToBacklo
 return bulkMoveToBacklog(_that.ids);case BulkDeleteTasks() when bulkDeleteTasks != null:
 return bulkDeleteTasks(_that.ids);case SortChanged() when sortChanged != null:
 return sortChanged(_that.sortMode);case FilterChanged() when filterChanged != null:
-return filterChanged(_that.filter);case _:
+return filterChanged(_that.filter);case ToggleSubtask() when toggleSubtask != null:
+return toggleSubtask(_that.taskId,_that.subtaskId);case RescheduleTask() when rescheduleTask != null:
+return rescheduleTask(_that.taskId,_that.newDueDate);case _:
   return null;
 
 }
@@ -1013,6 +1025,142 @@ class _$FilterChangedCopyWithImpl<$Res>
   return _then(FilterChanged(
 null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
 as TaskListFilter,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ToggleSubtask implements TaskListEvent {
+  const ToggleSubtask({required this.taskId, required this.subtaskId});
+  
+
+ final  String taskId;
+ final  String subtaskId;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ToggleSubtaskCopyWith<ToggleSubtask> get copyWith => _$ToggleSubtaskCopyWithImpl<ToggleSubtask>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ToggleSubtask&&(identical(other.taskId, taskId) || other.taskId == taskId)&&(identical(other.subtaskId, subtaskId) || other.subtaskId == subtaskId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,taskId,subtaskId);
+
+@override
+String toString() {
+  return 'TaskListEvent.toggleSubtask(taskId: $taskId, subtaskId: $subtaskId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ToggleSubtaskCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $ToggleSubtaskCopyWith(ToggleSubtask value, $Res Function(ToggleSubtask) _then) = _$ToggleSubtaskCopyWithImpl;
+@useResult
+$Res call({
+ String taskId, String subtaskId
+});
+
+
+
+
+}
+/// @nodoc
+class _$ToggleSubtaskCopyWithImpl<$Res>
+    implements $ToggleSubtaskCopyWith<$Res> {
+  _$ToggleSubtaskCopyWithImpl(this._self, this._then);
+
+  final ToggleSubtask _self;
+  final $Res Function(ToggleSubtask) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? taskId = null,Object? subtaskId = null,}) {
+  return _then(ToggleSubtask(
+taskId: null == taskId ? _self.taskId : taskId // ignore: cast_nullable_to_non_nullable
+as String,subtaskId: null == subtaskId ? _self.subtaskId : subtaskId // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class RescheduleTask implements TaskListEvent {
+  const RescheduleTask({required this.taskId, required this.newDueDate});
+  
+
+ final  String taskId;
+ final  DateTime newDueDate;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RescheduleTaskCopyWith<RescheduleTask> get copyWith => _$RescheduleTaskCopyWithImpl<RescheduleTask>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RescheduleTask&&(identical(other.taskId, taskId) || other.taskId == taskId)&&(identical(other.newDueDate, newDueDate) || other.newDueDate == newDueDate));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,taskId,newDueDate);
+
+@override
+String toString() {
+  return 'TaskListEvent.rescheduleTask(taskId: $taskId, newDueDate: $newDueDate)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RescheduleTaskCopyWith<$Res> implements $TaskListEventCopyWith<$Res> {
+  factory $RescheduleTaskCopyWith(RescheduleTask value, $Res Function(RescheduleTask) _then) = _$RescheduleTaskCopyWithImpl;
+@useResult
+$Res call({
+ String taskId, DateTime newDueDate
+});
+
+
+
+
+}
+/// @nodoc
+class _$RescheduleTaskCopyWithImpl<$Res>
+    implements $RescheduleTaskCopyWith<$Res> {
+  _$RescheduleTaskCopyWithImpl(this._self, this._then);
+
+  final RescheduleTask _self;
+  final $Res Function(RescheduleTask) _then;
+
+/// Create a copy of TaskListEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? taskId = null,Object? newDueDate = null,}) {
+  return _then(RescheduleTask(
+taskId: null == taskId ? _self.taskId : taskId // ignore: cast_nullable_to_non_nullable
+as String,newDueDate: null == newDueDate ? _self.newDueDate : newDueDate // ignore: cast_nullable_to_non_nullable
+as DateTime,
   ));
 }
 

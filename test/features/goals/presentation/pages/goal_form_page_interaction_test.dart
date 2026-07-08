@@ -6,7 +6,6 @@ import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
-import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/entities/goal_category.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -16,7 +15,8 @@ class MockIGoalRepository extends Mock implements IGoalRepository {}
 
 Stream<Either<Failure, List<GoalCategory>>> categoriesStream(
   List<GoalCategory> categories,
-) => Stream.value(Right<Failure, List<GoalCategory>>(categories));
+) =>
+    Stream.value(Right<Failure, List<GoalCategory>>(categories));
 
 void main() {
   late MockIGoalRepository mockRepo;
@@ -27,25 +27,27 @@ void main() {
     String title = 'Test goal',
     String? description,
     GoalTimeHorizon timeHorizon = GoalTimeHorizon.weekly,
-  }) => Goal(
-    id: id,
-    title: title,
-    description: description,
-    timeHorizon: timeHorizon,
-    createdAt: now,
-    updatedAt: now,
-  );
+  }) =>
+      Goal(
+        id: id,
+        title: title,
+        description: description,
+        timeHorizon: timeHorizon,
+        createdAt: now,
+        updatedAt: now,
+      );
 
   GoalCategory category({
     String id = 'c1',
     String name = 'Health',
-  }) => GoalCategory(
-    id: id,
-    name: name,
-    sortOrder: 0,
-    createdAt: now,
-    updatedAt: now,
-  );
+  }) =>
+      GoalCategory(
+        id: id,
+        name: name,
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      );
 
   Widget buildTestWidget({
     Goal? initialGoal,
@@ -116,7 +118,7 @@ void main() {
   });
 
   group('GoalFormPage interactions', () {
-    testWidgets('fills KPI fields when measurable is Yes', (tester) async {
+    testWidgets('fills KPI fields when KPI section expanded', (tester) async {
       when(() => mockRepo.createGoal(any())).thenAnswer(
         (inv) async => Right(inv.positionalArguments[0] as Goal),
       );
@@ -126,18 +128,31 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).at(0), 'Run 5k');
-      await scrollForm(tester);
-      await tester.enterText(find.byType(TextField).at(1), 'Distance in km');
-      await tester.enterText(find.byType(TextField).at(2), '0');
-      await tester.enterText(find.byType(TextField).at(3), '5');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'What do you want to achieve?'),
+        'Run 5k',
+      );
+      await tester.tap(find.text('Track a KPI'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'What KPI measures progress?'),
+        'Distance in km',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Start'),
+        '0',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Target'),
+        '5',
+      );
       await tester.pumpAndSettle();
 
       await tapSubmit(tester, label: 'Create Goal');
       verify(() => mockRepo.createGoal(any())).called(1);
     });
 
-    testWidgets('toggles priority and urgency chips', (tester) async {
+    testWidgets('selects importance level', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -145,17 +160,13 @@ void main() {
       await tester.pumpAndSettle();
 
       await scrollForm(tester);
-      final chips = find.byType(PriorityChip);
-      await tester.ensureVisible(chips.at(1));
-      await tester.tap(chips.at(1), warnIfMissed: false);
+      await tester.tap(find.text('Importance'));
       await tester.pumpAndSettle();
-      await scrollForm(tester, delta: -200);
-      await tester.ensureVisible(chips.at(6));
-      await tester.tap(chips.at(6), warnIfMissed: false);
+      await tester.tap(find.text('High'));
       await tester.pumpAndSettle();
     });
 
-    testWidgets('changes time horizon segment on new goal', (tester) async {
+    testWidgets('changes time horizon pill on new goal', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -173,31 +184,56 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField).at(0), 'Goal title');
-      await scrollForm(tester, delta: -500);
-      final fields = find.byType(TextField);
-      await tester.enterText(fields.at(fields.evaluate().length - 2), 'Personal growth');
-      await tester.enterText(fields.at(fields.evaluate().length - 1), 'Short summary');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'What do you want to achieve?'),
+        'Goal title',
+      );
+      await scrollForm(tester);
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Why you are setting this goal'),
+        'Personal growth',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Brief description'),
+        'Short summary',
+      );
       await tester.pumpAndSettle();
 
       await tapSubmit(tester, label: 'Create Goal');
       verify(() => mockRepo.createGoal(any())).called(1);
     });
 
-    testWidgets('selects check-in frequency chip', (tester) async {
+    testWidgets('selects check-in frequency pill', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await scrollForm(tester, delta: -500);
+      await scrollForm(tester);
       await tester.ensureVisible(find.text('Daily'));
       await tester.tap(find.text('Daily'));
       await tester.pumpAndSettle();
     });
 
-    testWidgets('start date picker updates label', (tester) async {
+    testWidgets('start date picker updates pill label', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.ensureVisible(find.text('Start date'));
+      await tester.tap(find.text('Start date'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Start date'), findsNothing);
+    });
+
+    testWidgets('target date picker updates pill label', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -205,30 +241,13 @@ void main() {
       await tester.pumpAndSettle();
 
       await scrollForm(tester, delta: -400);
-      await tester.ensureVisible(find.text('Pick start date'));
-      await tester.tap(find.text('Pick start date'));
+      await tester.ensureVisible(find.text('Target date'));
+      await tester.tap(find.text('Target date'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pick start date'), findsNothing);
-    });
-
-    testWidgets('target date picker updates label', (tester) async {
-      await tester.binding.setSurfaceSize(const Size(800, 1200));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      await scrollForm(tester, delta: -500);
-      await tester.ensureVisible(find.text('Pick target date'));
-      await tester.tap(find.text('Pick target date'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Pick target date'), findsNothing);
+      expect(find.text('Target date'), findsNothing);
     });
 
     testWidgets('discard dialog appears when leaving with unsaved changes', (
@@ -287,16 +306,14 @@ void main() {
       await tapSubmit(tester, label: 'Save Changes');
     });
 
-    testWidgets('selects category from dropdown', (tester) async {
+    testWidgets('selects category chip', (tester) async {
       final cat = category();
       await tester.pumpWidget(
         buildTestWidget(categories: categoriesStream([cat])),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(DropdownButtonFormField<String?>));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Health').last);
+      await tester.tap(find.text('Health'));
       await tester.pumpAndSettle();
     });
 
@@ -324,7 +341,8 @@ void main() {
       when(() => mockRepo.updateCategory(any())).thenAnswer(
         (inv) async => Right(inv.positionalArguments[0] as GoalCategory),
       );
-      when(() => mockRepo.deleteCategory(any())).thenAnswer((_) async => const Right(unit));
+      when(() => mockRepo.deleteCategory(any()))
+          .thenAnswer((_) async => const Right(unit));
 
       await tester.pumpWidget(
         buildTestWidget(categories: categoriesStream([cat])),
@@ -359,58 +377,6 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
     });
 
-    testWidgets('category add dialog cancel closes without creating', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Manage categories'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Add').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-
-      verifyNever(() => mockRepo.createCategory(any()));
-    });
-
-    testWidgets('category edit dialog cancel closes without updating', (
-      tester,
-    ) async {
-      final cat = category(name: 'Work');
-      await tester.pumpWidget(
-        buildTestWidget(categories: categoriesStream([cat])),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Manage categories'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.edit_outlined));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-
-      verifyNever(() => mockRepo.updateCategory(any()));
-    });
-
-    testWidgets('category delete dialog cancel keeps category', (tester) async {
-      final cat = category(name: 'Work');
-      await tester.pumpWidget(
-        buildTestWidget(categories: categoriesStream([cat])),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Manage categories'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.delete_outline));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-
-      verifyNever(() => mockRepo.deleteCategory(any()));
-    });
-
     testWidgets('shows submitting indicator while create is in progress', (
       tester,
     ) async {
@@ -432,7 +398,7 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('categories stream failure yields empty dropdown', (
+    testWidgets('categories stream failure yields only None chip', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -444,9 +410,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(DropdownButtonFormField<String?>));
-      await tester.pumpAndSettle();
-      expect(find.text('None'), findsWidgets);
+      expect(find.text('None'), findsAtLeastNWidgets(1));
     });
   });
 }

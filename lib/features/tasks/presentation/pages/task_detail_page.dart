@@ -3,15 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:reflect/core/observability/analytics_service.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/widgets/expandable_section_row.dart';
+import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
+import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
+import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
+import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
+import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
-import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/subtask_form_item.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_state.dart';
-import 'package:reflect/core/observability/analytics_service.dart';
-import 'package:reflect/core/presentation/widgets/priority_chip.dart';
 import 'package:reflect/main.dart';
 
 class TaskDetailPage extends StatelessWidget {
@@ -67,13 +72,100 @@ class _TaskFormViewState extends State<TaskFormView> {
     super.dispose();
   }
 
+  DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  bool _isToday(DateTime? date) {
+    if (date == null) return false;
+    return _dateOnly(date) == _dateOnly(DateTime.now());
+  }
+
+  bool _isTomorrow(DateTime? date) {
+    if (date == null) return false;
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    return _dateOnly(date) == _dateOnly(tomorrow);
+  }
+
+  bool _isCustomDate(DateTime? date) {
+    if (date == null) return false;
+    return !_isToday(date) && !_isTomorrow(date);
+  }
+
+  String _formatTimeDisplay(String? dueTime) {
+    if (dueTime == null || dueTime.isEmpty) return 'Add time';
+    final parts = dueTime.split(':');
+    if (parts.length < 2) return dueTime;
+    final hour = int.tryParse(parts[0]) ?? 0;
+    final minute = int.tryParse(parts[1]) ?? 0;
+    return DateFormat.jm().format(DateTime(2000, 1, 1, hour, minute));
+  }
+
+  void _openExtrasSheet(BuildContext context, TaskFormState state) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(ctx).bottom + 24,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Notes, goal & tags',
+              style: Theme.of(ctx).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            ReflectSoftField(
+              labelText: 'Notes',
+              hintText: 'Add details or context...',
+              maxLines: 4,
+              initialValue: state.notes,
+              onChanged: (v) => context.read<TaskFormCubit>().notesChanged(v),
+            ),
+            if (state.availableGoals.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String?>(
+                key: ValueKey(state.selectedGoalId),
+                initialValue: state.selectedGoalId != null &&
+                        state.availableGoals
+                            .any((g) => g.id == state.selectedGoalId)
+                    ? state.selectedGoalId
+                    : null,
+                decoration: const InputDecoration(
+                  labelText: 'Goal',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  const DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text('None'),
+                  ),
+                  ...state.availableGoals.map(
+                    (g) => DropdownMenuItem<String?>(
+                      value: g.id,
+                      child: Text(g.title, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                ],
+                onChanged: (id) =>
+                    context.read<TaskFormCubit>().goalIdChanged(id),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TaskFormCubit, TaskFormState>(
       listener: (context, state) {
-        if (state.isSuccess) {
-          context.pop();
-        }
+        if (state.isSuccess) context.pop();
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -85,17 +177,15 @@ class _TaskFormViewState extends State<TaskFormView> {
         }
       },
       builder: (context, state) {
-        final theme = Theme.of(context);
-        final colorScheme = theme.colorScheme;
-        final textTheme = theme.textTheme;
+        final textTheme = Theme.of(context).textTheme;
         final bottomPadding = MediaQuery.paddingOf(context).bottom;
+        final cubit = context.read<TaskFormCubit>();
 
         return PopScope(
           canPop: !state.isModified,
-          onPopInvokedWithResult: (bool didPop, dynamic result) async {
+          onPopInvokedWithResult: (didPop, _) async {
             if (didPop) return;
-            final shouldDiscard = await _showDiscardDialog(context);
-            if (shouldDiscard && context.mounted) {
+            if (await _showDiscardDialog(context) && context.mounted) {
               context.pop();
             }
           },
@@ -105,8 +195,7 @@ class _TaskFormViewState extends State<TaskFormView> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () async {
                   if (state.isModified) {
-                    final shouldDiscard = await _showDiscardDialog(context);
-                    if (shouldDiscard && context.mounted) {
+                    if (await _showDiscardDialog(context) && context.mounted) {
                       context.pop();
                     }
                   } else {
@@ -114,268 +203,125 @@ class _TaskFormViewState extends State<TaskFormView> {
                   }
                 },
               ),
-              title: Text(state.initialTask == null ? 'New Task' : 'Edit Task'),
+              title: Text(
+                state.initialTask == null ? 'New Task' : 'Edit Task',
+              ),
               actions: [
                 if (state.initialTask != null &&
-                    (state.dueDate != null ||
-                        (state.dueTime != null && state.dueTime!.isNotEmpty)) &&
+                    state.dueDate != null &&
                     !state.isSubmitting)
-                  TextButton.icon(
-                    onPressed: () async {
-                      await context.read<TaskFormCubit>().moveToBacklog();
-                    },
-                    icon: const Icon(Icons.inventory_2_outlined, size: 20),
-                    label: const Text('Add to backlog'),
+                  TextButton(
+                    onPressed: cubit.moveToBacklog,
+                    child: const Text('Add to backlog'),
                   ),
                 if (state.isSubmitting)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: colorScheme.primary,
-                        ),
-                      ),
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
               ],
             ),
             body: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 120 + bottomPadding),
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 100 + bottomPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title – no border when focused
                   TextFormField(
                     focusNode: _titleFocusNode,
                     initialValue: state.title,
                     style: textTheme.headlineSmall,
-                    autocorrect: true,
-                    enableSuggestions: true,
-                    textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(
-                      hintText: 'Task Title',
-                      hintStyle: textTheme.headlineSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant.withValues(
-                          alpha: 0.6,
-                        ),
-                      ),
+                    decoration: const InputDecoration(
+                      hintText: 'What needs doing?',
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
-                      errorBorder: InputBorder.none,
-                      focusedErrorBorder: InputBorder.none,
-                      disabledBorder: InputBorder.none,
-                      filled: false,
-                      contentPadding: EdgeInsets.zero,
                     ),
-                    onChanged: (value) =>
-                        context.read<TaskFormCubit>().titleChanged(value),
+                    onChanged: cubit.titleChanged,
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Priority',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: TaskPriority.values.map((priority) {
-                      final showLabel =
-                          priority == TaskPriority.p1 ||
-                          priority == TaskPriority.p4;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PriorityChip(
-                              priority: priority,
-                              compact: false,
-                              isSelected: state.priority == priority,
-                              onTap: () => context
-                                  .read<TaskFormCubit>()
-                                  .priorityChanged(priority),
-                            ),
-                            const SizedBox(height: 4),
-                            if (showLabel)
-                              Text(
-                                PriorityChip.labelFor(priority),
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              )
-                            else
-                              const SizedBox(
-                                height: 14,
-                              ), // placeholder for text height
-                          ],
-                        ),
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: TaskPriority.values.map((p) {
+                      return PriorityLozenge(
+                        priority: p,
+                        compact: false,
+                        isSelected: state.priority == p,
+                        onTap: () => cubit.priorityChanged(p),
                       );
                     }).toList(),
                   ),
-                  if (state.availableGoals.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    Text(
-                      'Goal (optional)',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String?>(
-                      initialValue:
-                          state.selectedGoalId != null &&
-                              state.availableGoals.any(
-                                (g) => g.id == state.selectedGoalId,
-                              )
-                          ? state.selectedGoalId
-                          : null,
-                      decoration: InputDecoration(
-                        hintText: 'Link to a goal',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                      isExpanded: true,
-                      items: [
-                        const DropdownMenuItem<String?>(
-                          value: null,
-                          child: Text('None'),
-                        ),
-                        ...state.availableGoals.map(
-                          (g) => DropdownMenuItem<String?>(
-                            value: g.id,
-                            child: Text(
-                              g.title,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ],
-                      onChanged: (id) =>
-                          context.read<TaskFormCubit>().goalIdChanged(id),
-                    ),
-                  ],
                   const SizedBox(height: 24),
                   Text(
-                    'Sub Tasks',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                    'When',
+                    style: textTheme.labelLarge?.copyWith(
+                      color: ReflectColors.textSecondary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  ...state.subtaskItems.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    final isLast = index == state.subtaskItems.length - 1;
-                    return _SubtaskFormTile(
-                      key: ValueKey(item.id),
-                      item: item,
-                      index: index,
-                      isLast: isLast,
-                      focusNode: isLast ? _lastSubtaskFocusNode : null,
-                      onToggle: () => context
-                          .read<TaskFormCubit>()
-                          .toggleSubtaskCompletedAt(index),
-                      onTitleChanged: (value) => context
-                          .read<TaskFormCubit>()
-                          .updateSubtaskAt(index, value),
-                      onDelete: () =>
-                          context.read<TaskFormCubit>().removeSubtaskAt(index),
-                    );
-                  }),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      context.read<TaskFormCubit>().addSubtask('');
-                    },
-                    icon: const Icon(Icons.add, size: 20),
-                    label: const Text('Add Sub Task'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ReflectPill(
+                        label: 'Today',
+                        selected: _isToday(state.dueDate),
+                        onTap: () {
+                          if (_isToday(state.dueDate)) {
+                            cubit.clearDueDate();
+                          } else {
+                            cubit.setDueToday();
+                          }
+                        },
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  InkWell(
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: state.dueDate ?? DateTime.now(),
-                        firstDate: DateTime.now().subtract(
-                          const Duration(days: 365),
-                        ),
-                        lastDate: DateTime.now().add(
-                          const Duration(days: 365 * 5),
-                        ),
-                      );
-                      if (date != null) {
-                        if (!context.mounted) return;
-                        context.read<TaskFormCubit>().dueDateChanged(date);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today_outlined,
-                            color: colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Due Date',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  state.dueDate != null
-                                      ? DateFormat(
-                                          'EEEE, MMM d, yyyy',
-                                        ).format(state.dueDate!)
-                                      : 'No date set',
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
+                      ReflectPill(
+                        label: 'Tomorrow',
+                        selected: _isTomorrow(state.dueDate),
+                        onTap: () {
+                          if (_isTomorrow(state.dueDate)) {
+                            cubit.clearDueDate();
+                          } else {
+                            cubit.setDueTomorrow();
+                          }
+                        },
+                      ),
+                      ReflectPill(
+                        label: _isCustomDate(state.dueDate)
+                            ? DateFormat('MMM d').format(state.dueDate!)
+                            : 'Pick date',
+                        selected: _isCustomDate(state.dueDate),
+                        leadingIcon: Icons.calendar_today_outlined,
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: state.dueDate ?? DateTime.now(),
+                            firstDate: DateTime.now().subtract(
+                              const Duration(days: 365),
                             ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ],
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365 * 5),
+                            ),
+                          );
+                          if (date != null) cubit.dueDateChanged(date);
+                        },
+                        onClear: _isCustomDate(state.dueDate)
+                            ? cubit.clearDueDate
+                            : null,
                       ),
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  // Optional time
-                  InkWell(
+                  const SizedBox(height: 8),
+                  ReflectPill(
+                    label: _formatTimeDisplay(state.dueTime),
+                    selected: state.dueTime != null && state.dueTime!.isNotEmpty,
+                    leadingIcon: Icons.access_time,
                     onTap: () async {
-                      TimeOfDay initial = const TimeOfDay(hour: 9, minute: 0);
+                      var initial = const TimeOfDay(hour: 9, minute: 0);
                       if (state.dueTime != null && state.dueTime!.isNotEmpty) {
                         final parts = state.dueTime!.split(':');
                         if (parts.length >= 2) {
@@ -389,262 +335,152 @@ class _TaskFormViewState extends State<TaskFormView> {
                         context: context,
                         initialTime: initial,
                       );
-                      if (time != null && context.mounted) {
-                        context.read<TaskFormCubit>().dueTimeChanged(
+                      if (time != null) {
+                        cubit.dueTimeChanged(
                           '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
                         );
                       }
                     },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.access_time_outlined,
-                            color: colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Time (optional)',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  state.dueTime != null &&
-                                          state.dueTime!.isNotEmpty
-                                      ? state.dueTime!
-                                      : 'No time set',
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ],
-                      ),
-                    ),
+                    onClear: state.dueTime != null && state.dueTime!.isNotEmpty
+                        ? cubit.clearDueTime
+                        : null,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Remind me when due',
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    title: const Text('Remind me when due'),
                     value: state.hasEnabledReminder,
-                    onChanged: (value) => context
-                        .read<TaskFormCubit>()
-                        .hasEnabledReminderChanged(value),
-                    activeThumbColor: colorScheme.primary,
+                    onChanged: cubit.hasEnabledReminderChanged,
+                    activeThumbColor: ReflectColors.accentPrimary,
                   ),
-                  const SizedBox(height: 8),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Repeats',
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    value: state.isRepeating,
-                    onChanged: (value) =>
-                        context.read<TaskFormCubit>().isRepeatingChanged(value),
-                    activeThumbColor: colorScheme.primary,
-                  ),
-                  if (state.isRepeating) ...[
-                    const SizedBox(height: 12),
-                    SegmentedButton<RecurrenceFrequency>(
-                      segments: const [
-                        ButtonSegment<RecurrenceFrequency>(
-                          value: RecurrenceFrequency.DAILY,
-                          label: Text('Daily'),
-                          icon: Icon(Icons.today_outlined, size: 18),
+                  ExpandableSectionRow(
+                    title: 'Repeats',
+                    icon: Icons.repeat,
+                    expanded: state.isRepeating,
+                    onTap: cubit.toggleRepeatsExpanded,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SegmentedButton<RecurrenceFrequency>(
+                          segments: const [
+                            ButtonSegment(
+                              value: RecurrenceFrequency.DAILY,
+                              label: Text('Daily'),
+                            ),
+                            ButtonSegment(
+                              value: RecurrenceFrequency.WEEKLY,
+                              label: Text('Weekly'),
+                            ),
+                          ],
+                          selected: {
+                            state.recurrenceFrequency ??
+                                RecurrenceFrequency.DAILY,
+                          },
+                          onSelectionChanged: (s) {
+                            if (s.isNotEmpty) {
+                              cubit.recurrenceFrequencyChanged(s.first);
+                            }
+                          },
                         ),
-                        ButtonSegment<RecurrenceFrequency>(
-                          value: RecurrenceFrequency.WEEKLY,
-                          label: Text('Weekly'),
-                          icon: Icon(Icons.date_range_outlined, size: 18),
-                        ),
-                      ],
-                      selected: {
-                        state.recurrenceFrequency ?? RecurrenceFrequency.DAILY,
-                      },
-                      onSelectionChanged: (Set<RecurrenceFrequency> selected) {
-                        context
-                            .read<TaskFormCubit>()
-                            .recurrenceFrequencyChanged(selected.first);
-                      },
-                    ),
-                    if (state.recurrenceFrequency ==
-                        RecurrenceFrequency.WEEKLY) ...[
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _DayPresetChip(
-                            label: 'Weekdays',
-                            isSelected: _listEquals(
-                              state.recurrenceDaysOfWeek,
-                              weekdaysPreset,
-                            ),
-                            onTap: () => context
-                                .read<TaskFormCubit>()
-                                .recurrenceDaysOfWeekChanged(weekdaysPreset),
-                          ),
-                          _DayPresetChip(
-                            label: 'Every day',
-                            isSelected: _listEquals(
-                              state.recurrenceDaysOfWeek,
-                              everyDayPreset,
-                            ),
-                            onTap: () => context
-                                .read<TaskFormCubit>()
-                                .recurrenceDaysOfWeekChanged(everyDayPreset),
-                          ),
-                          _DayPresetChip(
-                            label: 'Weekend',
-                            isSelected: _listEquals(
-                              state.recurrenceDaysOfWeek,
-                              weekendPreset,
-                            ),
-                            onTap: () => context
-                                .read<TaskFormCubit>()
-                                .recurrenceDaysOfWeekChanged(weekendPreset),
+                        if (state.recurrenceFrequency ==
+                            RecurrenceFrequency.WEEKLY) ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              _DayPresetChip(
+                                label: 'Weekdays',
+                                isSelected: _listEquals(
+                                  state.recurrenceDaysOfWeek,
+                                  weekdaysPreset,
+                                ),
+                                onTap: () => cubit.recurrenceDaysOfWeekChanged(
+                                  weekdaysPreset,
+                                ),
+                              ),
+                              _DayPresetChip(
+                                label: 'Every day',
+                                isSelected: _listEquals(
+                                  state.recurrenceDaysOfWeek,
+                                  everyDayPreset,
+                                ),
+                                onTap: () => cubit.recurrenceDaysOfWeekChanged(
+                                  everyDayPreset,
+                                ),
+                              ),
+                              _DayPresetChip(
+                                label: 'Weekend',
+                                isSelected: _listEquals(
+                                  state.recurrenceDaysOfWeek,
+                                  weekendPreset,
+                                ),
+                                onTap: () => cubit.recurrenceDaysOfWeekChanged(
+                                  weekendPreset,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Custom',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        children:
-                            [
-                              'Mon',
-                              'Tue',
-                              'Wed',
-                              'Thu',
-                              'Fri',
-                              'Sat',
-                              'Sun',
-                            ].asMap().entries.map((e) {
-                              final weekday = e.key + 1; // 1 = Mon .. 7 = Sun
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: FilterChip(
-                                  label: Text(e.value),
-                                  selected: state.recurrenceDaysOfWeek.contains(
-                                    weekday,
-                                  ),
-                                  onSelected: (_) => context
-                                      .read<TaskFormCubit>()
-                                      .toggleRecurrenceDay(weekday),
-                                  showCheckmark: true,
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ],
-                  ],
-                  const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
-                    'Details',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                    'Subtasks',
+                    style: textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // Details – no border when focused
-                  TextFormField(
-                    initialValue: state.notes,
-                    maxLines: 5,
-                    autocorrect: true,
-                    enableSuggestions: true,
-                    textInputAction: TextInputAction.newline,
-                    decoration: InputDecoration(
-                      hintText: 'Add details or context...',
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      errorBorder: InputBorder.none,
-                      focusedErrorBorder: InputBorder.none,
-                      disabledBorder: InputBorder.none,
-                      filled: true,
-                      fillColor: colorScheme.surfaceContainerHighest.withValues(
-                        alpha: 0.3,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                    onChanged: (value) =>
-                        context.read<TaskFormCubit>().notesChanged(value),
+                  const SizedBox(height: 8),
+                  ...state.subtaskItems.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    return _SubtaskFormTile(
+                      key: ValueKey(item.id),
+                      item: item,
+                      index: index,
+                      isLast: index == state.subtaskItems.length - 1,
+                      focusNode:
+                          index == state.subtaskItems.length - 1
+                              ? _lastSubtaskFocusNode
+                              : null,
+                      onToggle: () =>
+                          cubit.toggleSubtaskCompletedAt(index),
+                      onTitleChanged: (v) => cubit.updateSubtaskAt(index, v),
+                      onDelete: () => cubit.removeSubtaskAt(index),
+                    );
+                  }),
+                  TextButton.icon(
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      cubit.addSubtask('');
+                    },
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add step'),
                   ),
-                  const Divider(height: 32),
-                  // Temporarily hidden
-                  //   SwitchListTile(
-                  //     contentPadding: EdgeInsets.zero,
-                  //     title: Text(
-                  //       'Sync to Google Calendar',
-                  //       style: textTheme.bodyMedium?.copyWith(
-                  //         fontWeight: FontWeight.w500,
-                  //       ),
-                  //     ),
-                  //     value: state.syncToGcal,
-                  //     onChanged: (value) =>
-                  //         context.read<TaskFormCubit>().syncToGcalChanged(value),
-                  //     activeThumbColor: colorScheme.primary,
-                  //   ),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Notes, goal & tags'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _openExtrasSheet(context, state),
+                  ),
                 ],
               ),
             ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerFloat,
-            floatingActionButton: state.isSubmitting
-                ? null
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: FloatingActionButton.extended(
-                        heroTag: null,
-                        onPressed: () => context.read<TaskFormCubit>().submit(),
-                        label: Text(
-                          state.initialTask == null
-                              ? 'Create Task'
-                              : 'Save Changes',
-                          style: textTheme.titleMedium?.copyWith(
-                            color: colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        icon: const Icon(Icons.check_circle_outline),
-                      ),
-                    ),
-                  ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: ReflectPrimaryButton(
+                  label: state.initialTask == null
+                      ? 'Create Task'
+                      : 'Save Changes',
+                  icon: Icons.check_circle_outline,
+                  isLoading: state.isSubmitting,
+                  onPressed: state.isSubmitting ? null : cubit.submit,
+                ),
+              ),
+            ),
           ),
         );
       },
@@ -686,7 +522,6 @@ bool _listEquals(List<int> a, List<int> b) {
   return true;
 }
 
-/// Preset chip for weekly recurrence (Weekdays, Every day, Weekend).
 class _DayPresetChip extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -709,8 +544,6 @@ class _DayPresetChip extends StatelessWidget {
   }
 }
 
-/// One subtask row: checkbox, title (editable), swipe to delete. No due date (inherits from parent).
-/// When [focusNode] is provided (for the last subtask), focus is requested when the tile is first built.
 class _SubtaskFormTile extends StatefulWidget {
   const _SubtaskFormTile({
     super.key,
@@ -736,117 +569,47 @@ class _SubtaskFormTile extends StatefulWidget {
 }
 
 class _SubtaskFormTileState extends State<_SubtaskFormTile> {
-  bool _focusRequested = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.focusNode != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_focusRequested && mounted) {
-          _focusRequested = true;
-          widget.focusNode!.requestFocus();
-        }
-      });
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _SubtaskFormTile oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.focusNode != null && widget.focusNode != oldWidget.focusNode) {
-      _focusRequested = false;
-    }
-    if (widget.focusNode != null && !_focusRequested) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_focusRequested && mounted) {
-          _focusRequested = true;
-          widget.focusNode!.requestFocus();
-        }
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
     final item = widget.item;
-    final index = widget.index;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Slidable(
         key: ValueKey(item.id),
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
-          extentRatio: 0.25,
           children: [
             SlidableAction(
               onPressed: (_) => widget.onDelete(),
-              backgroundColor: colorScheme.error,
-              foregroundColor: colorScheme.onError,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Colors.white,
               icon: Icons.delete_outline,
             ),
           ],
         ),
-        child: Card(
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          color: item.isCompleted
-              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
-              : colorScheme.surfaceContainerLow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 4,
-            ),
-            leading: Checkbox(
+        child: Row(
+          children: [
+            Checkbox(
               value: item.isCompleted,
               onChanged: (_) => widget.onToggle(),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
             ),
-            title: TextFormField(
-              focusNode: widget.focusNode,
-              initialValue: item.title,
-              style: textTheme.titleMedium?.copyWith(
-                decoration: item.isCompleted
-                    ? TextDecoration.lineThrough
-                    : null,
-                color: item.isCompleted
-                    ? colorScheme.outline
-                    : colorScheme.onSurface,
-              ),
-              autocorrect: true,
-              enableSuggestions: true,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.next,
-              maxLines: null,
-              onFieldSubmitted: (_) {
-                if (widget.isLast) {
-                  context.read<TaskFormCubit>().addSubtask('');
-                }
-              },
-              decoration: InputDecoration(
-                hintText: 'Step ${index + 1}',
-                isDense: true,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 0,
+            Expanded(
+              child: TextFormField(
+                focusNode: widget.focusNode,
+                initialValue: item.title,
+                decoration: InputDecoration(
+                  hintText: 'Step ${widget.index + 1}',
+                  border: InputBorder.none,
                 ),
+                onChanged: widget.onTitleChanged,
+                onFieldSubmitted: (_) {
+                  if (widget.isLast) {
+                    context.read<TaskFormCubit>().addSubtask('');
+                  }
+                },
               ),
-              onChanged: widget.onTitleChanged,
             ),
-          ),
+          ],
         ),
       ),
     );

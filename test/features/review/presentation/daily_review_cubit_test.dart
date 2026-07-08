@@ -1,32 +1,46 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fpdart/fpdart.dart';
+import 'package:fpdart/fpdart.dart' hide Task;
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
 import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/features/review/domain/repositories/review_repository.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
+import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 
 class MockReviewRepository extends Mock implements IReviewRepository {}
 class FakeDailyReviewState extends Fake implements DailyReviewState {}
-
 class MockAppAnalyticsService extends Mock implements AppAnalyticsService {}
+class MockTaskRepository extends Mock implements ITaskRepository {}
 
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeDailyReviewState());
+    registerFallbackValue(
+      Task(
+        id: 't1',
+        title: 'Task',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
+    );
   });
 
   late MockReviewRepository mockRepository;
+  late MockTaskRepository mockTaskRepository;
   late MockAppAnalyticsService mockAnalytics;
   late DailyReviewCubit cubit;
 
   setUp(() {
     mockRepository = MockReviewRepository();
+    mockTaskRepository = MockTaskRepository();
     mockAnalytics = MockAppAnalyticsService();
     when(() => mockAnalytics.logDailyReviewSubmitted()).thenAnswer((_) async {});
-    cubit = DailyReviewCubit(mockRepository, mockAnalytics);
+    when(() => mockTaskRepository.getTasksForDate(any()))
+        .thenAnswer((_) async => const Right([]));
+    cubit = DailyReviewCubit(mockRepository, mockTaskRepository, mockAnalytics);
   });
 
   tearDown(() {
@@ -39,6 +53,39 @@ void main() {
     });
 
     blocTest<DailyReviewCubit, DailyReviewState>(
+      'initializeForToday loads task completion stats',
+      build: () {
+        when(() => mockTaskRepository.getTasksForDate(any())).thenAnswer(
+          (_) async => Right([
+            Task(
+              id: '1',
+              title: 'A',
+              status: TaskStatus.completed,
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+            ),
+            Task(
+              id: '2',
+              title: 'B',
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+            ),
+          ]),
+        );
+        return cubit;
+      },
+      act: (cubit) => cubit.initializeForToday(),
+      expect: () => [
+        const DailyReviewState(),
+        const DailyReviewState(
+          tasksCompletedToday: 1,
+          tasksTotalToday: 2,
+          taskCompletionRate: 0.5,
+        ),
+      ],
+    );
+
+    blocTest<DailyReviewCubit, DailyReviewState>(
       'emits updated state when ratingChanged is called',
       build: () => cubit,
       act: (cubit) => cubit.ratingChanged(4),
@@ -48,44 +95,16 @@ void main() {
     );
 
     blocTest<DailyReviewCubit, DailyReviewState>(
-      'emits updated state when wentWellChanged is called',
-      build: () => cubit,
-      act: (cubit) => cubit.wentWellChanged('Everything'),
-      expect: () => [
-        const DailyReviewState(wentWell: 'Everything'),
-      ],
-    );
-
-    blocTest<DailyReviewCubit, DailyReviewState>(
-      'emits updated state when couldBeBetterChanged is called',
-      build: () => cubit,
-      act: (cubit) => cubit.couldBeBetterChanged('Nothing'),
-      expect: () => [
-        const DailyReviewState(couldBeBetter: 'Nothing'),
-      ],
-    );
-
-    blocTest<DailyReviewCubit, DailyReviewState>(
-      'emits updated state when gratitudeChanged is called',
+      'addGratitudeField increases visible field count up to 3',
       build: () => cubit,
       act: (cubit) {
-        cubit.gratitudeChanged(0, 'Health');
-        cubit.gratitudeChanged(1, 'Family');
-        cubit.gratitudeChanged(2, 'Food');
+        cubit.addGratitudeField();
+        cubit.addGratitudeField();
+        cubit.addGratitudeField();
       },
       expect: () => [
-        const DailyReviewState(gratitude1: 'Health'),
-        const DailyReviewState(gratitude1: 'Health', gratitude2: 'Family'),
-        const DailyReviewState(gratitude1: 'Health', gratitude2: 'Family', gratitude3: 'Food'),
-      ],
-    );
-
-    blocTest<DailyReviewCubit, DailyReviewState>(
-      'emits updated state when completionRateChanged is called',
-      build: () => cubit,
-      act: (cubit) => cubit.completionRateChanged(0.8),
-      expect: () => [
-        const DailyReviewState(taskCompletionRate: 0.8),
+        const DailyReviewState(gratitudeFieldCount: 2),
+        const DailyReviewState(gratitudeFieldCount: 3),
       ],
     );
 
@@ -109,24 +128,21 @@ void main() {
       },
       seed: () => const DailyReviewState(
         dayRating: 5,
+        wentWell: 'Good day',
         gratitude1: 'A',
-        gratitude2: 'B',
-        gratitude3: 'C',
       ),
       act: (cubit) => cubit.submitReview(),
       expect: () => [
         const DailyReviewState(
           dayRating: 5,
+          wentWell: 'Good day',
           gratitude1: 'A',
-          gratitude2: 'B',
-          gratitude3: 'C',
           isSubmitting: true,
         ),
         const DailyReviewState(
           dayRating: 5,
+          wentWell: 'Good day',
           gratitude1: 'A',
-          gratitude2: 'B',
-          gratitude3: 'C',
           isSubmitting: false,
           isSuccess: true,
         ),
@@ -146,24 +162,21 @@ void main() {
       },
       seed: () => const DailyReviewState(
         dayRating: 5,
+        wentWell: 'Good day',
         gratitude1: 'A',
-        gratitude2: 'B',
-        gratitude3: 'C',
       ),
       act: (cubit) => cubit.submitReview(),
       expect: () => [
         const DailyReviewState(
           dayRating: 5,
+          wentWell: 'Good day',
           gratitude1: 'A',
-          gratitude2: 'B',
-          gratitude3: 'C',
           isSubmitting: true,
         ),
         const DailyReviewState(
           dayRating: 5,
+          wentWell: 'Good day',
           gratitude1: 'A',
-          gratitude2: 'B',
-          gratitude3: 'C',
           isSubmitting: false,
           error: 'Failed to save',
         ),
