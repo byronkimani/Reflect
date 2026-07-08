@@ -10,6 +10,10 @@ void main() {
     engine = RecurrenceEngineImpl();
   });
 
+  test('RecurrenceEngineImpl implements RecurrenceEngine', () {
+    expect(engine, isA<RecurrenceEngine>());
+  });
+
   group('RecurrenceEngineImpl', () {
     final baseDate = DateTime(2026, 6, 30); // A Tuesday
     final now = DateTime.now();

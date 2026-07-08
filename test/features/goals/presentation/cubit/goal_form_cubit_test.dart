@@ -7,6 +7,7 @@ import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/goals/presentation/cubit/goal_form_cubit.dart';
 import 'package:reflect/features/goals/presentation/cubit/goal_form_state.dart';
+import 'package:reflect/features/goals/presentation/utils/goal_importance.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 
 class MockIGoalRepository extends Mock implements IGoalRepository {}
@@ -289,6 +290,55 @@ void main() {
         predicate<GoalFormState>((s) => s.why == ''),
         predicate<GoalFormState>((s) => s.isSubmitting == true),
         predicate<GoalFormState>((s) => s.isSuccess == true),
+      ],
+    );
+
+    blocTest<GoalFormCubit, GoalFormState>(
+      'importanceChanged maps to priority and urgency',
+      build: () => GoalFormCubit(mockRepo),
+      act: (cubit) => cubit.importanceChanged(GoalImportance.high),
+      expect: () => [
+        predicate<GoalFormState>(
+          (s) =>
+              s.priority == TaskPriority.p2 && s.urgency == TaskPriority.p2,
+        ),
+      ],
+    );
+
+    blocTest<GoalFormCubit, GoalFormState>(
+      'toggleKpiExpanded flips isMeasurable',
+      build: () => GoalFormCubit(mockRepo),
+      act: (cubit) => cubit.toggleKpiExpanded(),
+      expect: () => [
+        predicate<GoalFormState>((s) => s.isMeasurable == true),
+      ],
+    );
+
+    blocTest<GoalFormCubit, GoalFormState>(
+      'isMeasurableChanged updates measurable flag',
+      build: () => GoalFormCubit(mockRepo),
+      act: (cubit) => cubit.isMeasurableChanged(false),
+      expect: () => [
+        predicate<GoalFormState>(
+          (s) => s.isMeasurable == false && s.isModified == true,
+        ),
+      ],
+    );
+
+    blocTest<GoalFormCubit, GoalFormState>(
+      'clearStartDate and clearTargetDate null out dates',
+      build: () => GoalFormCubit(mockRepo),
+      seed: () => GoalFormState(
+        startDate: now,
+        targetDate: now.add(const Duration(days: 30)),
+      ),
+      act: (cubit) {
+        cubit.clearStartDate();
+        cubit.clearTargetDate();
+      },
+      expect: () => [
+        predicate<GoalFormState>((s) => s.startDate == null),
+        predicate<GoalFormState>((s) => s.targetDate == null),
       ],
     );
   });

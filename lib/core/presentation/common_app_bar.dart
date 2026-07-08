@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // For kIsWeb
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -23,8 +21,9 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if we are on iOS/macOS to determine the platform style
-    final isIos = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+    final platform = Theme.of(context).platform;
+    final isIos =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
     if (isIos) {
       return _buildCupertinoBar(context);

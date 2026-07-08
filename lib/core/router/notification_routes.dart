@@ -1,6 +1,6 @@
 /// Validates and normalizes notification tap payloads before navigation.
 class NotificationRoutes {
-  NotificationRoutes._();
+  NotificationRoutes._(); // coverage:ignore-line
 
   static const _allowedExactRoutes = {
     '/today',

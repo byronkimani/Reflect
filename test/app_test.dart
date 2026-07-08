@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -92,6 +93,14 @@ void main() {
     await tester.pump();
     
     expect(find.byType(MaterialApp), findsOneWidget);
+  });
+
+  testWidgets('ReflectApp resolves DailyReviewCubit from GetIt', (tester) async {
+    await tester.pumpWidget(const ReflectApp());
+    await tester.pump();
+
+    final context = tester.element(find.byType(MaterialApp));
+    expect(context.read<DailyReviewCubit>(), same(mockDailyReviewCubit));
   });
 
   testWidgets('ReflectApp rebuilds when theme mode changes', (tester) async {

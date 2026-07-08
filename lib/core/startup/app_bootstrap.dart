@@ -8,7 +8,10 @@ import 'package:reflect/core/di/injectors.dart';
 import 'package:reflect/core/observability/app_bloc_observer.dart';
 import 'package:reflect/core/observability/crash_reporter.dart';
 import 'package:reflect/firebase_options.dart';
-import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
+
+Future<void> _defaultSqlCipherWorkaround() async {
+  // sqlcipher_flutter_libs 0.7+eol is a no-op stub; no Android workaround needed.
+}
 
 /// Initializes Firebase, storage, DI, and global error handlers.
 Future<void> bootstrapReflectApp({
@@ -21,18 +24,19 @@ Future<void> bootstrapReflectApp({
 }) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await (applySqlCipherWorkaround ??
-      applyWorkaroundToOpenSqlCipherOnOldAndroidVersions)();
+  await (applySqlCipherWorkaround ?? _defaultSqlCipherWorkaround)();
 
   await (initEnv ?? EnvConfig.init)();
 
   await (initFirebase ??
+      // coverage:ignore-start
       () async {
         if (Firebase.apps.isEmpty) {
           await Firebase.initializeApp(
             options: DefaultFirebaseOptions.currentPlatform,
           );
         }
+      // coverage:ignore-end
       })();
 
   HydratedBloc.storage = await (buildHydratedStorage ??

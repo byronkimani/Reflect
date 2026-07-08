@@ -29,12 +29,21 @@ void main() {
         .thenAnswer((_) async {});
   });
 
-  test('does not record when disabled', () async {
+  test('NoOpCrashReporter implements CrashReporter', () {
+    expect(const NoOpCrashReporter(), isA<CrashReporter>());
+  });
+
+  test('NoOpCrashReporter accepts fatal and non-fatal errors', () async {
     const reporter = NoOpCrashReporter();
 
-    await reporter.recordError(Exception('x'), StackTrace.current);
+    await reporter.recordError(Exception('non-fatal'), StackTrace.current);
+    await reporter.recordError(
+      Exception('fatal'),
+      StackTrace.current,
+      fatal: true,
+    );
     await reporter.recordFlutterError(
-      FlutterErrorDetails(exception: Exception('x')),
+      FlutterErrorDetails(exception: Exception('flutter')),
     );
   });
 

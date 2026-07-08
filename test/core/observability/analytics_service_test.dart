@@ -50,12 +50,44 @@ void main() {
       verifyNever(() => mockAnalytics.logEvent(name: any(named: 'name')));
       verifyNever(() => mockAnalytics.setAnalyticsCollectionEnabled(any()));
     });
+
+    test('logs daily_review_submitted when collection is enabled', () async {
+      final service = FirebaseAppAnalyticsService(
+        analytics: mockAnalytics,
+        reportingEnabled: true,
+      );
+      service.setCollectionEnabled(true);
+
+      await service.logDailyReviewSubmitted();
+      verify(
+        () => mockAnalytics.logEvent(name: 'daily_review_submitted'),
+      ).called(1);
+    });
+
+    test('logs planning_completed when collection is enabled', () async {
+      final service = FirebaseAppAnalyticsService(
+        analytics: mockAnalytics,
+        reportingEnabled: true,
+      );
+      service.setCollectionEnabled(true);
+
+      await service.logPlanningCompleted();
+      verify(() => mockAnalytics.logEvent(name: 'planning_completed')).called(1);
+    });
   });
 
   group('NoOpAppAnalyticsService', () {
-    test('accepts calls without throwing', () async {
+    test('implements AppAnalyticsService', () {
+      expect(const NoOpAppAnalyticsService(), isA<AppAnalyticsService>());
+    });
+
+    test('accepts all analytics calls without throwing', () async {
       const service = NoOpAppAnalyticsService();
+
       service.setCollectionEnabled(true);
+      service.setCollectionEnabled(false);
+      await service.logTaskCreated();
+      await service.logDailyReviewSubmitted();
       await service.logPlanningCompleted();
     });
   });

@@ -89,6 +89,26 @@ void main() {
         )).called(12);
   });
 
+  test('scheduleEveningReview with skipToday schedules for tomorrow at 9 PM', () async {
+    await scheduler.scheduleEveningReview(skipToday: true);
+
+    final captured = verify(() => mockPlugin.zonedSchedule(
+          id: 1002,
+          title: 'Daily Reflection 🌙',
+          body: 'Take a moment to review your day.',
+          scheduledDate: captureAny(named: 'scheduledDate'),
+          notificationDetails: any(named: 'notificationDetails'),
+          androidScheduleMode: any(named: 'androidScheduleMode'),
+          payload: '/today/review',
+          matchDateTimeComponents: DateTimeComponents.time,
+        )).captured.single as tz.TZDateTime;
+
+    final now = tz.TZDateTime.now(tz.local);
+    final expected = tz.TZDateTime(tz.local, now.year, now.month, now.day, 21, 0)
+        .add(const Duration(days: 1));
+    expect(captured, expected);
+  });
+
   test('cancel commands cancel correct ids', () async {
     await scheduler.cancelMorningPlanning();
     verify(() => mockPlugin.cancel(id: 1001)).called(1);

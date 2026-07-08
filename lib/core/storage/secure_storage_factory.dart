@@ -2,7 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Central factory for hardened secure storage options.
 class SecureStorageFactory {
-  SecureStorageFactory._();
+  SecureStorageFactory._(); // coverage:ignore-line
 
   static const FlutterSecureStorage instance = FlutterSecureStorage(
     aOptions: AndroidOptions(),

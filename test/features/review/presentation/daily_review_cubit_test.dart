@@ -52,6 +52,35 @@ void main() {
       expect(cubit.state, const DailyReviewState());
     });
 
+    test('canSubmit is false when rating set but reflection fields empty', () {
+      const state = DailyReviewState(dayRating: 4);
+      expect(state.canSubmit, isFalse);
+    });
+
+    blocTest<DailyReviewCubit, DailyReviewState>(
+      'initializeForToday ignores task repository failure',
+      build: () {
+        when(() => mockTaskRepository.getTasksForDate(any())).thenAnswer(
+          (_) async => const Left(CacheFailure(errorMessage: 'DB error')),
+        );
+        return cubit;
+      },
+      act: (cubit) => cubit.initializeForToday(),
+      expect: () => [const DailyReviewState()],
+    );
+
+    blocTest<DailyReviewCubit, DailyReviewState>(
+      'initializeForToday leaves state reset when no tasks',
+      build: () {
+        when(() => mockTaskRepository.getTasksForDate(any())).thenAnswer(
+          (_) async => const Right([]),
+        );
+        return cubit;
+      },
+      act: (cubit) => cubit.initializeForToday(),
+      expect: () => [const DailyReviewState()],
+    );
+
     blocTest<DailyReviewCubit, DailyReviewState>(
       'initializeForToday loads task completion stats',
       build: () {
@@ -93,6 +122,58 @@ void main() {
         const DailyReviewState(dayRating: 4),
       ],
     );
+
+    blocTest<DailyReviewCubit, DailyReviewState>(
+      'wentWellChanged and couldBeBetterChanged update fields',
+      build: () => cubit,
+      act: (cubit) {
+        cubit.wentWellChanged('Great meeting');
+        cubit.couldBeBetterChanged('Sleep earlier');
+      },
+      expect: () => [
+        const DailyReviewState(wentWell: 'Great meeting'),
+        const DailyReviewState(
+          wentWell: 'Great meeting',
+          couldBeBetter: 'Sleep earlier',
+        ),
+      ],
+    );
+
+    blocTest<DailyReviewCubit, DailyReviewState>(
+      'gratitudeChanged updates the correct gratitude slot',
+      build: () => cubit,
+      act: (cubit) {
+        cubit.gratitudeChanged(0, 'One');
+        cubit.gratitudeChanged(1, 'Two');
+        cubit.gratitudeChanged(2, 'Three');
+      },
+      expect: () => [
+        const DailyReviewState(gratitude1: 'One'),
+        const DailyReviewState(gratitude1: 'One', gratitude2: 'Two'),
+        const DailyReviewState(
+          gratitude1: 'One',
+          gratitude2: 'Two',
+          gratitude3: 'Three',
+        ),
+      ],
+    );
+
+    blocTest<DailyReviewCubit, DailyReviewState>(
+      'completionRateChanged updates taskCompletionRate',
+      build: () => cubit,
+      act: (cubit) => cubit.completionRateChanged(0.75),
+      expect: () => [
+        const DailyReviewState(taskCompletionRate: 0.75),
+      ],
+    );
+
+    test('addGratitudeField does not exceed 3', () {
+      cubit.addGratitudeField();
+      cubit.addGratitudeField();
+      cubit.addGratitudeField();
+      cubit.addGratitudeField();
+      expect(cubit.state.gratitudeFieldCount, 3);
+    });
 
     blocTest<DailyReviewCubit, DailyReviewState>(
       'addGratitudeField increases visible field count up to 3',

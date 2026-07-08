@@ -453,5 +453,120 @@ CREATE TABLE tasks (
 
     await driftDb.close();
   });
+
+  test('upgrade 6→7 recreates g_cal_sync_queue without foreign key', () async {
+    final raw = sqlite.sqlite3.openInMemory();
+
+    raw.execute('''
+CREATE TABLE recurrence_rules (
+  id TEXT NOT NULL PRIMARY KEY,
+  frequency TEXT NOT NULL,
+  interval_val INTEGER NOT NULL DEFAULT 1,
+  days_of_week TEXT,
+  day_of_month INTEGER,
+  end_type TEXT NOT NULL DEFAULT 'NEVER',
+  end_date INTEGER,
+  end_count INTEGER,
+  occurrence_count INTEGER NOT NULL DEFAULT 0
+);
+''');
+
+    raw.execute('''
+CREATE TABLE tasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  priority TEXT NOT NULL,
+  due_date INTEGER,
+  due_time INTEGER,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  is_overdue INTEGER NOT NULL DEFAULT 0,
+  overdue_day INTEGER NOT NULL DEFAULT 0,
+  recurrence_rule_id TEXT,
+  recurrence_parent_id TEXT,
+  has_enabled_reminder INTEGER NOT NULL DEFAULT 0,
+  gcal_event_id TEXT,
+  sync_to_gcal INTEGER NOT NULL DEFAULT 0,
+  due_date_local_day_start INTEGER,
+  due_date_utc_ms INTEGER,
+  goal_id TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute('''
+CREATE TABLE subtasks (
+  id TEXT NOT NULL PRIMARY KEY,
+  task_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  is_completed INTEGER NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute('''
+CREATE TABLE goal_categories (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute('''
+CREATE TABLE goals (
+  id TEXT NOT NULL PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  category_id TEXT,
+  kpi_description TEXT,
+  start_value TEXT,
+  target_value TEXT,
+  priority TEXT,
+  urgency TEXT,
+  why TEXT,
+  start_date INTEGER,
+  target_date INTEGER,
+  check_in_frequency TEXT,
+  time_horizon TEXT NOT NULL,
+  is_measurable INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute('''
+CREATE TABLE g_cal_sync_queue (
+  id TEXT NOT NULL PRIMARY KEY,
+  task_id TEXT NOT NULL,
+  operation TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  retry_count INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+''');
+
+    raw.execute(
+      "INSERT INTO g_cal_sync_queue "
+      "VALUES ('q1', 't1', 'CREATE', '{}', 0, 0);",
+    );
+
+    raw.userVersion = 6;
+
+    final driftDb = AppDatabase.forTesting(
+      DatabaseConnection(NativeDatabase.opened(raw)),
+    );
+
+    final rows = await driftDb
+        .customSelect('SELECT id, task_id FROM g_cal_sync_queue')
+        .get();
+    expect(rows, hasLength(1));
+    expect(rows.first.read<String>('id'), 'q1');
+
+    await driftDb.close();
+  });
 }
 
