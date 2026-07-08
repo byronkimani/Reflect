@@ -33,7 +33,7 @@ class FirebaseAppAnalyticsService implements AppAnalyticsService {
   FirebaseAppAnalyticsService({
     FirebaseAnalytics? analytics,
     @visibleForTesting bool? reportingEnabled,
-  })  : _analytics = analytics ?? FirebaseAnalytics.instance,
+  })  : _analytics = analytics ?? FirebaseAnalytics.instance, // coverage:ignore-line
         _reportingEnabled = reportingEnabled ?? !kDebugMode;
 
   final FirebaseAnalytics _analytics;

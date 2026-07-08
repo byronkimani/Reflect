@@ -2,7 +2,7 @@
 
 > All rules below are non-negotiable. Scan this list before writing any code.
 
-1. **Tests ship with every change — no exceptions.** Every new or changed behavior must include tests before merge: at minimum one **happy-path** and one **failure/edge** test. **Unit** tests for domain/data/core, **widget** tests for presentation UI, **bloc_test** for BLoC/Cubit. Filtered coverage from `make coverage` must stay **≥ 98%** (same exclusions as CI). No exceptions without explicit user approval.
+1. **Tests ship with every change — no exceptions.** Every new or changed behavior must include tests before merge: at minimum one **happy-path** and one **failure/edge** test. **Unit** tests for domain/data/core, **widget** tests for presentation UI, **bloc_test** for BLoC/Cubit. Filtered coverage from `make coverage` must stay **≥ 99%** in CI (same exclusions as CI).
 2. **No unauthorized commits.** Stage all changes, show the diff to the user, and wait for explicit approval before running `git commit`.
 3. **Tests are mandatory, not optional.** (See rule 1.) Every changed or new function ships with at least one happy-path test **and** at least one failure/edge test. Unit, widget, and integration tests are required based on the layer changed.
 4. **No linter bypasses.** Never bypass the linter using `// ignore: ...` unless explicitly specified by the user. `make lint` must exit with **zero** analyzer issues (errors, warnings, and info).

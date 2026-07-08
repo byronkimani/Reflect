@@ -2,7 +2,7 @@ import 'dart:convert';
 
 /// Applies a SQLCipher encryption key without string-interpolating the raw key.
 class SqlCipherKey {
-  SqlCipherKey._();
+  SqlCipherKey._(); // coverage:ignore-line
 
   /// Sets the SQLCipher key using the hex-key PRAGMA form.
   ///

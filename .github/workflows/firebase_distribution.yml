@@ -48,18 +48,17 @@ jobs:
 
       - name: Filter Coverage
         run: |
-          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
+          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*firebase_options.dart' '*/l10n/*' '*/tables/*' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
 
       - name: Generate Coverage HTML
         run: genhtml coverage/lcov.info -o coverage/html
 
-      # Coverage gate (98%) temporarily disabled during UI refresh rollout.
-      # Restore in session 2 — see docs/testing.md
-      # - name: Check Coverage Threshold
-      #   uses: VeryGoodOpenSource/very_good_coverage@v3
-      #   with:
-      #     path: coverage/lcov.info
-      #     min_coverage: 98
+      # 99% gate on filtered in-scope lib/ lines (see docs/testing.md exclusions)
+      - name: Check Coverage Threshold
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: coverage/lcov.info
+          min_coverage: 99
 
       - name: Upload Coverage Artifact
         uses: actions/upload-artifact@v4

@@ -24,6 +24,12 @@ void main() {
     bloc.close();
   });
 
+  setUpAll(() {
+    registerFallbackValue(
+      Task(id: '', title: '', createdAt: DateTime(2020), updatedAt: DateTime(2020)),
+    );
+  });
+
   final testDate = DateTime(2023, 10, 10);
   final taskPending = Task(
     id: 't1',
@@ -431,6 +437,116 @@ void main() {
       verify: (_) {
         verify(() => mockRepo.watchTasksForDate(any())).called(1);
       },
+    );
+
+    blocTest<TaskListBloc, TaskListState>(
+      'ToggleSubtask calls repository and emits error on failure',
+      build: () {
+        when(() => mockRepo.toggleSubtask('t1', 's1')).thenAnswer(
+          (_) async => const Left(CacheFailure(errorMessage: 'DB error')),
+        );
+        return bloc;
+      },
+      seed: () => TaskListState.loaded(
+        rawTasks: [taskPending],
+        pending: [taskPending],
+        completed: [],
+        overdue: [],
+      ),
+      act: (b) => b.add(
+        const TaskListEvent.toggleSubtask(taskId: 't1', subtaskId: 's1'),
+      ),
+      expect: () => [
+        const TaskListState.error('DB error'),
+      ],
+    );
+
+    blocTest<TaskListBloc, TaskListState>(
+      'ToggleSubtask succeeds without changing loaded state',
+      build: () {
+        when(() => mockRepo.toggleSubtask('t1', 's1')).thenAnswer(
+          (_) async => Right(taskPending),
+        );
+        return bloc;
+      },
+      seed: () => TaskListState.loaded(
+        rawTasks: [taskPending],
+        pending: [taskPending],
+        completed: [],
+        overdue: [],
+      ),
+      act: (b) => b.add(
+        const TaskListEvent.toggleSubtask(taskId: 't1', subtaskId: 's1'),
+      ),
+      expect: () => <TaskListState>[],
+      verify: (_) {
+        verify(() => mockRepo.toggleSubtask('t1', 's1')).called(1);
+      },
+    );
+
+    blocTest<TaskListBloc, TaskListState>(
+      'RescheduleTask updates task due date via repository',
+      build: () {
+        when(() => mockRepo.updateTask(any())).thenAnswer(
+          (inv) async => Right(inv.positionalArguments[0] as Task),
+        );
+        return bloc;
+      },
+      seed: () => TaskListState.loaded(
+        rawTasks: [taskPending],
+        pending: [taskPending],
+        completed: [],
+        overdue: [],
+      ),
+      act: (b) => b.add(
+        TaskListEvent.rescheduleTask(
+          taskId: 't1',
+          newDueDate: DateTime(2026, 4, 1),
+        ),
+      ),
+      verify: (_) {
+        verify(() => mockRepo.updateTask(any())).called(1);
+      },
+    );
+
+    blocTest<TaskListBloc, TaskListState>(
+      'RescheduleTask does nothing when task not in loaded state',
+      build: () => bloc,
+      seed: () => const TaskListState.initial(),
+      act: (b) => b.add(
+        TaskListEvent.rescheduleTask(
+          taskId: 'missing',
+          newDueDate: DateTime(2026, 4, 1),
+        ),
+      ),
+      verify: (_) {
+        verifyNever(() => mockRepo.updateTask(any()));
+      },
+    );
+
+    blocTest<TaskListBloc, TaskListState>(
+      'RescheduleTask emits error when repository update fails',
+      build: () {
+        when(() => mockRepo.updateTask(any())).thenAnswer(
+          (_) async => const Left(CacheFailure(errorMessage: 'Reschedule failed')),
+        );
+        return bloc;
+      },
+      seed: () => TaskListState.loaded(
+        rawTasks: [taskPending],
+        pending: [taskPending],
+        completed: [],
+        overdue: [],
+      ),
+      act: (b) => b.add(
+        TaskListEvent.rescheduleTask(
+          taskId: 't1',
+          newDueDate: DateTime(2026, 4, 1),
+        ),
+      ),
+      expect: () => [
+        const TaskListState.error('Reschedule failed'),
+      ],
     );
   });
 }

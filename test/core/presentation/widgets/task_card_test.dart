@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/presentation/widgets/task_card.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/subtask.dart';
+import 'package:reflect/features/tasks/domain/entities/tag.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
@@ -14,6 +15,8 @@ import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_se
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_state.dart';
 
 import 'package:bloc_test/bloc_test.dart';
+
+import '../../../helpers/slidable_test_harness.dart';
 
 class MockTaskListBloc extends MockBloc<TaskListEvent, TaskListState>
     implements TaskListBloc {}
@@ -76,6 +79,12 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const TaskListEvent.completeTask('x'));
     registerFallbackValue('');
+    registerFallbackValue(
+      TaskListEvent.rescheduleTask(
+        taskId: 'x',
+        newDueDate: DateTime(2026),
+      ),
+    );
   });
 
   setUp(() {
@@ -85,6 +94,7 @@ void main() {
     when(() => mockTaskListBloc.state).thenReturn(const TaskListState.initial());
     when(() => mockSelectionCubit.state)
         .thenReturn(const TaskSelectionState());
+    when(() => mockTaskListBloc.add(any())).thenReturn(null);
   });
 
   group('TaskCard', () {
@@ -191,10 +201,11 @@ void main() {
       await tester.pumpWidget(buildWidget(buildTask()));
       await tester.pumpAndSettle();
 
-      await tester.drag(find.text('Buy groceries'), const Offset(-300, 0));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.delete_outline));
-      await tester.pumpAndSettle();
+      await SlidableTestHarness.performEndAction(
+        tester,
+        descendant: find.text('Buy groceries'),
+        icon: Icons.delete_outline,
+      );
 
       verify(
         () => mockTaskListBloc.add(const TaskListEvent.deleteTask('task-1')),
@@ -235,6 +246,232 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(RepaintBoundary), findsWidgets);
+    });
+
+    testWidgets('completing parent with incomplete subtasks shows dialog', (
+      tester,
+    ) async {
+      final task = buildTask().copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 'task-1',
+            title: 'Step one',
+            sortOrder: 0,
+            createdAt: now,
+          ),
+        ],
+      );
+      await tester.pumpWidget(buildWidget(task));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Checkbox));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mark all subtasks done too?'), findsOneWidget);
+      await tester.tap(find.text('Parent only'));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockTaskListBloc.add(const TaskListEvent.completeTask('task-1')),
+      ).called(1);
+    });
+
+    testWidgets('complete all subtasks from dialog completes parent', (
+      tester,
+    ) async {
+      final task = buildTask().copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 'task-1',
+            title: 'Step one',
+            sortOrder: 0,
+            createdAt: now,
+          ),
+        ],
+      );
+      await tester.pumpWidget(buildWidget(task));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Checkbox));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Complete all'));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockTaskListBloc.add(
+          const TaskListEvent.toggleSubtask(
+            taskId: 'task-1',
+            subtaskId: 's1',
+          ),
+        ),
+      ).called(1);
+      verify(
+        () => mockTaskListBloc.add(const TaskListEvent.completeTask('task-1')),
+      ).called(1);
+    });
+
+    testWidgets('cancel subtask dialog keeps task pending', (tester) async {
+      final task = buildTask().copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 'task-1',
+            title: 'Step one',
+            sortOrder: 0,
+            createdAt: now,
+          ),
+        ],
+      );
+      await tester.pumpWidget(buildWidget(task));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Checkbox));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      verifyNever(
+        () => mockTaskListBloc.add(const TaskListEvent.completeTask('task-1')),
+      );
+    });
+
+    testWidgets('parent only option completes task without toggling subtasks', (
+      tester,
+    ) async {
+      final task = buildTask().copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 'task-1',
+            title: 'Step one',
+            sortOrder: 0,
+            createdAt: now,
+          ),
+        ],
+      );
+      await tester.pumpWidget(buildWidget(task));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(Checkbox));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Parent only'));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockTaskListBloc.add(const TaskListEvent.completeTask('task-1')),
+      ).called(1);
+      verifyNever(
+        () => mockTaskListBloc.add(
+          const TaskListEvent.toggleSubtask(taskId: 'task-1', subtaskId: 's1'),
+        ),
+      );
+    });
+
+    testWidgets('shows tag chips and overflow count', (tester) async {
+      final tags = [
+        Tag(id: 't1', name: 'Work', colour: '#FF5733', createdAt: now),
+        Tag(id: 't2', name: 'Home', colour: '#33FF57', createdAt: now),
+        Tag(id: 't3', name: 'Extra', colour: '#AABBCC', createdAt: now),
+      ];
+      await tester.pumpWidget(buildWidget(buildTask().copyWith(tags: tags)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Work'), findsOneWidget);
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('+1'), findsOneWidget);
+    });
+
+    testWidgets('renders tag with invalid colour using accent fallback', (
+      tester,
+    ) async {
+      final tags = [
+        Tag(id: 't1', name: 'Bad colour', colour: 'not-hex', createdAt: now),
+      ];
+      await tester.pumpWidget(buildWidget(buildTask().copyWith(tags: tags)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bad colour'), findsOneWidget);
+    });
+
+    testWidgets('expanded subtask checkbox dispatches toggleSubtask', (
+      tester,
+    ) async {
+      final task = buildTask().copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 'task-1',
+            title: 'Step A',
+            sortOrder: 0,
+            createdAt: now,
+          ),
+        ],
+      );
+      await tester.pumpWidget(buildWidget(task));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Buy groceries'));
+      await tester.pumpAndSettle();
+      expect(find.text('Step A'), findsOneWidget);
+
+      await tester.tap(find.byType(Checkbox).at(1));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockTaskListBloc.add(
+          const TaskListEvent.toggleSubtask(
+            taskId: 'task-1',
+            subtaskId: 's1',
+          ),
+        ),
+      ).called(1);
+    });
+
+    testWidgets('reschedule dispatches event when date confirmed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildWidget(buildTask()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Buy groceries'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Reschedule'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pump();
+
+      verify(
+        () => mockTaskListBloc.add(
+          any(
+            that: predicate<TaskListEvent>(
+              (event) => event.maybeWhen(
+                rescheduleTask: (taskId, newDueDate) => taskId == 'task-1',
+                orElse: () => false,
+              ),
+            ),
+          ),
+        ),
+      ).called(1);
+    });
+
+    testWidgets('title tap toggles selection in selection mode', (tester) async {
+      when(() => mockSelectionCubit.state).thenReturn(
+        const TaskSelectionState(
+          isSelectionMode: true,
+          selectedTaskIds: {},
+        ),
+      );
+      when(() => mockSelectionCubit.toggleSelection(any())).thenReturn(null);
+
+      await tester.pumpWidget(buildWidget(buildTask()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Buy groceries'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockSelectionCubit.toggleSelection('task-1')).called(1);
     });
   });
 }

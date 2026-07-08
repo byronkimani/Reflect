@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import 'app_loading_indicator.dart';
 
@@ -23,8 +21,10 @@ class AppSecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIos = !kIsWeb && (Platform.isIOS || Platform.isMacOS);
     final theme = Theme.of(context);
+    final platform = theme.platform;
+    final isIos =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
     if (isIos) {
       // iOS doesn't have a native "Outlined Button" concept in the standard kit,

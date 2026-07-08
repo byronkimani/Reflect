@@ -6,6 +6,28 @@ void main() {
   group('Task Entity', () {
     final now = DateTime.now();
 
+    test('fromJson deserializes task fields', () {
+      final task = Task.fromJson({
+        'id': '1',
+        'title': 'Test',
+        'createdAt': now.toIso8601String(),
+        'updatedAt': now.toIso8601String(),
+        'tags': [
+          {
+            'id': 'tag-1',
+            'name': 'Work',
+            'colour': '#FF0000',
+            'createdAt': now.toIso8601String(),
+          },
+        ],
+      });
+
+      expect(task.id, '1');
+      expect(task.title, 'Test');
+      expect(task.tags, hasLength(1));
+      expect(task.tags.first.name, 'Work');
+    });
+
     test('isBacklog returns true when dueDate is null', () {
       final task = Task(
         id: '1',

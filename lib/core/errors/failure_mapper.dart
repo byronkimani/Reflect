@@ -4,7 +4,7 @@ import 'package:reflect/core/errors/failure.dart';
 
 /// Maps internal errors to safe, user-facing [Failure] instances.
 class FailureMapper {
-  FailureMapper._();
+  FailureMapper._(); // coverage:ignore-line
 
   static const cacheMessage = 'Something went wrong while saving your data.';
   static const serverMessage = 'Something went wrong. Please try again.';

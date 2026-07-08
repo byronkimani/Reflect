@@ -1,3 +1,4 @@
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -142,6 +143,37 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('New task form'), findsOneWidget);
+  });
+
+  testWidgets('rebuilds when loaded task list changes', (tester) async {
+    whenListen(
+      mockTaskListBloc,
+      Stream.fromIterable([
+        TaskListState.loaded(
+          rawTasks: [],
+          pending: [testTask('1', 'First task')],
+          completed: [],
+          overdue: [],
+        ),
+        TaskListState.loaded(
+          rawTasks: [],
+          pending: [
+            testTask('1', 'First task'),
+            testTask('2', 'Second task'),
+          ],
+          completed: [],
+          overdue: [],
+        ),
+      ]),
+      initialState: const TaskListState.initial(),
+    );
+
+    await tester.pumpWidget(buildWidget());
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('First task'), findsOneWidget);
+    expect(find.text('Second task'), findsOneWidget);
   });
 
   testWidgets('select-all checkbox clears selection when all selected', (

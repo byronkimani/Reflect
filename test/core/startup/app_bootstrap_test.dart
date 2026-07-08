@@ -5,9 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:reflect/core/observability/app_bloc_observer.dart';
 import 'package:reflect/core/observability/crash_reporter.dart';
 import 'package:reflect/core/startup/app_bootstrap.dart';
+
+import '../../helpers/fake_path_provider.dart';
 
 class MockCrashReporter extends Mock implements CrashReporter {}
 
@@ -23,11 +26,14 @@ void main() {
 
   late MockCrashReporter crashReporter;
   late Directory tempDir;
+  PathProviderPlatform? previousPathProvider;
   FlutterExceptionHandler? previousFlutterHandler;
   ErrorCallback? previousPlatformHandler;
 
   setUp(() {
     tempDir = Directory.systemTemp.createTempSync('reflect_bootstrap_test');
+    previousPathProvider = PathProviderPlatform.instance;
+    PathProviderPlatform.instance = FakePathProvider.using(tempDir);
     crashReporter = MockCrashReporter();
     when(() => crashReporter.recordFlutterError(any())).thenAnswer((_) async {});
     when(
@@ -42,6 +48,7 @@ void main() {
   });
 
   tearDown(() {
+    PathProviderPlatform.instance = previousPathProvider!;
     FlutterError.onError = previousFlutterHandler;
     PlatformDispatcher.instance.onError = previousPlatformHandler ?? (_, _) => false;
     Bloc.observer = AppBlocObserver(crashReporter);
@@ -87,5 +94,30 @@ void main() {
         fatal: true,
       ),
     ).called(1);
+  });
+
+  test('uses default sqlcipher workaround when override is omitted', () async {
+    await bootstrapReflectApp(
+      crashReporter: crashReporter,
+      initEnv: () async {},
+      initFirebase: () async {},
+      buildHydratedStorage: () async => HydratedStorage.build(
+        storageDirectory: HydratedStorageDirectory(tempDir.path),
+      ),
+      setupDi: () {},
+    );
+
+    expect(Bloc.observer, isA<BlocObserver>());
+  });
+
+  test('uses default hydrated storage when builder omitted', () async {
+    await bootstrapReflectApp(
+      crashReporter: crashReporter,
+      initEnv: () async {},
+      initFirebase: () async {},
+      setupDi: () {},
+    );
+
+    expect(HydratedBloc.storage, isNotNull);
   });
 }
