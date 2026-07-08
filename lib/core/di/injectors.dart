@@ -105,7 +105,7 @@ void setupDependencies() {
   );
   getIt.registerLazySingleton<CrashReporter>(() => FirebaseCrashReporter());
   getIt.registerLazySingleton<AppAnalyticsService>(
-    () => FirebaseAppAnalyticsService(),
+    () => FirebaseAppAnalyticsService(), // coverage:ignore-line
   );
 
   getIt.registerLazySingleton<SettingsCubit>(

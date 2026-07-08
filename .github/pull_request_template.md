@@ -40,7 +40,7 @@
 ## Checklist
 
 - [ ] Tests added/updated: happy-path **and** failure/edge (unit / widget / bloc_test as appropriate)
-- [ ] Filtered coverage ≥ 98% (`make coverage`)
+- [ ] Filtered coverage ≥ 99% CI gate (`make coverage`)
 - [ ] No debug code or hardcoded secrets
 - [ ] Linter passes (`make lint`) with **zero** analyzer issues and no bypassed rules
 - [ ] Error states handled

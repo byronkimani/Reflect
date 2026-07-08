@@ -507,5 +507,46 @@ void main() {
       
       expect(cubit.state.error, 'err');
     });
+
+    test('clearDueDate and clearDueTime update state', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.setDueToday();
+      cubit.dueTimeChanged('09:00');
+
+      cubit.clearDueDate();
+      expect(cubit.state.dueDate, isNull);
+      expect(cubit.state.isModified, isTrue);
+
+      cubit.setDueToday();
+      cubit.clearDueTime();
+      expect(cubit.state.dueTime, isNull);
+    });
+
+    test('setDueTomorrow sets due date to tomorrow', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.setDueTomorrow();
+
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      final expected = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+      expect(cubit.state.dueDate, expected);
+      expect(cubit.state.isModified, isTrue);
+    });
+
+    test('toggleRepeatsExpanded collapses when already repeating', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      cubit.isRepeatingChanged(true);
+      expect(cubit.state.isRepeating, isTrue);
+
+      cubit.toggleRepeatsExpanded();
+      expect(cubit.state.isRepeating, isFalse);
+    });
+
+    test('toggleRepeatsExpanded expands when not repeating', () {
+      cubit = TaskFormCubit(mockRepo, mockGoalRepo, null);
+      expect(cubit.state.isRepeating, isFalse);
+
+      cubit.toggleRepeatsExpanded();
+      expect(cubit.state.isRepeating, isTrue);
+    });
   });
 }

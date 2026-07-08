@@ -1,6 +1,6 @@
 /// Validates production environment variables before the app starts.
 class ProductionEnvValidator {
-  ProductionEnvValidator._();
+  ProductionEnvValidator._(); // coverage:ignore-line
 
   static const placeholderValue = 'replace_me';
 

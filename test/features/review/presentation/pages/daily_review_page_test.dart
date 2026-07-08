@@ -148,4 +148,82 @@ void main() {
 
     expect(find.text('4 of 6 tasks done today'), findsOneWidget);
   });
+
+  testWidgets('Add another gratitude field calls cubit', (tester) async {
+    when(() => mockCubit.state).thenReturn(const DailyReviewState());
+    when(() => mockCubit.stream)
+        .thenAnswer((_) => Stream.value(const DailyReviewState()));
+    when(() => mockCubit.addGratitudeField()).thenReturn(null);
+
+    await tester.pumpWidget(buildPage());
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add another'));
+    await tester.pump();
+
+    verify(() => mockCubit.addGratitudeField()).called(1);
+  });
+
+  testWidgets('shows loading state on Save Review button', (tester) async {
+    when(() => mockCubit.state).thenReturn(const DailyReviewState(
+      dayRating: 4,
+      wentWell: 'win',
+      gratitude1: 'thanks',
+      isSubmitting: true,
+    ));
+
+    await tester.pumpWidget(buildPage());
+
+    final button = tester.widget<ReflectPrimaryButton>(
+      find.byType(ReflectPrimaryButton),
+    );
+    expect(button.isLoading, isTrue);
+    expect(button.onPressed, isNull);
+  });
+
+  testWidgets('success state shows snackbar and pops route', (tester) async {
+    whenListen(
+      mockCubit,
+      Stream.fromIterable([
+        const DailyReviewState(
+          dayRating: 4,
+          wentWell: 'win',
+          gratitude1: 'thanks',
+        ),
+        const DailyReviewState(
+          dayRating: 4,
+          wentWell: 'win',
+          gratitude1: 'thanks',
+          isSuccess: true,
+        ),
+      ]),
+      initialState: const DailyReviewState(),
+    );
+
+    await tester.pumpWidget(buildPage());
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Daily Review saved!'), findsOneWidget);
+  });
+
+  testWidgets('error state shows error snackbar', (tester) async {
+    whenListen(
+      mockCubit,
+      Stream.fromIterable([
+        const DailyReviewState(dayRating: 3),
+        const DailyReviewState(dayRating: 3, error: 'Save failed'),
+      ]),
+      initialState: const DailyReviewState(),
+    );
+
+    await tester.pumpWidget(buildPage());
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Save failed'), findsOneWidget);
+  });
 }

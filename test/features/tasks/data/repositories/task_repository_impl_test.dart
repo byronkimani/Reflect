@@ -6,6 +6,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/storage/database/app_database.dart';
 
 import 'package:reflect/features/tasks/data/repositories/task_repository_impl.dart';
+import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
+import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/services/recurrence_engine.dart';
 import 'package:reflect/features/notifications/notification_scheduler.dart';
@@ -294,6 +296,277 @@ void main() {
       final result = await localRepo.reopenTasks(['t1']);
 
       expect(result.isLeft(), isTrue);
+    });
+
+    test('toggleSubtask flips subtask completion', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      when(() => mockNotificationScheduler.scheduleTaskReminder(any()))
+          .thenAnswer((_) async {});
+
+      final taskWithSub = task1.copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 't1',
+            title: 'Step',
+            isCompleted: false,
+            createdAt: testDate,
+          ),
+        ],
+      );
+      await repository.createTask(taskWithSub);
+
+      final result = await repository.toggleSubtask('t1', 's1');
+
+      expect(result.isRight(), isTrue);
+      result.fold(
+        (_) => fail('expected Right'),
+        (task) {
+          expect(task.subtasks.single.isCompleted, isTrue);
+        },
+      );
+    });
+
+    test('toggleSubtask returns Left when task not found', () async {
+      final result = await repository.toggleSubtask('missing', 's1');
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('getTasksForDate hydrates recurrence rules for repeating tasks', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+
+      final withRule = task1.copyWith(
+        recurrenceRule: const RecurrenceRule(
+          id: 'rule-1',
+          frequency: RecurrenceFrequency.DAILY,
+          intervalVal: 1,
+        ),
+      );
+      await repository.updateTask(withRule);
+
+      final result = await repository.getTasksForDate(testDate);
+      expect(result.isRight(), isTrue);
+      final tasks = result.getOrElse((_) => []);
+      expect(tasks.single.recurrenceRule?.frequency, RecurrenceFrequency.DAILY);
+    });
+
+    test('watchTasksForDate emits tasks for the requested date', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+
+      final stream = repository.watchTasksForDate(testDate);
+      final first = await stream.first;
+
+      expect(first.isRight(), isTrue);
+      expect(first.getOrElse((_) => []).single.id, 't1');
+    });
+
+    test('watchBacklogTasks emits backlog tasks', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      final backlogTask = Task(
+        id: 'b2',
+        title: 'Backlog stream',
+        createdAt: testDate,
+        updatedAt: testDate,
+        dueDate: null,
+        status: TaskStatus.pending,
+      );
+      await repository.createTask(backlogTask);
+
+      final first = await repository.watchBacklogTasks().first;
+      expect(first.isRight(), isTrue);
+      expect(first.getOrElse((_) => []).single.id, 'b2');
+    });
+
+    test('reopenTask returns Left when database is closed', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1.copyWith(status: TaskStatus.completed));
+      await db.close();
+
+      final result = await repository.reopenTask('t1');
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('getTasksForDate returns Left when database is closed', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+      await db.close();
+
+      final result = await repository.getTasksForDate(testDate);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('getBacklogTasks returns Left when database is closed', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1.copyWith(dueDate: null));
+      await db.close();
+
+      final result = await repository.getBacklogTasks();
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('watchTasksForDate returns Left when subtasks table is missing', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+      await db.customStatement('DROP TABLE subtasks;');
+
+      final result = await repository.watchTasksForDate(testDate).first;
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('watchBacklogTasks returns Left when subtasks table is missing', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1.copyWith(dueDate: null));
+      await db.customStatement('DROP TABLE subtasks;');
+
+      final result = await repository.watchBacklogTasks().first;
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('createTask schedules reminder when enabled', () async {
+      when(() => mockNotificationScheduler.scheduleTaskReminder(any()))
+          .thenAnswer((_) async {});
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+
+      final reminderTask = task1.copyWith(
+        hasEnabledReminder: true,
+        dueTime: '09:00',
+      );
+      await repository.createTask(reminderTask);
+
+      verify(() => mockNotificationScheduler.scheduleTaskReminder(any()))
+          .called(1);
+    });
+
+    test('createTask inserts recurrence rule when present', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+
+      final withRule = task1.copyWith(
+        recurrenceRule: const RecurrenceRule(
+          id: 'rule-1',
+          frequency: RecurrenceFrequency.DAILY,
+        ),
+      );
+      await repository.createTask(withRule);
+
+      final rules = await db.select(db.recurrenceRules).get();
+      expect(rules, hasLength(1));
+      expect(rules.first.id, 'rule-1');
+    });
+
+    test('completeTask spawns next occurrence for recurring tasks', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      final nextDate = testDate.add(const Duration(days: 1));
+      when(() => mockRecurrenceEngine.getNextOccurrence(any()))
+          .thenReturn(nextDate);
+
+      final withRule = task1.copyWith(
+        recurrenceRule: const RecurrenceRule(
+          id: 'rule-1',
+          frequency: RecurrenceFrequency.DAILY,
+        ),
+      );
+      await repository.createTask(withRule);
+
+      final result = await repository.completeTask('t1');
+
+      expect(result.isRight(), isTrue);
+      final rows = await db.select(db.tasks).get();
+      expect(rows, hasLength(2));
+      expect(rows.where((row) => row.status == 'pending'), hasLength(1));
+    });
+
+    test('completeTask returns Left when task is missing', () async {
+      final result = await repository.completeTask('missing');
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('completeTasks returns Left when database is closed', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+      await db.close();
+
+      final result = await repository.completeTasks(['t1']);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('moveTasksToBacklog returns Left when task is missing', () async {
+      final result = await repository.moveTasksToBacklog(['missing']);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('deleteTasks returns Left when database is closed', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+      await db.close();
+
+      final result = await repository.deleteTasks(['t1']);
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('updateTask returns Left when database is closed', () async {
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+      await db.close();
+
+      final result = await repository.updateTask(task1.copyWith(title: 'Updated'));
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('updateTask replaces subtasks and schedules reminder', () async {
+      when(() => mockNotificationScheduler.scheduleTaskReminder(any()))
+          .thenAnswer((_) async {});
+      when(() => mockNotificationScheduler.cancelTaskReminder(any()))
+          .thenAnswer((_) async {});
+      await repository.createTask(task1);
+
+      final updated = task1.copyWith(
+        subtasks: [
+          Subtask(
+            id: 's1',
+            taskId: 't1',
+            title: 'Step',
+            createdAt: testDate,
+          ),
+        ],
+        hasEnabledReminder: true,
+        dueTime: '10:00',
+      );
+
+      final result = await repository.updateTask(updated);
+
+      expect(result.isRight(), isTrue);
+      final subtasks = await db.select(db.subtasks).get();
+      expect(subtasks, hasLength(1));
+      verify(() => mockNotificationScheduler.scheduleTaskReminder(any()))
+          .called(1);
     });
   });
 }

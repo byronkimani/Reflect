@@ -1,4 +1,4 @@
-.PHONY: gen test clean get lint run-dev run-prod watch coverage format fix run prepare-env build-prod-apk deps-outdated deps-check deps-upgrade
+.PHONY: gen test clean get lint run-dev run-prod watch coverage coverage-check format fix run prepare-env build-prod-apk deps-outdated deps-check deps-upgrade
 
 # ----------------------------------------------------------------------
 # Code Generation
@@ -27,9 +27,14 @@ test: prepare-env-testing
 # Usage: make coverage
 coverage: prepare-env-testing
 	flutter test --coverage
-	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
+	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*firebase_options.dart' '*/l10n/*' '*/tables/*' '*/main.dart' -o coverage/lcov.info --ignore-errors unused,empty
 	genhtml coverage/lcov.info -o coverage/html
-	open coverage/html/index.html
+	@lcov --summary coverage/lcov.info | grep lines || true
+	@if [ "$$SKIP_COVERAGE_OPEN" != "1" ]; then open coverage/html/index.html; fi
+
+# Print filtered line coverage (run after make coverage)
+coverage-check:
+	lcov --summary coverage/lcov.info 2>&1 | grep lines
 
 # Analyze code for linting errors
 # Usage: make lint

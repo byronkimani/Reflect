@@ -394,7 +394,7 @@ test: prepare-env-testing
 
 coverage: prepare-env-testing
 	flutter test --coverage
-	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
+	lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*firebase_options.dart' '*/l10n/*' '*/tables/*' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
 	genhtml coverage/lcov.info -o coverage/html
 	open coverage/html/index.html
 
@@ -599,8 +599,9 @@ AppDatabase createTestDatabase() {
 
 ### Coverage Threshold
 
-- Target: **≥ 98%** overall (enforced in CI).
-- Exclude generated files: `*.g.dart`, `*.freezed.dart`, `*/tables/*`, `*firebase_options.dart`, `*/di/*`, `*/l10n/*`, `*app_theme.dart`, `*/main.dart`.
+- Target: **≥ 99%** filtered line coverage (enforced in CI).
+- Exclude generated artifacts, Drift schema DSL, and prod entry: `*.g.dart`, `*.freezed.dart`, `*firebase_options.dart`, `*/l10n/*`, `*/tables/*`, `*/main.dart`.
+- **In-scope:** `injectors.dart`, `app_theme.dart`, `app_bootstrap.dart`, `app_database.dart`, and all feature code.
 
 ---
 
@@ -650,13 +651,13 @@ jobs:
 
       - name: Filter Generated Files from Coverage
         run: |
-          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*/tables/*' '*firebase_options.dart' '*/di/*' '*/l10n/*' '*app_theme.dart' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
+          lcov --remove coverage/lcov.info '*.g.dart' '*.freezed.dart' '*firebase_options.dart' '*/l10n/*' '*/tables/*' '*/main.dart' -o coverage/lcov.info --ignore-errors unused
 
-      - name: Check Coverage Threshold (98%)
+      - name: Check Coverage Threshold (99%)
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: coverage/lcov.info
-          min_coverage: 98
+          min_coverage: 99
 
       - uses: actions/upload-artifact@v4
         with:
@@ -861,7 +862,7 @@ Use this before submitting to the App Store or Google Play.
 
 - [ ] All tests pass (`make test`)
 - [ ] Lint is clean (`make lint`)
-- [ ] Code coverage ≥ 98%
+- [ ] Code coverage ≥ 99%
 - [ ] No hardcoded secrets — all via `flutter_dotenv`
 - [ ] Release APK built with `--obfuscate --split-debug-info`
 - [ ] Debug symbols uploaded as CI artifact

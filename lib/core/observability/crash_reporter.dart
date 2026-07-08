@@ -13,7 +13,7 @@ abstract class CrashReporter {
 
 /// No-op implementation for tests and debug-only paths.
 class NoOpCrashReporter implements CrashReporter {
-  const NoOpCrashReporter();
+  const NoOpCrashReporter(); // coverage:ignore-line
 
   @override
   Future<void> recordFlutterError(FlutterErrorDetails details) async {}

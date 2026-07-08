@@ -26,6 +26,10 @@ void main() {
     expect(result, false);
   });
 
+  test('implements NetworkInfo', () {
+    expect(networkInfo, isA<NetworkInfo>());
+  });
+
   test('onStatusChange returns stream from internet connection checker', () {
     final stream = Stream<InternetStatus>.fromIterable([InternetStatus.connected]);
     when(() => mockInternetConnection.onStatusChange).thenAnswer((_) => stream);

@@ -1,3 +1,4 @@
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,11 +16,16 @@ import 'package:reflect/features/tasks/domain/entities/subtask.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/tasks/domain/repositories/task_repository.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_cubit.dart';
+import 'package:reflect/features/tasks/presentation/blocs/task_form/task_form_state.dart';
 import 'package:reflect/features/tasks/presentation/pages/task_detail_page.dart';
+
+import '../../../../helpers/slidable_test_harness.dart';
 
 class MockITaskRepository extends Mock implements ITaskRepository {}
 
 class MockIGoalRepository extends Mock implements IGoalRepository {}
+
+class MockTaskFormCubit extends MockCubit<TaskFormState> implements TaskFormCubit {}
 
 void main() {
   late MockITaskRepository mockRepo;
@@ -32,12 +38,14 @@ void main() {
     List<Subtask> subtasks = const [],
     DateTime? dueDate,
     String? notes,
+    String? goalId,
   }) => Task(
     id: id,
     title: title,
     priority: TaskPriority.p4,
     dueDate: dueDate ?? now,
     notes: notes,
+    goalId: goalId,
     createdAt: now,
     updatedAt: now,
     subtasks: subtasks,
@@ -109,16 +117,6 @@ void main() {
     final button = find.byType(ReflectPrimaryButton);
     await tester.ensureVisible(button);
     await tester.tap(button);
-  }
-
-  Future<void> dragAndHold(
-    WidgetTester tester,
-    Finder finder,
-    Offset offset,
-  ) async {
-    final gesture = await tester.startGesture(tester.getCenter(finder));
-    await gesture.moveBy(offset);
-    await tester.pump();
   }
 
   Future<void> tapRepeatsRow(WidgetTester tester) async {
@@ -587,17 +585,34 @@ void main() {
       await tester.ensureVisible(find.text('Remove me'));
       await tester.pumpAndSettle();
 
-      final subtaskCheckbox = find.descendant(
-        of: find.ancestor(
-          of: find.text('Remove me'),
-          matching: find.byType(Row),
-        ),
-        matching: find.byType(Checkbox),
+      await SlidableTestHarness.openEndPane(
+        tester,
+        descendant: find.text('Remove me'),
       );
-      await dragAndHold(tester, subtaskCheckbox, const Offset(-400, 0));
-      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.byType(SlidableAction), findsOneWidget);
+    });
+
+    testWidgets('deleting subtask via slidable removes the step', (tester) async {
+      final t = task(
+        subtasks: [subtask(id: 's1', title: 'Remove me')],
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Remove me'));
+      await tester.pumpAndSettle();
+
+      await SlidableTestHarness.performEndAction(
+        tester,
+        descendant: find.text('Remove me'),
+        icon: Icons.delete_outline,
+      );
+
+      final cubit = tester
+          .element(find.byType(TaskFormView))
+          .read<TaskFormCubit>();
+      expect(cubit.state.subtaskItems, isEmpty);
     });
 
     testWidgets('submit with weekly recurrence includes recurrence rule', (
@@ -768,5 +783,243 @@ void main() {
 
       expect(find.text('OK'), findsOneWidget);
     });
+
+    testWidgets('PopScope intercepts route pop when form is modified', (
+      tester,
+    ) async {
+      final t = task(id: 'task-1', title: 'Original');
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextFormField).first, 'Modified');
+      await tester.pumpAndSettle();
+      final scope = tester.widget<PopScope>(
+        find.byWidgetPredicate((widget) => widget is PopScope),
+      );
+      scope.onPopInvokedWithResult!(false, null);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Discard changes?'), findsOneWidget);
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit Task'), findsNothing);
+    });
+
+    testWidgets('tapping Today pill sets due date when not today', (
+      tester,
+    ) async {
+      final t = task(
+        dueDate: DateTime.now().add(const Duration(days: 3)),
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.tap(find.text('Today'));
+      await tester.pumpAndSettle();
+
+      final cubit = tester
+          .element(find.byType(TaskFormView))
+          .read<TaskFormCubit>();
+      final today = DateTime.now();
+      expect(
+        cubit.state.dueDate,
+        DateTime(today.year, today.month, today.day),
+      );
+    });
+
+    testWidgets('tapping Tomorrow pill sets due date when not tomorrow', (
+      tester,
+    ) async {
+      final t = task(dueDate: DateTime.now().add(const Duration(days: 3)));
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.tap(find.text('Tomorrow'));
+      await tester.pumpAndSettle();
+
+      final cubit = tester
+          .element(find.byType(TaskFormView))
+          .read<TaskFormCubit>();
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      expect(
+        cubit.state.dueDate,
+        DateTime(tomorrow.year, tomorrow.month, tomorrow.day),
+      );
+    });
+
+    testWidgets('tapping Today pill clears due date when already today', (
+      tester,
+    ) async {
+      final today = DateTime.now();
+      final t = task(
+        dueDate: DateTime(today.year, today.month, today.day),
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.tap(find.text('Today'));
+      await tester.pumpAndSettle();
+
+      final cubit = tester
+          .element(find.byType(TaskFormView))
+          .read<TaskFormCubit>();
+      expect(cubit.state.dueDate, isNull);
+    });
+
+    testWidgets('tapping Tomorrow pill clears due date when already tomorrow', (
+      tester,
+    ) async {
+      final tomorrow = DateTime.now().add(const Duration(days: 1));
+      final t = task(
+        dueDate: DateTime(tomorrow.year, tomorrow.month, tomorrow.day),
+      );
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.tap(find.text('Tomorrow'));
+      await tester.pumpAndSettle();
+
+      final cubit = tester
+          .element(find.byType(TaskFormView))
+          .read<TaskFormCubit>();
+      expect(cubit.state.dueDate, isNull);
+    });
+
+    testWidgets('confirming date picker applies custom due date', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester, delta: -200);
+      await tester.tap(find.text('Pick date'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pump();
+
+      final cubit = tester
+          .element(find.byType(TaskFormView))
+          .read<TaskFormCubit>();
+      expect(cubit.state.dueDate, isNotNull);
+    });
+
+    testWidgets('extras sheet nulls stale goal when linked goal is missing', (
+      tester,
+    ) async {
+      when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
+        (_) => Stream.value(
+          Right([
+            Goal(
+              id: 'goal-2',
+              title: 'Other goal',
+              timeHorizon: GoalTimeHorizon.weekly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ]),
+        ),
+      );
+      final t = task(goalId: 'deleted-goal');
+      await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
+      await tester.pumpAndSettle();
+
+      await tapExtrasRow(tester);
+
+      final dropdown = tester.widget<DropdownButtonFormField<String?>>(
+        find.byType(DropdownButtonFormField<String?>),
+      );
+      expect(dropdown.initialValue, isNull);
+    });
+
+    testWidgets(
+      'extras sheet defensive dropdown nulls stale selectedGoalId in cubit state',
+      (tester) async {
+        final mockCubit = MockTaskFormCubit();
+        final staleState = TaskFormState(
+          title: 'Existing task',
+          availableGoals: [
+            Goal(
+              id: 'goal-2',
+              title: 'Other goal',
+              timeHorizon: GoalTimeHorizon.weekly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+          selectedGoalId: 'deleted-goal',
+        );
+        when(() => mockCubit.state).thenReturn(staleState);
+        when(() => mockCubit.stream).thenAnswer((_) => Stream.value(staleState));
+
+        await tester.pumpWidget(
+          SlidableAutoCloseBehavior(
+            child: MaterialApp(
+              home: Scaffold(
+                body: BlocProvider<TaskFormCubit>.value(
+                  value: mockCubit,
+                  child: const TaskFormView(),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await scrollForm(tester);
+        await tapExtrasRow(tester);
+
+        final dropdown = tester.widget<DropdownButtonFormField<String?>>(
+          find.byType(DropdownButtonFormField<String?>),
+        );
+        expect(dropdown.initialValue, isNull);
+      },
+    );
+
+    testWidgets(
+      'extras sheet dropdown preserves linked goal when selectedGoalId matches',
+      (tester) async {
+        final mockCubit = MockTaskFormCubit();
+        final linkedState = TaskFormState(
+          title: 'Existing task',
+          availableGoals: [
+            Goal(
+              id: 'goal-1',
+              title: 'Run marathon',
+              timeHorizon: GoalTimeHorizon.yearly,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+          selectedGoalId: 'goal-1',
+        );
+        when(() => mockCubit.state).thenReturn(linkedState);
+        when(() => mockCubit.stream).thenAnswer((_) => Stream.value(linkedState));
+
+        await tester.pumpWidget(
+          SlidableAutoCloseBehavior(
+            child: MaterialApp(
+              home: Scaffold(
+                body: BlocProvider<TaskFormCubit>.value(
+                  value: mockCubit,
+                  child: const TaskFormView(),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await scrollForm(tester);
+        await tapExtrasRow(tester);
+
+        final dropdown = tester.widget<DropdownButtonFormField<String?>>(
+          find.byType(DropdownButtonFormField<String?>),
+        );
+        expect(dropdown.initialValue, 'goal-1');
+      },
+    );
   });
 }

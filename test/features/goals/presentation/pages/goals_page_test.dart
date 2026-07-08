@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
+import 'package:reflect/features/tasks/domain/entities/task.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_state.dart';
 import 'package:reflect/features/goals/presentation/pages/goals_page.dart';
@@ -204,5 +205,34 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Edit goal g-edit'), findsOneWidget);
+  });
+
+  testWidgets('GoalsPage goal card shows priority and target date', (
+    tester,
+  ) async {
+    final goal = Goal(
+      id: 'g1',
+      title: 'Run 5K',
+      description: 'Training plan',
+      priority: TaskPriority.p2,
+      targetDate: DateTime(2026, 12, 31),
+      timeHorizon: GoalTimeHorizon.yearly,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    when(() => mockGoalsCubit.state).thenReturn(GoalsState(
+      goalsByHorizon: {GoalTimeHorizon.yearly: [goal]},
+      selectedHorizon: GoalTimeHorizon.yearly,
+    ));
+    when(() => mockGoalsCubit.stream).thenAnswer((_) => const Stream.empty());
+
+    await tester.pumpWidget(buildPage());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Run 5K'), findsOneWidget);
+    expect(find.text('Training plan'), findsOneWidget);
+    expect(find.textContaining('Target'), findsOneWidget);
+    expect(find.text('P2'), findsOneWidget);
   });
 }

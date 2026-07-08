@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/core/presentation/utils/adaptive_dialog.dart';
+import 'package:reflect/core/presentation/utils/day_greeting.dart';
 import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_progress_bar.dart';
@@ -42,13 +43,7 @@ class TodayPage extends StatelessWidget {
               final doneToday = completed.length;
               final progress = totalToday == 0 ? 0.0 : doneToday / totalToday;
 
-              String greeting = 'Good morning';
-              final hour = now.hour;
-              if (hour >= 12 && hour < 17) {
-                greeting = 'Good afternoon';
-              } else if (hour >= 17) {
-                greeting = 'Good evening';
-              }
+              String greeting = dayGreetingForHour(now.hour);
 
               return Stack(
                 children: [

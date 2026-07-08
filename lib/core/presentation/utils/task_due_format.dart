@@ -36,9 +36,6 @@ String formatTaskRelativeDue(Task task, {DateTime? reference}) {
       task.dueDate!.day,
     );
     final diff = dueDay.difference(today).inDays;
-    if (diff == 0 && task.dueTime != null && task.dueTime!.isNotEmpty) {
-      return _formatTime(task.dueTime!);
-    }
     if (diff == 1) return 'Tomorrow';
     if (diff > 1) return DateFormat('MMM d').format(task.dueDate!);
   }

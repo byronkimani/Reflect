@@ -11,9 +11,42 @@ Every new or changed behavior must include tests before merge:
 - **Widget** tests for presentation UI
 - **bloc_test** for BLoC / Cubit
 
-Filtered coverage from `make coverage` must stay **≥ 98%** (same file exclusions as CI) under normal development.
+Filtered coverage from `make coverage` must stay **≥ 99%** in CI. Same file exclusions as CI.
 
-**UI refresh (2026):** The 98% CI gate is **temporarily disabled** while the redesigned screens land. Tests still run in CI; `make test` must pass locally. Coverage will be restored to ≥ 98% in a follow-up session after UI sign-off and App Tester validation.
+**Coverage baseline (Jul 2026):** **100%** filtered line coverage on in-scope `lib/` lines. CI enforces **99%**.
+
+### Coverage exclusions (filtered before the gate)
+
+`make coverage` and CI apply the same `lcov --remove` patterns. **Generated artifacts**, **Drift schema DSL** (`tables/*`), and **`main.dart`** are excluded.
+
+| Pattern | Files | Rationale |
+|---------|-------|-----------|
+| `*.g.dart` | 5 | **Generated** — `json_serializable`, Drift |
+| `*.freezed.dart` | 14 | **Generated** — Freezed unions/copyWith |
+| `*firebase_options.dart` | 1 | **Generated** — FlutterFire config |
+| `*/l10n/*` | 3 | **Generated** — `flutter gen-l10n` |
+| `*/tables/*` | 3 | **Drift schema DSL** — column getters are compile-time only (not runtime-executable); logic covered via migrations/DAOs |
+| `*/main.dart` | 1 | **Prod entry** — thin `bootstrapReflectApp` + `runApp` shell |
+
+**In-scope (must be covered):** `injectors.dart`, `app_theme.dart`, `app_bootstrap.dart`, `app_database.dart` (including production open paths), and all feature code.
+
+### Intentionally ignored lines (`// coverage:ignore-line`)
+
+`lcov --remove` only excludes whole files. Lines that are structurally uncoverable or prod-only Firebase wiring are marked in source:
+
+| File | Lines | Rationale |
+|------|-------|-----------|
+| `failure_mapper.dart` | private ctor | Never instantiated |
+| `notification_routes.dart` | private ctor | Static-only utility |
+| `production_env_validator.dart` | private ctor | Static-only utility |
+| `secure_storage_factory.dart` | private ctor | Static `instance` only |
+| `sqlcipher_key.dart` | private ctor | Static `apply` only |
+| `app_bootstrap.dart` | default `initFirebase` | `Firebase.initializeApp` conflicts with test mocks |
+| `injectors.dart` | `FirebaseAppAnalyticsService()` registration | Hits `FirebaseAnalytics.instance` without device Firebase |
+| `analytics_service.dart` | `FirebaseAnalytics.instance` fallback | Same — all tests inject a mock analytics instance |
+| `crash_reporter.dart` | `NoOpCrashReporter` ctor | Const ctor line not attributed when behavior is tested elsewhere |
+
+**Testing pyramid for new tests:** prioritize **unit** tests (domain, data, core utils, network), then **widget** tests for shared components, then **page interaction** widget tests. Each behavior needs happy-path **and** failure/edge coverage.
 
 ## Coverage Expectations
 
@@ -33,12 +66,28 @@ Run lint before tests locally and in CI. `make lint` must report **zero** analyz
 ```bash
 make lint             # Static analysis (must be clean before merge)
 make test             # Run all unit and widget tests
-make coverage         # Generate lcov report (filtered ≥ 98% required)
+make coverage         # Generate lcov report (filtered ≥ 99% CI gate)
+make coverage-check   # Print filtered line coverage summary
 ```
 
 ## Mocking dependencies
 
 We use `mocktail` for mocking dependencies.
+
+### Widget test helpers
+
+| Helper | Path | Use for |
+|--------|------|---------|
+| `pumpMaterialPage` | `test/helpers/page_test_harness.dart` | Minimal `MaterialApp` scaffold wrapper |
+| `SlidableTestHarness` | `test/helpers/slidable_test_harness.dart` | Open/tap `Slidable` end actions via `SlidableController` (prefer over raw drags) |
+
+```dart
+await SlidableTestHarness.performEndAction(
+  tester,
+  descendant: find.text('Remove me'),
+  icon: Icons.delete_outline,
+);
+```
 
 ```dart
 import 'package:mocktail/mocktail.dart';

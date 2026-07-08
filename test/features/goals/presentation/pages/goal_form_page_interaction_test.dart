@@ -26,12 +26,14 @@ void main() {
     String id = 'goal-1',
     String title = 'Test goal',
     String? description,
+    String? categoryId,
     GoalTimeHorizon timeHorizon = GoalTimeHorizon.weekly,
   }) =>
       Goal(
         id: id,
         title: title,
         description: description,
+        categoryId: categoryId,
         timeHorizon: timeHorizon,
         createdAt: now,
         updatedAt: now,
@@ -411,6 +413,126 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('None'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('expands timeline section', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(buildTestWidget(initialGoal: goal()));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      expect(find.text('Start date'), findsOneWidget);
+      await tester.tap(find.text('Timeline'));
+      await tester.pumpAndSettle();
+      expect(find.text('Start date'), findsNothing);
+      await tester.tap(find.text('Timeline'));
+      await tester.pumpAndSettle();
+      expect(find.text('Start date'), findsOneWidget);
+    });
+
+    testWidgets('expands motivation section', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(buildTestWidget(initialGoal: goal()));
+      await tester.pumpAndSettle();
+
+      await scrollForm(tester);
+      await tester.tap(find.text('Motivation'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Motivation'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Why this goal?'), findsOneWidget);
+    });
+
+    testWidgets('add category dialog cancel dismisses without saving', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Manage categories'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Add').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockRepo.createCategory(any()));
+    });
+
+    testWidgets('edit category dialog cancel dismisses without saving', (
+      tester,
+    ) async {
+      final cat = category(name: 'Work');
+      await tester.pumpWidget(
+        buildTestWidget(categories: categoriesStream([cat])),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Manage categories'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockRepo.updateCategory(any()));
+    });
+
+    testWidgets('delete category dialog cancel keeps category', (tester) async {
+      final cat = category(name: 'Work');
+      await tester.pumpWidget(
+        buildTestWidget(categories: categoriesStream([cat])),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Manage categories'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockRepo.deleteCategory(any()));
+    });
+
+    testWidgets('None category pill clears selected category', (tester) async {
+      final cat = category();
+      await tester.pumpWidget(
+        buildTestWidget(
+          categories: categoriesStream([cat]),
+          initialGoal: goal(categoryId: 'c1'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('None').first);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('PopScope intercepts route pop when form is modified', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, 'Changed');
+      await tester.pumpAndSettle();
+      final scope = tester.widget<PopScope>(
+        find.byWidgetPredicate((widget) => widget is PopScope),
+      );
+      scope.onPopInvokedWithResult!(false, null);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Discard changes?'), findsOneWidget);
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('New Goal'), findsNothing);
     });
   });
 }
