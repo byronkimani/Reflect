@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/entities/goal_category.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -253,6 +254,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Category One'), findsOneWidget);
+    });
+
+    testWidgets('create goal button uses sticky bottom bar safe area', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ReflectStickyBottomBar), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(ReflectStickyBottomBar),
+          matching: find.byType(SafeArea),
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

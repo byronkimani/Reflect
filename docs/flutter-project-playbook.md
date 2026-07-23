@@ -76,6 +76,7 @@ Create `AGENTS.md` at the project root. This file controls how AI coding assista
 17. **Release notes required.** Document changes for testers when shipping a new release.
 18. **Keep documentation synced.** Always keep all documentation updated as code changes are made. Any conflicts or discrepancies must be raised to the user. The playbook itself must be kept up to date with any newly introduced coding guidelines.
 19. **Ask architectural questions.** When bootstrapping a new project or feature, do not assume default technologies. Ask the user architectural questions (e.g., State Management, Storage, Networking) to determine the right stack if it isn't explicitly specified.
+20. **Respect safe areas consistently.** Use `ReflectStickyBottomBar` for full-screen sticky CTAs, `ReflectTabPageSafeArea` + `reflect_page_insets.dart` helpers for tab-root pages, and `SafeArea` (plus keyboard `viewInsets` padding) on modal bottom sheets. Do not hardcode status-bar offsets or pin primary actions flush to the screen bottom.
 
 ## Pre-flight (before writing code)
 
@@ -273,6 +274,18 @@ lib/
 - **Domain** must never import Flutter SDK or `data/`.
 - **Data** implements domain interfaces — dependency inversion.
 - All domain entities and BLoC states use `@freezed` — never mutable models.
+
+### Safe area & layout chrome
+
+Use the shared helpers in `core/presentation/` — do not reinvent per screen.
+
+| Context | Widget / helper | Notes |
+|---------|-----------------|-------|
+| Full-screen form CTA (pushed routes) | `ReflectStickyBottomBar` on `Scaffold.bottomNavigationBar` | Clears home indicator; auto-skips bottom inset when embedded in tab shell |
+| Tab-root page without `AppBar` | `ReflectTabPageSafeArea` + `reflectTabHeaderPadding()` | Replaces hardcoded `56` top padding |
+| Tab scroll lists | `reflectTabScrollPadding()` / `kReflectTabBarScrollClearance` | Keeps last items above tab bar + FAB |
+| Full-screen pushed list/settings | `SafeArea` around `body` | e.g. Settings |
+| Modal bottom sheets | `SafeArea` + `MediaQuery.viewInsetsOf` bottom padding | Keyboard-aware; include explicit Done/Apply when editing |
 
 ---
 

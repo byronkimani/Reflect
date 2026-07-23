@@ -25,9 +25,7 @@ abstract class DailyReviewState with _$DailyReviewState {
   bool get canSubmit {
     if (dayRating <= 0) return false;
     if (wentWell.isEmpty && couldBeBetter.isEmpty) return false;
-    if (gratitudeFieldCount >= 1 && gratitude1.isEmpty) return false;
-    if (gratitudeFieldCount >= 2 && gratitude2.isEmpty) return false;
-    if (gratitudeFieldCount >= 3 && gratitude3.isEmpty) return false;
+    if (gratitudeFieldCount >= 1 && gratitude1.trim().isEmpty) return false;
     return true;
   }
 

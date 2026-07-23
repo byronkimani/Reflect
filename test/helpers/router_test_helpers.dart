@@ -104,7 +104,7 @@ class RouterTestHarness {
     );
     when(() => planningCubit.state).thenReturn(const PlanningState());
     when(() => dailyReviewCubit.state).thenReturn(const DailyReviewState());
-    when(() => dailyReviewCubit.initializeForToday()).thenAnswer((_) async {});
+    when(() => dailyReviewCubit.startWatchingTodayTasks()).thenReturn(null);
     when(() => taskSelectionCubit.state)
         .thenReturn(const TaskSelectionState());
     when(() => settingsCubit.state).thenReturn(const SettingsState());

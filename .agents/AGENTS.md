@@ -21,6 +21,7 @@
 17. **Release Notes.** When sending out a new feature, ensure that release notes are created/updated to document the changes for users and testers.
 18. **Keep documentation synced.** Always keep all documentation updated as code changes are made. Any conflicts or discrepancies must be raised to the user. For instance, the `flutter-project-playbook.md` needs to be updated as new coding guidelines are introduced so it always reflects the latest standards.
 19. **Ask architectural questions.** When bootstrapping a new project or feature, do not assume default technologies. Ask the user architectural questions (e.g., State Management, Storage, Networking) to determine the right stack if it isn't explicitly specified.
+20. **Respect safe areas consistently.** Use `ReflectStickyBottomBar` for full-screen sticky CTAs, `ReflectTabPageSafeArea` + `reflect_page_insets.dart` helpers for tab-root pages, and `SafeArea` (plus keyboard `viewInsets` padding) on modal bottom sheets. Do not hardcode status-bar offsets or pin primary actions flush to the screen bottom.
 
 ---
 

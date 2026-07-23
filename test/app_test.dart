@@ -58,7 +58,7 @@ void main() {
     when(() => mockTaskListBloc.state).thenReturn(const TaskListState.loaded(rawTasks: [], pending: [], completed: [], overdue: []));
     when(() => mockPlanningCubit.state).thenReturn(const PlanningState());
     when(() => mockDailyReviewCubit.state).thenReturn(const DailyReviewState());
-    when(() => mockDailyReviewCubit.initializeForToday()).thenAnswer((_) async {});
+    when(() => mockDailyReviewCubit.startWatchingTodayTasks()).thenReturn(null);
     when(() => mockTaskSelectionCubit.state).thenReturn(const TaskSelectionState());
     when(() => mockSettingsCubit.state).thenReturn(const SettingsState());
 
