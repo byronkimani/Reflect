@@ -607,12 +607,14 @@ AppDatabase createTestDatabase() {
 
 ## 12. CI / CD with GitHub Actions
 
+**Reflect branch policy:** `develop` (default) ← feature PRs; `main` ← release PRs from `develop`. No direct pushes. Merges to either branch distribute to App Tester (`qa-team`); `main` will move to Play Console later. Full setup: [`deployment.md`](deployment.md).
+
 ### Workflow structure
 
 Create `.github/workflows/firebase_distribution.yml`. The workflow has two jobs:
 
-1. **test** — runs on every push and PR.
-2. **deploy** — runs only on push to `main`/`develop` after tests pass.
+1. **test** — runs on PRs and pushes to `develop` / `main`.
+2. **deploy** — runs only on **push** (merge) to `develop` or `main` after tests pass; **not** on PRs.
 
 ```yaml
 name: Firebase App Distribution
@@ -666,7 +668,7 @@ jobs:
 
   deploy:
     name: Build & Distribute APK
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -716,6 +718,7 @@ jobs:
           credentials-file: firebase-credentials.json
           groups: qa-team
           file: build/app/outputs/flutter-apk/app-release.apk
+          release-notes-file: release-notes.txt   # channel-specific; see deployment.md
 
       - name: Cleanup Secrets
         if: always()

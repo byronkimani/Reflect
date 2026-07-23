@@ -22,6 +22,9 @@ Source-of-truth specs for product behavior and engineering conventions. Structur
 | [`agent-map.md`](agent-map.md) | Active | Task to file lookup for AI agents |
 | [`collaboration-framework.md`](collaboration-framework.md) | Active | AI-Human collaboration and brainstorming rules |
 | [`production-readiness.md`](production-readiness.md) | Active | Production launch requirements and recommendations |
+| [`deployment.md`](deployment.md) | Active | Branching, CI/CD, App Tester, GitHub branch protection |
+| [`versioning.md`](versioning.md) | Active | SemVer, build numbers, release process |
+| [`security.md`](security.md) | Active | Secrets, signing, Firebase hardening |
 | [`flutter-project-playbook.md`](flutter-project-playbook.md) | Active | Personal bootstrap guide for starting new Flutter projects to this standard |
 
 ## Feature Specs

@@ -7,7 +7,7 @@ Security practices for secrets, local data, releases, and third-party integratio
 - Never commit `.env.production`, keystores, or `firebase-credentials.json`.
 - The app loads a single bundled env file: `env/active.env` (gitignored).
 - Use `tool/prepare_env.sh <flavor>` before local runs/builds (`make run-dev`, `make build-prod-apk`).
-- CI decodes production secrets only in the **deploy** job (push to `main`/`develop`), then deletes them in a cleanup step.
+- CI decodes production secrets only in the **deploy** job (push to `develop` or `main` after merge), then deletes them in a cleanup step. See [`deployment.md`](deployment.md).
 
 Required keys are documented in [`env/active.env.example`](../env/active.env.example).
 

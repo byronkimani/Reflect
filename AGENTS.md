@@ -73,6 +73,8 @@
 | `make run-dev` | Uses `.env.testing` (Default for local development) |
 | `make run-prod` | Uses `.env.production` (Production build) |
 
+**Git branches:** PRs target **`develop`** (default). Promote to **`main`** via PR only. No direct pushes to either. CI distributes merged builds to App Tester — see [`docs/deployment.md`](docs/deployment.md).
+
 Never commit `.env.production`. Use `flutter_dotenv` to load these values securely.
 
 ## 3. Testing Policy
