@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/presentation/widgets/mood_rating_row.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
 import 'package:reflect/features/review/presentation/pages/daily_review_page.dart';
@@ -18,13 +19,14 @@ void main() {
 
   setUp(() {
     mockCubit = MockDailyReviewCubit();
-    when(() => mockCubit.initializeForToday()).thenAnswer((_) async {});
+    when(() => mockCubit.startWatchingTodayTasks()).thenReturn(null);
+    when(() => mockCubit.removeGratitudeField(any())).thenReturn(null);
   });
 
-  Widget buildPage() {
+  Widget buildPage({String initialLocation = '/review'}) {
     return MaterialApp.router(
       routerConfig: GoRouter(
-        initialLocation: '/review',
+        initialLocation: initialLocation,
         routes: [
           GoRoute(
             path: '/',
@@ -57,7 +59,7 @@ void main() {
     expect(find.text('Share up to 3 things'), findsOneWidget);
     expect(find.byType(MoodRatingRow), findsOneWidget);
     expect(find.text('Add another'), findsOneWidget);
-    verify(() => mockCubit.initializeForToday()).called(1);
+    verify(() => mockCubit.startWatchingTodayTasks()).called(1);
   });
 
   testWidgets('DailyReviewPage interactions call cubit methods', (tester) async {
@@ -79,7 +81,7 @@ void main() {
     verify(() => mockCubit.couldBeBetterChanged('Could be better')).called(1);
 
     await tester.enterText(
-      find.widgetWithText(TextField, 'I am grateful for…'),
+      find.widgetWithText(TextFormField, 'I am grateful for…'),
       'Food',
     );
     verify(() => mockCubit.gratitudeChanged(0, 'Food')).called(1);
@@ -105,6 +107,25 @@ void main() {
 
     verify(() => mockCubit.submitReview()).called(1);
   });
+
+  testWidgets(
+    'Save Review stays enabled with empty added gratitude field',
+    (tester) async {
+      when(() => mockCubit.state).thenReturn(const DailyReviewState(
+        dayRating: 3,
+        wentWell: 'win',
+        gratitude1: 'sunshine',
+        gratitudeFieldCount: 2,
+      ));
+
+      await tester.pumpWidget(buildPage());
+
+      final button = tester.widget<ReflectPrimaryButton>(
+        find.byType(ReflectPrimaryButton),
+      );
+      expect(button.onPressed, isNotNull);
+    },
+  );
 
   testWidgets('DailyReviewPage Save Review button is disabled when not submittable',
       (tester) async {
@@ -166,6 +187,45 @@ void main() {
     verify(() => mockCubit.addGratitudeField()).called(1);
   });
 
+  testWidgets('remove gratitude button calls cubit', (tester) async {
+    whenListen(
+      mockCubit,
+      Stream.value(
+        const DailyReviewState(
+          gratitudeFieldCount: 2,
+          gratitude1: 'A',
+          gratitude2: 'B',
+        ),
+      ),
+      initialState: const DailyReviewState(
+        gratitudeFieldCount: 2,
+        gratitude1: 'A',
+        gratitude2: 'B',
+      ),
+    );
+
+    await tester.pumpWidget(buildPage());
+    await tester.pumpAndSettle();
+
+    final removeButton = find.byTooltip('Remove');
+    await tester.ensureVisible(removeButton);
+    await tester.tap(removeButton, warnIfMissed: false);
+    await tester.pump();
+
+    verify(() => mockCubit.removeGratitudeField(1)).called(1);
+  });
+
+  testWidgets('gratitude field displays initial value from state', (tester) async {
+    when(() => mockCubit.state).thenReturn(const DailyReviewState(
+      gratitude1: 'sunshine',
+    ));
+
+    await tester.pumpWidget(buildPage());
+    await tester.pump();
+
+    expect(find.text('sunshine'), findsOneWidget);
+  });
+
   testWidgets('shows loading state on Save Review button', (tester) async {
     when(() => mockCubit.state).thenReturn(const DailyReviewState(
       dayRating: 4,
@@ -183,7 +243,9 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
-  testWidgets('success state shows snackbar and pops route', (tester) async {
+  testWidgets('success state shows snackbar on tab root without popping', (
+    tester,
+  ) async {
     whenListen(
       mockCubit,
       Stream.fromIterable([
@@ -208,6 +270,61 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Daily Review saved!'), findsOneWidget);
+    expect(find.text('Daily Review'), findsOneWidget);
+  });
+
+  testWidgets('success state shows snackbar and pops pushed route', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, _) => Scaffold(
+            body: TextButton(
+              onPressed: () => context.push('/review'),
+              child: const Text('Open review'),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/review',
+          builder: (_, _) => BlocProvider<DailyReviewCubit>.value(
+            value: mockCubit,
+            child: const DailyReviewPage(),
+          ),
+        ),
+      ],
+    );
+
+    whenListen(
+      mockCubit,
+      Stream.fromIterable([
+        const DailyReviewState(
+          dayRating: 4,
+          wentWell: 'win',
+          gratitude1: 'thanks',
+        ),
+        const DailyReviewState(
+          dayRating: 4,
+          wentWell: 'win',
+          gratitude1: 'thanks',
+          isSuccess: true,
+        ),
+      ]),
+      initialState: const DailyReviewState(),
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open review'));
+    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Daily Review saved!'), findsOneWidget);
+    expect(find.text('Open review'), findsOneWidget);
   });
 
   testWidgets('error state shows error snackbar', (tester) async {
@@ -225,5 +342,15 @@ void main() {
     await tester.pump();
 
     expect(find.text('Save failed'), findsOneWidget);
+  });
+
+  testWidgets('save review button uses sticky bottom bar', (tester) async {
+    when(() => mockCubit.state).thenReturn(const DailyReviewState());
+
+    await tester.pumpWidget(buildPage());
+    await tester.pump();
+
+    expect(find.byType(ReflectStickyBottomBar), findsOneWidget);
+    expect(find.text('Save Review'), findsOneWidget);
   });
 }

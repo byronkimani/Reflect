@@ -152,6 +152,16 @@ void main() {
     );
   }
 
+  Future<void> tapExtrasSheetDone(WidgetTester tester) async {
+    final doneButton = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.widgetWithText(ReflectPrimaryButton, 'Done'),
+    );
+    await tester.ensureVisible(doneButton);
+    await tester.tap(doneButton);
+    await tester.pumpAndSettle();
+  }
+
   Future<void> tapReminderSwitch(WidgetTester tester) async {
     final reminderSwitch = find.widgetWithText(
       SwitchListTile,
@@ -355,8 +365,7 @@ void main() {
       await tester.enterText(extrasSheetNotesField(), 'New notes');
       await tester.pumpAndSettle();
 
-      await tester.tapAt(const Offset(20, 20));
-      await tester.pumpAndSettle();
+      await tapExtrasSheetDone(tester);
 
       await tapSaveButton(tester);
       await tester.pump();
@@ -495,6 +504,37 @@ void main() {
       final updated = captured[0] as Task;
       expect(updated.dueDate, isNull);
       expect(updated.dueTime, isNull);
+    });
+
+    testWidgets('extras sheet Done button dismisses the sheet', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tapExtrasRow(tester);
+
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(find.widgetWithText(ReflectPrimaryButton, 'Done'), findsOneWidget);
+
+      await tapExtrasSheetDone(tester);
+
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+
+    testWidgets('extras sheet respects bottom safe area', (tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      await tapExtrasRow(tester);
+
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.byType(SafeArea),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows goal selector in extras sheet when goals exist', (

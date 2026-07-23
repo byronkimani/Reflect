@@ -70,7 +70,8 @@ Single scroll — all three cards visible (no wizard).
   - Start with **one** field visible
   - **+ Add another** link (sage-teal) until 3 fields shown
   - Teal heart **outline** icon (not bright pink filled)
-- **All visible gratitude fields** must be non-empty to submit (if 2 shown, both required; if 3 shown, all 3)
+- **First gratitude field** must be non-empty to submit; additional fields (2–3) may be left empty
+- **+ Remove** (X) on fields 2–3 to dismiss an accidentally added row
 
 ## Primary action
 
@@ -82,8 +83,10 @@ Single scroll — all three cards visible (no wizard).
 ```text
 dayRating > 0
 AND (wentWell.isNotEmpty OR couldBeBetter.isNotEmpty)
-AND all visible gratitude fields non-empty (1–3)
+AND gratitude1.isNotEmpty (when gratitude section is shown)
 ```
+
+Additional gratitude fields (2–3) are optional even when visible.
 
 ## Archive mocks
 

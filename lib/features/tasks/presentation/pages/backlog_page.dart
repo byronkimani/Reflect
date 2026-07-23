@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/utils/reflect_page_insets.dart';
 import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/core/presentation/widgets/task_card.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_state.dart';
@@ -18,7 +20,8 @@ class BacklogPage extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: BlocBuilder<TaskListBloc, TaskListState>(
+      body: ReflectTabPageSafeArea(
+        child: BlocBuilder<TaskListBloc, TaskListState>(
         buildWhen: (previous, current) => previous != current,
         builder: (context, state) {
           return state.when(
@@ -32,7 +35,7 @@ class BacklogPage extends StatelessWidget {
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 56, 16, 8),
+                      padding: reflectTabHeaderPadding(context),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -91,12 +94,15 @@ class BacklogPage extends StatelessWidget {
                         childCount: allTasks.length,
                       ),
                     ),
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+                  SliverPadding(
+                    padding: reflectTabScrollPadding(context),
+                  ),
                 ],
               );
             },
           );
         },
+        ),
       ),
       floatingActionButton: ReflectFab(
         heroTag: 'backlog_fab',

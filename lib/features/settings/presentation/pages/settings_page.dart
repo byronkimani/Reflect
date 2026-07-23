@@ -17,7 +17,8 @@ class SettingsPage extends StatelessWidget {
         backgroundColor: ReflectColors.pageBackground,
         elevation: 0,
       ),
-      body: BlocBuilder<SettingsCubit, SettingsState>(
+      body: SafeArea(
+        child: BlocBuilder<SettingsCubit, SettingsState>(
         buildWhen: settingsStateShouldRebuild,
         builder: (context, state) {
           return ListView(
@@ -104,6 +105,7 @@ class SettingsPage extends StatelessWidget {
             ],
           );
         },
+        ),
       ),
     );
   }

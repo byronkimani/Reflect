@@ -8,6 +8,7 @@ import 'package:reflect/core/presentation/widgets/reflect_form_card.dart';
 import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
 
@@ -23,7 +24,7 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DailyReviewCubit>().initializeForToday();
+      context.read<DailyReviewCubit>().startWatchingTodayTasks();
     });
   }
 
@@ -38,7 +39,9 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
               backgroundColor: ReflectColors.accentPrimary,
             ),
           );
-          context.pop();
+          if (context.canPop()) {
+            context.pop();
+          }
         }
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -51,6 +54,7 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
       },
       builder: (context, state) {
         final dateLabel = DateFormat('EEEE, MMM d').format(DateTime.now());
+        final cubit = context.read<DailyReviewCubit>();
 
         return Scaffold(
           backgroundColor: ReflectColors.pageBackground,
@@ -59,130 +63,120 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
             backgroundColor: ReflectColors.pageBackground,
             elevation: 0,
           ),
-          body: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    dateLabel,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: ReflectColors.textSecondary,
+                        ),
+                  ),
+                ),
+                if (state.showTaskChip)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: ReflectPill(
+                      label:
+                          '${state.tasksCompletedToday} of ${state.tasksTotalToday} tasks done today',
+                      selected: false,
+                    ),
+                  ),
+                ReflectFormCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                        child: Text(
-                          dateLabel,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: ReflectColors.textSecondary,
-                              ),
-                        ),
+                      Text(
+                        'How was your day?',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                      if (state.showTaskChip)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                          child: ReflectPill(
-                            label:
-                                '${state.tasksCompletedToday} of ${state.tasksTotalToday} tasks done today',
-                            selected: false,
-                          ),
-                        ),
-                      ReflectFormCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'How was your day?',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 16),
-                            MoodRatingRow(
-                              selectedRating: state.dayRating,
-                              onRatingChanged: (rating) => context
-                                  .read<DailyReviewCubit>()
-                                  .ratingChanged(rating),
-                            ),
-                          ],
-                        ),
+                      const SizedBox(height: 16),
+                      MoodRatingRow(
+                        selectedRating: state.dayRating,
+                        onRatingChanged: cubit.ratingChanged,
                       ),
-                      ReflectFormCard(
-                        title: 'Wins & Growth',
-                        child: Column(
-                          children: [
-                            ReflectSoftField(
-                              labelText: 'What went well?',
-                              hintText: 'A win from today…',
-                              maxLines: 2,
-                              onChanged: (value) => context
-                                  .read<DailyReviewCubit>()
-                                  .wentWellChanged(value),
-                            ),
-                            const SizedBox(height: 16),
-                            ReflectSoftField(
-                              labelText: 'What could be better?',
-                              hintText: 'One thing to improve…',
-                              maxLines: 2,
-                              onChanged: (value) => context
-                                  .read<DailyReviewCubit>()
-                                  .couldBeBetterChanged(value),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ReflectFormCard(
-                        title: 'Gratitude',
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Share up to 3 things',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: ReflectColors.textSecondary),
-                            ),
-                            const SizedBox(height: 12),
-                            for (var i = 0; i < state.gratitudeFieldCount; i++) ...[
-                              if (i > 0) const SizedBox(height: 12),
-                              _GratitudeField(
-                                index: i,
-                                onChanged: (text) => context
-                                    .read<DailyReviewCubit>()
-                                    .gratitudeChanged(i, text),
-                              ),
-                            ],
-                            if (state.gratitudeFieldCount < 3) ...[
-                              const SizedBox(height: 12),
-                              TextButton.icon(
-                                onPressed: () => context
-                                    .read<DailyReviewCubit>()
-                                    .addGratitudeField(),
-                                icon: const Icon(Icons.add, size: 18),
-                                label: const Text('Add another'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: ReflectColors.accentPrimary,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 80),
                     ],
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: ReflectPrimaryButton(
-                  label: 'Save Review',
-                  isLoading: state.isSubmitting,
-                  onPressed: state.canSubmit && !state.isSubmitting
-                      ? () => context.read<DailyReviewCubit>().submitReview()
-                      : null,
+                ReflectFormCard(
+                  title: 'Wins & Growth',
+                  child: Column(
+                    children: [
+                      ReflectSoftField(
+                        labelText: 'What went well?',
+                        hintText: 'A win from today…',
+                        maxLines: 2,
+                        onChanged: cubit.wentWellChanged,
+                      ),
+                      const SizedBox(height: 16),
+                      ReflectSoftField(
+                        labelText: 'What could be better?',
+                        hintText: 'One thing to improve…',
+                        maxLines: 2,
+                        onChanged: cubit.couldBeBetterChanged,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                ReflectFormCard(
+                  title: 'Gratitude',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Share up to 3 things',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: ReflectColors.textSecondary),
+                      ),
+                      const SizedBox(height: 12),
+                      for (var i = 0; i < state.gratitudeFieldCount; i++) ...[
+                        if (i > 0) const SizedBox(height: 12),
+                        _GratitudeField(
+                          key: ValueKey('gratitude_$i'),
+                          initialValue: switch (i) {
+                            0 => state.gratitude1,
+                            1 => state.gratitude2,
+                            _ => state.gratitude3,
+                          },
+                          showRemove: i > 0,
+                          onChanged: (text) => cubit.gratitudeChanged(i, text),
+                          onRemove: () => cubit.removeGratitudeField(i),
+                        ),
+                      ],
+                      if (state.gratitudeFieldCount < 3) ...[
+                        const SizedBox(height: 12),
+                        TextButton.icon(
+                          onPressed: cubit.addGratitudeField,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add another'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: ReflectColors.accentPrimary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          bottomNavigationBar: ReflectStickyBottomBar(
+            child: ReflectPrimaryButton(
+              label: 'Save Review',
+              isLoading: state.isSubmitting,
+              onPressed: state.canSubmit && !state.isSubmitting
+                  ? cubit.submitReview
+                  : null,
+            ),
           ),
         );
       },
@@ -192,16 +186,22 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
 
 class _GratitudeField extends StatelessWidget {
   const _GratitudeField({
-    required this.index,
+    super.key,
+    required this.initialValue,
     required this.onChanged,
+    required this.showRemove,
+    required this.onRemove,
   });
 
-  final int index;
+  final String initialValue;
   final ValueChanged<String> onChanged;
+  final bool showRemove;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      initialValue: initialValue,
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: 'I am grateful for…',
@@ -212,6 +212,13 @@ class _GratitudeField extends StatelessWidget {
           color: ReflectColors.accentPrimary,
           size: 20,
         ),
+        suffixIcon: showRemove
+            ? IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                tooltip: 'Remove',
+                onPressed: onRemove,
+              )
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

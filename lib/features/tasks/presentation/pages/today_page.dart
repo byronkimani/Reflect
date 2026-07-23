@@ -5,10 +5,12 @@ import 'package:intl/intl.dart';
 import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/core/presentation/utils/adaptive_dialog.dart';
 import 'package:reflect/core/presentation/utils/day_greeting.dart';
+import 'package:reflect/core/presentation/utils/reflect_page_insets.dart';
 import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_progress_bar.dart';
 import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/core/presentation/widgets/task_card.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bloc.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
@@ -25,7 +27,8 @@ class TodayPage extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: BlocBuilder<TaskListBloc, TaskListState>(
+      body: ReflectTabPageSafeArea(
+        child: BlocBuilder<TaskListBloc, TaskListState>(
         buildWhen: (previous, current) => previous != current,
         builder: (context, state) {
           return state.when(
@@ -51,7 +54,7 @@ class TodayPage extends StatelessWidget {
                     slivers: [
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 56, 16, 8),
+                          padding: reflectTabHeaderPadding(context),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -175,7 +178,9 @@ class TodayPage extends StatelessWidget {
                             childCount: allTasks.length,
                           ),
                         ),
-                      const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+                      SliverPadding(
+                        padding: reflectTabScrollPadding(context),
+                      ),
                     ],
                   ),
                   _SelectionOverlay(allTaskIds: allDisplayableTaskIds),
@@ -184,6 +189,7 @@ class TodayPage extends StatelessWidget {
             },
           );
         },
+        ),
       ),
       floatingActionButton: BlocBuilder<TaskSelectionCubit, TaskSelectionState>(
         builder: (context, selectionState) {

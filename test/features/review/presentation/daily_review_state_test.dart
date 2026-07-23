@@ -47,29 +47,37 @@ void main() {
       expect(filled.canSubmit, isTrue);
     });
 
-    test('requires gratitude2 when two fields are visible', () {
-      const missing = DailyReviewState(
+    test('allows empty gratitude2 when two fields are visible', () {
+      const state = DailyReviewState(
         dayRating: 5,
         wentWell: 'Fine',
         gratitudeFieldCount: 2,
         gratitude1: 'A',
       );
-      final filled = missing.copyWith(gratitude2: 'B');
-      expect(missing.canSubmit, isFalse);
-      expect(filled.canSubmit, isTrue);
+      expect(state.canSubmit, isTrue);
     });
 
-    test('requires gratitude3 when three fields are visible', () {
-      const missing = DailyReviewState(
+    test('allows empty gratitude3 when three fields are visible', () {
+      const state = DailyReviewState(
         dayRating: 5,
         wentWell: 'Fine',
         gratitudeFieldCount: 3,
         gratitude1: 'A',
         gratitude2: 'B',
       );
-      final filled = missing.copyWith(gratitude3: 'C');
-      expect(missing.canSubmit, isFalse);
-      expect(filled.canSubmit, isTrue);
+      expect(state.canSubmit, isTrue);
+    });
+
+    test('allows submit with three gratitude entries when third is filled', () {
+      const state = DailyReviewState(
+        dayRating: 5,
+        wentWell: 'Fine',
+        gratitudeFieldCount: 3,
+        gratitude1: 'A',
+        gratitude2: 'B',
+        gratitude3: 'C',
+      );
+      expect(state.canSubmit, isTrue);
     });
   });
 

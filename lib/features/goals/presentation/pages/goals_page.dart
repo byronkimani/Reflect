@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:reflect/core/presentation/theme/reflect_colors.dart';
+import 'package:reflect/core/presentation/utils/reflect_page_insets.dart';
 import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
 import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_cubit.dart';
 import 'package:reflect/features/goals/presentation/cubit/goals_state.dart';
@@ -20,7 +22,7 @@ class GoalsPage extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: ReflectColors.pageBackground,
-          body: SafeArea(
+          body: ReflectTabPageSafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -109,7 +111,12 @@ class _GoalList extends StatelessWidget {
           );
         }
         return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            kReflectTabBarScrollClearance,
+          ),
           itemCount: goals.length,
           itemBuilder: (context, index) {
             final goal = goals[index];

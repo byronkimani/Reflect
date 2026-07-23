@@ -130,6 +130,7 @@ Show **×** on the time chip only when a time value is set. Tapping the chip bod
 ### Notes, goal & tags
 
 - Collapsed row → bottom sheet (notes, goal dropdown, tags)
+- Sheet includes a sticky **Done** action and respects device safe areas (home indicator / keyboard)
 
 ### Primary action
 

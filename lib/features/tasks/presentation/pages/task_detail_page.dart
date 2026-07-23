@@ -10,6 +10,7 @@ import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
 import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
 import 'package:reflect/features/tasks/domain/entities/recurrence_rule.dart';
 import 'package:reflect/features/tasks/domain/entities/task.dart';
@@ -100,62 +101,71 @@ class _TaskFormViewState extends State<TaskFormView> {
   }
 
   void _openExtrasSheet(BuildContext context, TaskFormState state) {
+    final cubit = context.read<TaskFormCubit>();
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(ctx).bottom + 24,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Notes, goal & tags',
-              style: Theme.of(ctx).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            ReflectSoftField(
-              labelText: 'Notes',
-              hintText: 'Add details or context...',
-              maxLines: 4,
-              initialValue: state.notes,
-              onChanged: (v) => context.read<TaskFormCubit>().notesChanged(v),
-            ),
-            if (state.availableGoals.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String?>(
-                key: ValueKey(state.selectedGoalId),
-                initialValue: state.selectedGoalId != null &&
-                        state.availableGoals
-                            .any((g) => g.id == state.selectedGoalId)
-                    ? state.selectedGoalId
-                    : null,
-                decoration: const InputDecoration(
-                  labelText: 'Goal',
-                  border: OutlineInputBorder(),
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Notes, goal & tags',
+                  style: Theme.of(ctx).textTheme.titleMedium,
                 ),
-                items: [
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text('None'),
-                  ),
-                  ...state.availableGoals.map(
-                    (g) => DropdownMenuItem<String?>(
-                      value: g.id,
-                      child: Text(g.title, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 16),
+                ReflectSoftField(
+                  labelText: 'Notes',
+                  hintText: 'Add details or context...',
+                  maxLines: 4,
+                  initialValue: state.notes,
+                  onChanged: cubit.notesChanged,
+                ),
+                if (state.availableGoals.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String?>(
+                    key: ValueKey(state.selectedGoalId),
+                    initialValue: state.selectedGoalId != null &&
+                            state.availableGoals
+                                .any((g) => g.id == state.selectedGoalId)
+                        ? state.selectedGoalId
+                        : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Goal',
+                      border: OutlineInputBorder(),
                     ),
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('None'),
+                      ),
+                      ...state.availableGoals.map(
+                        (g) => DropdownMenuItem<String?>(
+                          value: g.id,
+                          child: Text(g.title, overflow: TextOverflow.ellipsis),
+                        ),
+                      ),
+                    ],
+                    onChanged: cubit.goalIdChanged,
                   ),
                 ],
-                onChanged: (id) =>
-                    context.read<TaskFormCubit>().goalIdChanged(id),
-              ),
-            ],
-          ],
+                const SizedBox(height: 24),
+                ReflectPrimaryButton(
+                  label: 'Done',
+                  icon: Icons.check_circle_outline,
+                  onPressed: () {
+                    FocusScope.of(ctx).unfocus();
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -468,17 +478,14 @@ class _TaskFormViewState extends State<TaskFormView> {
                 ],
               ),
             ),
-            bottomNavigationBar: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ReflectPrimaryButton(
-                  label: state.initialTask == null
-                      ? 'Create Task'
-                      : 'Save Changes',
-                  icon: Icons.check_circle_outline,
-                  isLoading: state.isSubmitting,
-                  onPressed: state.isSubmitting ? null : cubit.submit,
-                ),
+            bottomNavigationBar: ReflectStickyBottomBar(
+              child: ReflectPrimaryButton(
+                label: state.initialTask == null
+                    ? 'Create Task'
+                    : 'Save Changes',
+                icon: Icons.check_circle_outline,
+                isLoading: state.isSubmitting,
+                onPressed: state.isSubmitting ? null : cubit.submit,
               ),
             ),
           ),

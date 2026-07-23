@@ -9,6 +9,7 @@ import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
 import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
+import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/entities/goal_category.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -111,13 +112,10 @@ class _GoalFormViewState extends State<_GoalFormView> {
                 state.initialGoal == null ? 'New Goal' : 'Edit Goal',
               ),
             ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: StreamBuilder<dynamic>(
-                      stream: widget.categoriesStream,
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: StreamBuilder<dynamic>(
+                stream: widget.categoriesStream,
                       builder: (context, snapshot) {
                         final categories =
                             snapshot.hasData && snapshot.data != null
@@ -245,21 +243,16 @@ class _GoalFormViewState extends State<_GoalFormView> {
                         );
                       },
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: ReflectPrimaryButton(
-                    label: state.initialGoal == null
-                        ? 'Create Goal'
-                        : 'Save Changes',
-                    isLoading: state.isSubmitting,
-                    icon: Icons.check_circle_outline,
-                    onPressed:
-                        state.isSubmitting ? null : () => cubit.submit(),
-                  ),
-                ),
-              ],
+            ),
+            bottomNavigationBar: ReflectStickyBottomBar(
+              child: ReflectPrimaryButton(
+                label: state.initialGoal == null
+                    ? 'Create Goal'
+                    : 'Save Changes',
+                isLoading: state.isSubmitting,
+                icon: Icons.check_circle_outline,
+                onPressed: state.isSubmitting ? null : () => cubit.submit(),
+              ),
             ),
           ),
         );
