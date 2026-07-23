@@ -1,6 +1,7 @@
 <!--
   Reflect Flutter App
   Engineering conventions: AGENTS.md. Typical checks: make lint, make test, make gen;
+  Target branch: feature/chore PRs → develop; releases → develop → main (see docs/deployment.md)
 -->
 
 ## Summary

@@ -13,6 +13,7 @@ Reflect is a powerful, offline-first personal task manager and wellness tool des
 | Find the source-of-truth spec for a feature | [`docs/README.md`](docs/README.md) |
 | Check what is shipped, placeholder, or deferred | [`docs/implementation-status.md`](docs/implementation-status.md) |
 | Jump from a task area to the right docs, code, and tests | [`docs/agent-map.md`](docs/agent-map.md) |
+| Branching, CI, App Tester, and GitHub setup | [`docs/deployment.md`](docs/deployment.md) |
 
 ## Tech stack
 
@@ -122,7 +123,7 @@ If you have been invited to test Reflect via Firebase App Distribution, follow t
 
 ## Contributing
 
-We follow a GitFlow-lite model (`main` → `develop` → feature branches). See [`CONTRIBUTING.md`](CONTRIBUTING.md) for full branch strategies, PR templates, and coding standards.
+We follow a GitFlow-lite model: feature branches → **`develop`** (default, QA) → **`main`** (production). No direct pushes to `develop` or `main`. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/deployment.md`](docs/deployment.md).
 
 ***
 

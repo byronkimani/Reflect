@@ -24,7 +24,19 @@ We follow a **GitFlow-lite** model suitable for mobile applications:
 3. Make your changes, ensure code generation is run (`make gen`), and run tests (`make test`).
 4. Commit your changes.
 5. Push your branch and open a Pull Request against `develop`.
-6. Once approved, tested, and passing CI (GitHub Actions), the team will merge it into `develop`.
+6. Once approved, tested, and passing CI (GitHub Actions), merge the PR into `develop`.
+7. Merging to `develop` triggers a **QA APK** build to Firebase App Distribution (`qa-team`). See [`docs/deployment.md`](docs/deployment.md).
+
+### Promoting to production (`main`)
+
+`main` is the production branch. **Do not push directly to `main`.**
+
+1. When `develop` is ready for a production-line release, open a PR **`develop` → `main`**.
+2. Include release notes and bump `pubspec.yaml` version if needed (see [`docs/versioning.md`](docs/versioning.md)).
+3. After CI passes, merge the PR.
+4. Merging to `main` triggers a **production-line APK** to App Tester **temporarily** (Google Play upload will replace this in a future workflow update).
+
+Full CI/CD and GitHub branch protection steps: [`docs/deployment.md`](docs/deployment.md).
 
 ## Commit Rules and Conventions
 
