@@ -7,6 +7,7 @@ class ExpandableSectionRow extends StatelessWidget {
   final bool expanded;
   final VoidCallback onTap;
   final Widget? child;
+  final String? summary;
 
   const ExpandableSectionRow({
     super.key,
@@ -15,6 +16,7 @@ class ExpandableSectionRow extends StatelessWidget {
     required this.expanded,
     required this.onTap,
     this.child,
+    this.summary,
   });
 
   @override
@@ -22,35 +24,49 @@ class ExpandableSectionRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const Divider(height: 1, color: ReflectColors.hairline),
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
             child: Row(
               children: [
-                Icon(icon, size: 20, color: ReflectColors.accentPrimary),
+                Icon(icon, size: 18, color: ReflectColors.textSecondary),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      if (summary != null && summary!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          summary!,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: ReflectColors.textSecondary,
+                              ),
                         ),
+                      ],
+                    ],
                   ),
                 ),
                 Icon(
                   expanded ? Icons.expand_less : Icons.expand_more,
                   color: ReflectColors.textSecondary,
+                  size: 20,
                 ),
               ],
             ),
           ),
         ),
         if (expanded && child != null) ...[
-          const Divider(height: 1),
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 12),
             child: child,
           ),
         ],

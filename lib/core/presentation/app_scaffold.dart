@@ -31,12 +31,16 @@ class ScaffoldWithNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: Material(
-        color: ReflectColors.cardSurface,
-        elevation: 8,
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: ReflectColors.paper,
+          border: Border(
+            top: BorderSide(color: ReflectColors.hairline, width: 1),
+          ),
+        ),
         child: SafeArea(
           child: SizedBox(
-            height: 64,
+            height: 56,
             child: Row(
               children: List.generate(_destinations.length, (index) {
                 final dest = _destinations[index];
@@ -89,31 +93,22 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected
-        ? ReflectColors.accentPrimary
-        : ReflectColors.textSecondary;
+    final color =
+        selected ? ReflectColors.ink : ReflectColors.textSecondary;
 
     return InkWell(
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: selected
-                ? BoxDecoration(
-                    color: ReflectColors.accentSoft,
-                    borderRadius: BorderRadius.circular(20),
-                  )
-                : null,
-            child: Icon(icon, size: 22, color: color),
-          ),
+          Icon(icon, size: 22, color: color),
           const SizedBox(height: 2),
           Text(
-            label,
+            label.toUpperCase(),
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              letterSpacing: 0.8,
               color: color,
             ),
           ),

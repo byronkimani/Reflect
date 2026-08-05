@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reflect/core/config/env_config.dart';
@@ -22,8 +21,6 @@ Future<void> bootstrapReflectApp({
   Future<HydratedStorage> Function()? buildHydratedStorage,
   void Function()? setupDi,
 }) async {
-  WidgetsFlutterBinding.ensureInitialized();
-
   await (applySqlCipherWorkaround ?? _defaultSqlCipherWorkaround)();
 
   await (initEnv ?? EnvConfig.init)();

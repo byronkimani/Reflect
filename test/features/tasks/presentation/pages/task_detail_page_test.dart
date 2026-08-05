@@ -7,7 +7,6 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reflect/core/errors/failure.dart';
-import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/features/goals/domain/entities/goal.dart';
 import 'package:reflect/features/goals/domain/repositories/goal_repository.dart';
@@ -25,7 +24,8 @@ class MockITaskRepository extends Mock implements ITaskRepository {}
 
 class MockIGoalRepository extends Mock implements IGoalRepository {}
 
-class MockTaskFormCubit extends MockCubit<TaskFormState> implements TaskFormCubit {}
+class MockTaskFormCubit extends MockCubit<TaskFormState>
+    implements TaskFormCubit {}
 
 void main() {
   late MockITaskRepository mockRepo;
@@ -77,11 +77,8 @@ void main() {
             GoRoute(
               path: 'edit',
               builder: (_, _) => BlocProvider<TaskFormCubit>(
-                create: (_) => TaskFormCubit(
-                  mockRepo,
-                  mockGoalRepo,
-                  initialTask,
-                ),
+                create: (_) =>
+                    TaskFormCubit(mockRepo, mockGoalRepo, initialTask),
                 child: const TaskFormView(),
               ),
             ),
@@ -97,9 +94,9 @@ void main() {
   setUp(() {
     mockRepo = MockITaskRepository();
     mockGoalRepo = MockIGoalRepository();
-    when(() => mockGoalRepo.watchAllGoals()).thenAnswer(
-      (_) => Stream.value(const Right(<Goal>[])),
-    );
+    when(
+      () => mockGoalRepo.watchAllGoals(),
+    ).thenAnswer((_) => Stream.value(const Right(<Goal>[])));
   });
 
   setUpAll(() {
@@ -109,7 +106,10 @@ void main() {
   });
 
   Future<void> scrollForm(WidgetTester tester, {double delta = -280}) async {
-    await tester.drag(find.byType(SingleChildScrollView).first, Offset(0, delta));
+    await tester.drag(
+      find.byType(SingleChildScrollView).first,
+      Offset(0, delta),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -266,7 +266,10 @@ void main() {
         await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField).first, 'Updated title');
+        await tester.enterText(
+          find.byType(TextFormField).first,
+          'Updated title',
+        );
         await tester.pumpAndSettle();
 
         await tapSaveButton(tester);
@@ -289,7 +292,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextFormField).first, 'New task title');
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        'New task title',
+      );
       await tester.pumpAndSettle();
 
       await tapSaveButton(tester);
@@ -312,7 +318,10 @@ void main() {
         await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField).first, 'Edited title');
+        await tester.enterText(
+          find.byType(TextFormField).first,
+          'Edited title',
+        );
         await tester.pumpAndSettle();
 
         await tapAddStep(tester);
@@ -405,10 +414,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
-      final p2Chip = find.byType(PriorityLozenge).at(1);
-      await tester.tap(p2Chip);
+      await tester.tap(find.text('P2'));
       await tester.pumpAndSettle();
-      
+
       await tapSaveButton(tester);
       await tester.pumpAndSettle();
 
@@ -449,7 +457,9 @@ void main() {
       expect(find.text('Save failed'), findsOneWidget);
     });
 
-    testWidgets('back with unsaved changes shows discard dialog', (tester) async {
+    testWidgets('back with unsaved changes shows discard dialog', (
+      tester,
+    ) async {
       final t = task(id: 'task-1', title: 'Original');
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
@@ -506,9 +516,7 @@ void main() {
       expect(updated.dueTime, isNull);
     });
 
-    testWidgets('extras sheet Done button dismisses the sheet', (
-      tester,
-    ) async {
+    testWidgets('extras sheet Done button dismisses the sheet', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -633,7 +641,9 @@ void main() {
       expect(find.byType(SlidableAction), findsOneWidget);
     });
 
-    testWidgets('deleting subtask via slidable removes the step', (tester) async {
+    testWidgets('deleting subtask via slidable removes the step', (
+      tester,
+    ) async {
       final t = task(
         subtasks: [subtask(id: 's1', title: 'Remove me')],
       );
@@ -664,7 +674,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextFormField).first, 'Weekly standup');
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        'Weekly standup',
+      );
       await tester.pumpAndSettle();
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
@@ -807,9 +820,10 @@ void main() {
     });
 
     testWidgets('due time picker opens from pill', (tester) async {
-      final t = task(id: 'task-1', title: 'Timed task').copyWith(
-        dueTime: '14:30',
-      );
+      final t = task(
+        id: 'task-1',
+        title: 'Timed task',
+      ).copyWith(dueTime: '14:30');
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
@@ -849,9 +863,7 @@ void main() {
     testWidgets('tapping Today pill sets due date when not today', (
       tester,
     ) async {
-      final t = task(
-        dueDate: DateTime.now().add(const Duration(days: 3)),
-      );
+      final t = task(dueDate: DateTime.now().add(const Duration(days: 3)));
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
@@ -863,10 +875,7 @@ void main() {
           .element(find.byType(TaskFormView))
           .read<TaskFormCubit>();
       final today = DateTime.now();
-      expect(
-        cubit.state.dueDate,
-        DateTime(today.year, today.month, today.day),
-      );
+      expect(cubit.state.dueDate, DateTime(today.year, today.month, today.day));
     });
 
     testWidgets('tapping Tomorrow pill sets due date when not tomorrow', (
@@ -894,9 +903,7 @@ void main() {
       tester,
     ) async {
       final today = DateTime.now();
-      final t = task(
-        dueDate: DateTime(today.year, today.month, today.day),
-      );
+      final t = task(dueDate: DateTime(today.year, today.month, today.day));
       await tester.pumpWidget(buildTestWidget(taskId: t.id, initialTask: t));
       await tester.pumpAndSettle();
 
@@ -930,7 +937,9 @@ void main() {
       expect(cubit.state.dueDate, isNull);
     });
 
-    testWidgets('confirming date picker applies custom due date', (tester) async {
+    testWidgets('confirming date picker applies custom due date', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
@@ -992,7 +1001,9 @@ void main() {
           selectedGoalId: 'deleted-goal',
         );
         when(() => mockCubit.state).thenReturn(staleState);
-        when(() => mockCubit.stream).thenAnswer((_) => Stream.value(staleState));
+        when(
+          () => mockCubit.stream,
+        ).thenAnswer((_) => Stream.value(staleState));
 
         await tester.pumpWidget(
           SlidableAutoCloseBehavior(
@@ -1036,7 +1047,9 @@ void main() {
           selectedGoalId: 'goal-1',
         );
         when(() => mockCubit.state).thenReturn(linkedState);
-        when(() => mockCubit.stream).thenAnswer((_) => Stream.value(linkedState));
+        when(
+          () => mockCubit.stream,
+        ).thenAnswer((_) => Stream.value(linkedState));
 
         await tester.pumpWidget(
           SlidableAutoCloseBehavior(

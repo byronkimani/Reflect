@@ -16,12 +16,10 @@ class ReflectFab extends StatelessWidget {
     return FloatingActionButton(
       heroTag: heroTag,
       onPressed: onPressed,
-      backgroundColor: ReflectColors.accentPrimary,
-      foregroundColor: Colors.white,
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ReflectSpacing.fabRadius),
-      ),
+      backgroundColor: ReflectColors.ink,
+      foregroundColor: ReflectColors.paper,
+      elevation: 0,
+      shape: const CircleBorder(),
       child: const Icon(Icons.add),
     );
   }

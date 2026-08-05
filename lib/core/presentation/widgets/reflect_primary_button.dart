@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 
 class ReflectPrimaryButton extends StatelessWidget {
   final String label;
@@ -27,7 +28,7 @@ class ReflectPrimaryButton extends StatelessWidget {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: ReflectColors.paper,
                 ),
               )
             : Row(
@@ -40,7 +41,7 @@ class ReflectPrimaryButton extends StatelessWidget {
                   Text(
                     label,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
+                          color: ReflectColors.paper,
                           fontWeight: FontWeight.w600,
                         ),
                   ),

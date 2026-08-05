@@ -33,15 +33,16 @@ Source-of-truth specs for product behavior and engineering conventions. Structur
 |------|--------|-------|
 | [`notifications.md`](notifications.md) | Active | Local notifications, scheduling, permissions |
 
-## UI / Design
+## UI / design
 
-| Spec | Status | Notes |
-|------|--------|-------|
-| [`design/README.md`](design/README.md) | Active | Index of approved screen specs and mock assets |
-| [`design/today-screen.md`](design/today-screen.md) | **Approved** | Today list, cards, expand, tokens |
-| [`design/new-task-screen.md`](design/new-task-screen.md) | **Approved** | B Quick Capture + C schedule/repeats hybrid |
-| [`design/new-goal-screen.md`](design/new-goal-screen.md) | **Approved** | Accordion form + Importance control |
-| [`design/daily-review-screen.md`](design/daily-review-screen.md) | **Approved** | C Compact Cards + mood icons |
-| [`design/design-tokens.md`](design/design-tokens.md) | Active | Sage-teal accent, priority lozenges |
+No screen-level design specs are checked in (`docs/design/` was removed; a full redesign is planned later).
+
+| Reference | Location |
+|-----------|----------|
+| Theme tokens & colors | [`lib/core/presentation/theme/`](../lib/core/presentation/theme/) |
+| Shared widgets | [`lib/core/presentation/`](../lib/core/presentation/) |
+| App icon & splash assets | [`assets/icons/README.md`](../assets/icons/README.md) |
+
+For new or changed UI, follow [`AGENTS.md`](../AGENTS.md) rule 5: confirm an explicit Figma reference or owner-approved direction before implementing layouts.
 
 *(More feature specs will be added as product areas like Planning, Reviews, and Analytics are detailed.)*

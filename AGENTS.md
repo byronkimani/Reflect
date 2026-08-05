@@ -6,7 +6,7 @@
 2. **No unauthorized commits.** Stage all changes, show the diff to the user, and wait for explicit approval before running `git commit`.
 3. **Tests are mandatory, not optional.** (See rule 1.) Every changed or new function ships with at least one happy-path test **and** at least one failure/edge test. Unit, widget, and integration tests are required based on the layer changed.
 4. **No linter bypasses.** Never bypass the linter using `// ignore: ...` unless explicitly specified by the user. `make lint` must exit with **zero** analyzer issues (errors, warnings, and info).
-5. **No UI without a design reference.** Do not invent new UI layouts or visual treatments unless the user has provided an explicit Figma reference or an approved direction.
+5. **No UI without a design reference.** Do not invent new UI layouts or visual treatments unless the user provides an explicit Figma reference or approved direction. Written design specs in `docs/design/` are not maintained (pending a future redesign); use existing theme/widgets in `lib/core/presentation/` for consistency until new specs exist.
 6. **Run codegen after model changes.** Any change to `@freezed`, `@JsonSerializable`, or `@DriftDatabase`/`@DriftAccessor` annotated files requires running `make gen` before continuing.
 7. **Follow Clean Architecture boundaries.** Presentation layer must not import `data/` directly. Domain layer must not import Flutter or `data/`. Data layer implements domain interfaces.
 8. **Use BLoC/Cubit for state management.** Do not use `setState`, `ChangeNotifier`, or other state management in feature code.

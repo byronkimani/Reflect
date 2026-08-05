@@ -11,6 +11,7 @@ import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_bl
 import 'package:reflect/features/tasks/presentation/blocs/task_list/task_list_event.dart';
 import 'package:reflect/features/tasks/presentation/blocs/task_selection/task_selection_cubit.dart';
 import 'package:reflect/core/startup/deferred_startup.dart';
+import 'package:reflect/core/startup/reflect_launch_overlay.dart';
 import 'package:reflect/features/planning/presentation/planning_cubit.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:reflect/features/settings/presentation/cubit/settings_state.dart';
@@ -49,34 +50,36 @@ class ReflectApp extends StatelessWidget {
       ],
       child: DeferredStartupRunner(
         child: Builder(
-          builder: (context) {
-            return BlocBuilder<SettingsCubit, SettingsState>(
-              buildWhen: (prev, next) => prev.themeMode != next.themeMode,
-              builder: (context, settingsState) {
-                return MaterialApp.router(
-                  title: 'Reflect',
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  theme: AppTheme.lightTheme,
-                  darkTheme: AppTheme.darkTheme,
-                  themeMode: settingsState.themeMode,
-                  routerConfig: _router,
-                  builder: (context, child) {
-                    return ConnectivityWrapper(
-                      child: child ?? const SizedBox.shrink(),
-                    );
-                  },
-                );
-              },
-            );
-          },
+            builder: (context) {
+              return BlocBuilder<SettingsCubit, SettingsState>(
+                buildWhen: (prev, next) => prev.themeMode != next.themeMode,
+                builder: (context, settingsState) {
+                  return MaterialApp.router(
+                    title: 'Reflect',
+                    localizationsDelegates: const [
+                      AppLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    theme: AppTheme.lightTheme,
+                    darkTheme: AppTheme.darkTheme,
+                    themeMode: settingsState.themeMode,
+                    routerConfig: _router,
+                    builder: (context, child) {
+                      return ReflectLaunchOverlay(
+                        child: ConnectivityWrapper(
+                          child: child ?? const SizedBox.shrink(),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
         ),
-      ),
     );
   }
 }

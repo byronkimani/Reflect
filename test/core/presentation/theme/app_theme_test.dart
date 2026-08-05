@@ -5,7 +5,7 @@ import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 
 void main() {
   group('AppTheme', () {
-    test('light theme uses sage-teal seed color', () {
+    test('light theme uses ink primary color', () {
       final theme = AppTheme.lightTheme;
       expect(theme.colorScheme.primary, ReflectColors.accentPrimary);
       expect(theme.scaffoldBackgroundColor, ReflectColors.pageBackground);
@@ -37,14 +37,14 @@ void main() {
 
       expect(selectedLabel?.fontWeight, FontWeight.w600);
       expect(unselectedLabel?.fontWeight, FontWeight.w500);
-      expect(selectedLabel?.color, ReflectColors.accentPrimary);
+      expect(selectedLabel?.color, ReflectColors.ink);
       expect(unselectedLabel?.color, ReflectColors.textSecondary);
 
       final selectedIcon =
           navTheme.iconTheme?.resolve({WidgetState.selected});
       final unselectedIcon = navTheme.iconTheme?.resolve(<WidgetState>{});
 
-      expect(selectedIcon?.color, ReflectColors.accentPrimary);
+      expect(selectedIcon?.color, ReflectColors.ink);
       expect(unselectedIcon?.color, ReflectColors.textSecondary);
     });
   });

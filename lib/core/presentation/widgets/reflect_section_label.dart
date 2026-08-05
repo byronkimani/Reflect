@@ -10,7 +10,7 @@ class ReflectSectionLabel extends StatelessWidget {
     super.key,
     required this.title,
     this.color,
-    this.padding = const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    this.padding = const EdgeInsets.fromLTRB(20, 16, 20, 8),
   });
 
   @override
@@ -19,10 +19,11 @@ class ReflectSectionLabel extends StatelessWidget {
       padding: padding,
       child: Text(
         title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: color ?? ReflectColors.textSecondary,
               fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
+              letterSpacing: 2.0,
+              fontSize: 11,
             ),
       ),
     );

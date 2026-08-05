@@ -47,7 +47,21 @@ We strictly enforce the **[Conventional Commits](https://www.conventionalcommits
 ```
 <type>(<scope>): <subject>
 
-<body>
+<optional body — use blank line after subject; bullet lists OK>
+
+<optional footer>
+```
+
+**Example (title + bullet body):**
+
+```
+feat(ui): ship Paper & Ink refresh and iOS splash fix
+
+Implement v2 visual refresh and fix congested iOS launch splash.
+
+- Add theme tokens and shared v2 widgets
+- Regenerate app icon and splash assets via make splash
+- Update tests and docs; remove obsolete design spec links
 ```
 
 ### Types

@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:reflect/core/observability/analytics_service.dart';
 import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/core/presentation/widgets/expandable_section_row.dart';
-import 'package:reflect/core/presentation/widgets/priority_lozenge.dart';
+import 'package:reflect/core/presentation/widgets/reflect_segmented_control.dart';
 import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
@@ -243,27 +243,27 @@ class _TaskFormViewState extends State<TaskFormView> {
                   TextFormField(
                     focusNode: _titleFocusNode,
                     initialValue: state.title,
-                    style: textTheme.headlineSmall,
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                     decoration: const InputDecoration(
                       hintText: 'What needs doing?',
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: ReflectColors.hairline),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: ReflectColors.hairline),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: ReflectColors.ink, width: 2),
+                      ),
                     ),
                     onChanged: cubit.titleChanged,
                   ),
                   const SizedBox(height: 20),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: TaskPriority.values.map((p) {
-                      return PriorityLozenge(
-                        priority: p,
-                        compact: false,
-                        isSelected: state.priority == p,
-                        onTap: () => cubit.priorityChanged(p),
-                      );
-                    }).toList(),
+                  ReflectSegmentedControl.priority(
+                    selected: state.priority,
+                    onChanged: cubit.priorityChanged,
                   ),
                   const SizedBox(height: 24),
                   Text(

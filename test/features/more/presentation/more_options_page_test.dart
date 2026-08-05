@@ -8,7 +8,7 @@ void main() {
       const MaterialApp(home: MoreOptionsPage()),
     );
 
-    expect(find.text('More options'), findsOneWidget);
+    expect(find.text('More'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Appearance & notifications'), findsOneWidget);
   });

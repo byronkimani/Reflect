@@ -4,37 +4,80 @@ import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 class AppTheme {
   static const _fontFamily = 'Inter';
 
+  static TextTheme _buildTextTheme(TextTheme base, ColorScheme colorScheme) {
+    final themed = base.apply(
+      fontFamily: _fontFamily,
+      bodyColor: colorScheme.onSurface,
+      displayColor: colorScheme.onSurface,
+    );
+
+    return themed.copyWith(
+      displayLarge: themed.displayLarge?.copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: themed.displayMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.4,
+      ),
+      displaySmall: themed.displaySmall?.copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.3,
+      ),
+      headlineLarge: themed.headlineLarge?.copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.3,
+        fontSize: 34,
+        height: 1.0,
+      ),
+      headlineMedium: themed.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.25,
+      ),
+      headlineSmall: themed.headlineSmall?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+      titleLarge: themed.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+      titleMedium: themed.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+      labelSmall: themed.labelSmall?.copyWith(
+        letterSpacing: 1.5,
+        fontWeight: FontWeight.w600,
+        fontSize: 11,
+      ),
+    );
+  }
+
   static ColorScheme _lightColorScheme() {
     return ColorScheme(
       brightness: Brightness.light,
-      primary: ReflectColors.accentPrimary,
-      onPrimary: Colors.white,
-      primaryContainer: ReflectColors.accentSoft,
-      onPrimaryContainer: ReflectColors.accentPrimary,
-      secondary: ReflectColors.accentPrimary,
-      onSecondary: Colors.white,
-      secondaryContainer: ReflectColors.accentSoft,
-      onSecondaryContainer: ReflectColors.textPrimary,
+      primary: ReflectColors.ink,
+      onPrimary: ReflectColors.paper,
+      primaryContainer: ReflectColors.paperSoft,
+      onPrimaryContainer: ReflectColors.ink,
+      secondary: ReflectColors.ink,
+      onSecondary: ReflectColors.paper,
+      secondaryContainer: ReflectColors.paperSoft,
+      onSecondaryContainer: ReflectColors.ink,
       tertiary: ReflectColors.priorityP3,
-      onTertiary: Colors.white,
+      onTertiary: ReflectColors.paper,
       error: ReflectColors.overdue,
-      onError: Colors.white,
-      surface: ReflectColors.cardSurface,
-      onSurface: ReflectColors.textPrimary,
+      onError: ReflectColors.paper,
+      surface: ReflectColors.paper,
+      onSurface: ReflectColors.ink,
       onSurfaceVariant: ReflectColors.textSecondary,
-      outline: ReflectColors.textSecondary,
-      outlineVariant: ReflectColors.inputSurface,
-      shadow: Colors.black26,
+      outline: ReflectColors.hairline,
+      outlineVariant: ReflectColors.paperSoft,
+      shadow: Colors.transparent,
       scrim: Colors.black54,
-      inverseSurface: ReflectColors.textPrimary,
-      onInverseSurface: ReflectColors.cardSurface,
-      inversePrimary: ReflectColors.accentSoft,
-      surfaceTint: ReflectColors.accentPrimary,
-      surfaceContainerHighest: ReflectColors.inputSurface,
-      surfaceContainerHigh: ReflectColors.inputSurface,
-      surfaceContainer: ReflectColors.cardSurface,
-      surfaceContainerLow: ReflectColors.pageBackground,
-      surfaceContainerLowest: ReflectColors.pageBackground,
+      inverseSurface: ReflectColors.ink,
+      onInverseSurface: ReflectColors.paper,
+      inversePrimary: ReflectColors.paperSoft,
+      surfaceTint: Colors.transparent,
+      surfaceContainerHighest: ReflectColors.paperSoft,
+      surfaceContainerHigh: ReflectColors.paperSoft,
+      surfaceContainer: ReflectColors.paper,
+      surfaceContainerLow: ReflectColors.paper,
+      surfaceContainerLowest: ReflectColors.paper,
     );
   }
 
@@ -43,64 +86,34 @@ class AppTheme {
     const darkCard = Color(0xFF2C2C2E);
     return ColorScheme(
       brightness: Brightness.dark,
-      primary: ReflectColors.accentPrimary,
-      onPrimary: Colors.white,
-      primaryContainer: const Color(0xFF3D4F50),
-      onPrimaryContainer: ReflectColors.accentSoft,
-      secondary: ReflectColors.accentPrimary,
-      onSecondary: Colors.white,
-      secondaryContainer: const Color(0xFF3D4F50),
-      onSecondaryContainer: ReflectColors.accentSoft,
+      primary: ReflectColors.ink,
+      onPrimary: ReflectColors.paper,
+      primaryContainer: darkCard,
+      onPrimaryContainer: ReflectColors.paper,
+      secondary: ReflectColors.ink,
+      onSecondary: ReflectColors.paper,
+      secondaryContainer: darkCard,
+      onSecondaryContainer: ReflectColors.paper,
       tertiary: ReflectColors.priorityP3,
-      onTertiary: Colors.white,
+      onTertiary: ReflectColors.paper,
       error: ReflectColors.overdue,
-      onError: Colors.white,
+      onError: ReflectColors.paper,
       surface: darkSurface,
       onSurface: Colors.white,
       onSurfaceVariant: const Color(0xFFAEAEB2),
       outline: const Color(0xFF8E8E93),
       outlineVariant: darkCard,
-      shadow: Colors.black,
+      shadow: Colors.transparent,
       scrim: Colors.black87,
       inverseSurface: Colors.white,
       onInverseSurface: darkSurface,
-      inversePrimary: ReflectColors.accentPrimary,
-      surfaceTint: ReflectColors.accentPrimary,
+      inversePrimary: ReflectColors.ink,
+      surfaceTint: Colors.transparent,
       surfaceContainerHighest: darkCard,
       surfaceContainerHigh: darkCard,
       surfaceContainer: darkCard,
       surfaceContainerLow: darkSurface,
       surfaceContainerLowest: const Color(0xFF121214),
-    );
-  }
-
-  static TextTheme _buildTextTheme(TextTheme base, ColorScheme colorScheme) {
-    final inter = base.apply(fontFamily: _fontFamily);
-    return inter.copyWith(
-      displayLarge: inter.displayLarge?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
-      displayMedium: inter.displayMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
-      displaySmall: inter.displaySmall?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
-      headlineLarge: inter.headlineLarge?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
-      headlineMedium: inter.headlineMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
-      headlineSmall: inter.headlineSmall?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
     );
   }
 
@@ -119,31 +132,31 @@ class AppTheme {
       scaffoldBackgroundColor: scaffoldBg,
       fontFamily: _fontFamily,
       textTheme: textTheme,
+      dividerTheme: const DividerThemeData(
+        color: ReflectColors.hairline,
+        thickness: 1,
+        space: 1,
+      ),
       appBarTheme: AppBarTheme(
         centerTitle: false,
         backgroundColor: scaffoldBg,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: TextStyle(
-          fontFamily: _fontFamily,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
-        ),
+        titleTextStyle: textTheme.titleLarge,
         iconTheme: IconThemeData(color: colorScheme.onSurface),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: colorScheme.surface,
-        indicatorColor: ReflectColors.accentSoft,
+        indicatorColor: ReflectColors.paperSoft,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
-          return TextStyle(
-            fontFamily: _fontFamily,
-            fontSize: 12,
+          return textTheme.labelSmall?.copyWith(
+            fontSize: 10,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            letterSpacing: 0.8,
             color: selected
-                ? ReflectColors.accentPrimary
+                ? ReflectColors.ink
                 : ReflectColors.textSecondary,
           );
         }),
@@ -151,58 +164,57 @@ class AppTheme {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             color: selected
-                ? ReflectColors.accentPrimary
+                ? ReflectColors.ink
                 : ReflectColors.textSecondary,
-            size: 24,
+            size: 22,
           );
         }),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: ReflectColors.inputSurface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        filled: false,
+        fillColor: Colors.transparent,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
         alignLabelWithHint: true,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+        border: const UnderlineInputBorder(
+          borderSide: BorderSide(color: ReflectColors.hairline),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: ReflectColors.hairline),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: ReflectColors.accentPrimary, width: 2),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: ReflectColors.ink, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+        errorBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: colorScheme.error, width: 1),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: ReflectColors.accentPrimary,
-          foregroundColor: Colors.white,
+          backgroundColor: ReflectColors.ink,
+          foregroundColor: ReflectColors.paper,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(ReflectSpacing.cardRadius),
           ),
+          textStyle: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: ReflectColors.accentPrimary,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(ReflectSpacing.fabRadius)),
-        ),
+        backgroundColor: ReflectColors.ink,
+        foregroundColor: ReflectColors.paper,
+        elevation: 0,
+        shape: CircleBorder(),
       ),
       cardTheme: CardThemeData(
-        color: ReflectColors.cardSurface,
-        elevation: 1,
-        shadowColor: Colors.black.withValues(alpha: 0.06),
+        color: ReflectColors.paper,
+        elevation: 0,
+        shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ReflectSpacing.cardRadius),
+          side: const BorderSide(color: ReflectColors.hairline),
         ),
       ),
     );

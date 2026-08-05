@@ -25,19 +25,19 @@ class ReflectPill extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Material(
-      color: selected ? ReflectColors.accentPrimary : Colors.transparent,
-      borderRadius: BorderRadius.circular(ReflectSpacing.pillRadius),
+      color: selected ? ReflectColors.ink : Colors.transparent,
+      borderRadius: BorderRadius.circular(ReflectSpacing.cardRadius),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(ReflectSpacing.pillRadius),
+        borderRadius: BorderRadius.circular(ReflectSpacing.cardRadius),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ReflectSpacing.pillRadius),
+            borderRadius: BorderRadius.circular(ReflectSpacing.cardRadius),
             border: Border.all(
               color: selected
-                  ? ReflectColors.accentPrimary
-                  : ReflectColors.textSecondary.withValues(alpha: 0.35),
+                  ? ReflectColors.ink
+                  : ReflectColors.hairline,
             ),
           ),
           child: Row(
@@ -47,15 +47,16 @@ class ReflectPill extends StatelessWidget {
                 Icon(
                   leadingIcon,
                   size: 16,
-                  color: selected ? Colors.white : ReflectColors.textSecondary,
+                  color: selected ? ReflectColors.paper : ReflectColors.textSecondary,
                 ),
                 const SizedBox(width: 6),
               ],
               Text(
                 label,
                 style: textTheme.labelLarge?.copyWith(
-                  color: selected ? Colors.white : ReflectColors.textPrimary,
+                  color: selected ? ReflectColors.paper : ReflectColors.textPrimary,
                   fontWeight: FontWeight.w500,
+                  fontSize: 13,
                 ),
               ),
               if (onClear != null) ...[
@@ -65,7 +66,7 @@ class ReflectPill extends StatelessWidget {
                   child: Icon(
                     Icons.close,
                     size: 16,
-                    color: selected ? Colors.white : ReflectColors.textSecondary,
+                    color: selected ? ReflectColors.paper : ReflectColors.textSecondary,
                   ),
                 ),
               ] else if (trailingIcon != null) ...[
@@ -73,7 +74,7 @@ class ReflectPill extends StatelessWidget {
                 Icon(
                   trailingIcon,
                   size: 16,
-                  color: selected ? Colors.white : ReflectColors.textSecondary,
+                  color: selected ? ReflectColors.paper : ReflectColors.textSecondary,
                 ),
               ],
             ],

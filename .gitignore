@@ -48,9 +48,6 @@ app.*.map.json
 .env*
 env/active.env
 
-# Release obfuscation symbols
-build/debug-info/
-
 # Secrets and Keys
 *.jks
 *.keystore

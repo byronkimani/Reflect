@@ -4,10 +4,12 @@ import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 
 void main() {
   group('ReflectColors', () {
-    test('accent tokens match design system hex values', () {
-      expect(ReflectColors.accentPrimary, const Color(0xFF7A9E9F));
-      expect(ReflectColors.accentSoft, const Color(0xFFE8F0F0));
-      expect(ReflectColors.pageBackground, const Color(0xFFFAFAF8));
+    test('Paper & Ink tokens match expected hex values', () {
+      expect(ReflectColors.paper, const Color(0xFFF5F3EE));
+      expect(ReflectColors.ink, const Color(0xFF0D0D0D));
+      expect(ReflectColors.hairline, const Color(0xFFE0DBD3));
+      expect(ReflectColors.pageBackground, ReflectColors.paper);
+      expect(ReflectColors.accentPrimary, ReflectColors.ink);
       expect(ReflectColors.overdue, const Color(0xFFC45C5C));
     });
 
@@ -31,6 +33,10 @@ void main() {
       expect(ReflectSpacing.sm, lessThan(ReflectSpacing.md));
       expect(ReflectSpacing.md, lessThan(ReflectSpacing.lg));
       expect(ReflectSpacing.lg, lessThan(ReflectSpacing.xl));
+    });
+
+    test('cardRadius is 8px', () {
+      expect(ReflectSpacing.cardRadius, 8);
     });
   });
 }

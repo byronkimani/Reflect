@@ -1,4 +1,4 @@
-.PHONY: gen test clean get lint run-dev run-prod watch coverage coverage-check format fix run prepare-env build-prod-apk deps-outdated deps-check deps-upgrade
+.PHONY: gen test clean get lint run-dev run-prod watch coverage coverage-check format fix run prepare-env build-prod-apk deps-outdated deps-check deps-upgrade splash
 
 # ----------------------------------------------------------------------
 # Code Generation
@@ -60,6 +60,15 @@ format:
 clean:
 	flutter clean
 	flutter pub get
+
+# Regenerate splash + launcher icons and re-apply platform patches
+# Usage: make splash
+splash:
+	python3 tool/generate_splash_assets.py
+	dart run flutter_launcher_icons
+	dart run flutter_native_splash:create
+	chmod +x tool/patch_splash_platforms.sh
+	./tool/patch_splash_platforms.sh
 
 # Just get dependencies
 # Usage: make get

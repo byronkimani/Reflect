@@ -17,7 +17,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Reflection'), findsOneWidget);
+    expect(find.text('REFLECTION'), findsOneWidget);
     expect(find.text('Body content'), findsOneWidget);
   });
 }

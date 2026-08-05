@@ -8,6 +8,7 @@ import 'package:reflect/core/presentation/widgets/reflect_form_card.dart';
 import 'package:reflect/core/presentation/widgets/reflect_pill.dart';
 import 'package:reflect/core/presentation/widgets/reflect_primary_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_soft_field.dart';
+import 'package:reflect/core/presentation/widgets/reflect_page_header.dart';
 import 'package:reflect/core/presentation/widgets/reflect_sticky_bottom_bar.dart';
 import 'package:reflect/features/review/presentation/daily_review_cubit.dart';
 import 'package:reflect/features/review/presentation/daily_review_state.dart';
@@ -36,7 +37,7 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Daily Review saved!'),
-              backgroundColor: ReflectColors.accentPrimary,
+              backgroundColor: ReflectColors.ink,
             ),
           );
           if (context.canPop()) {
@@ -58,28 +59,18 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
 
         return Scaffold(
           backgroundColor: ReflectColors.pageBackground,
-          appBar: AppBar(
-            title: const Text('Daily Review'),
-            backgroundColor: ReflectColors.pageBackground,
-            elevation: 0,
-          ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Text(
-                    dateLabel,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: ReflectColors.textSecondary,
-                        ),
-                  ),
+                ReflectPageHeader(
+                  eyebrow: 'Reflect',
+                  title: dateLabel,
                 ),
                 if (state.showTaskChip)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                     child: ReflectPill(
                       label:
                           '${state.tasksCompletedToday} of ${state.tasksTotalToday} tasks done today',
@@ -159,7 +150,7 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
                           icon: const Icon(Icons.add, size: 18),
                           label: const Text('Add another'),
                           style: TextButton.styleFrom(
-                            foregroundColor: ReflectColors.accentPrimary,
+                            foregroundColor: ReflectColors.ink,
                           ),
                         ),
                       ],
@@ -209,7 +200,7 @@ class _GratitudeField extends StatelessWidget {
         fillColor: ReflectColors.inputSurface,
         prefixIcon: const Icon(
           Icons.favorite_border,
-          color: ReflectColors.accentPrimary,
+          color: ReflectColors.textSecondary,
           size: 20,
         ),
         suffixIcon: showRemove
@@ -227,11 +218,10 @@ class _GratitudeField extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: ReflectColors.accentPrimary,
-            width: 1.5,
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: ReflectColors.ink,
+            width: 2,
           ),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

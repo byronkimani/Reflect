@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/core/presentation/utils/reflect_page_insets.dart';
+import 'package:reflect/core/presentation/widgets/reflect_page_header.dart';
 import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_section_label.dart';
@@ -34,17 +35,11 @@ class BacklogPage extends StatelessWidget {
               return CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: reflectTabHeaderPadding(context),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    child: ReflectPageHeader(
+                      title: 'Backlog',
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Backlog',
-                              style: textTheme.headlineMedium,
-                            ),
-                          ),
                           ReflectIconButton(
                             icon: Icons.tune,
                             tooltip: 'Filter',

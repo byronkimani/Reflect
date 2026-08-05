@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens for the 2026 Reflect UI refresh.
-/// See docs/design/design-system.md
+/// Design tokens for Reflect — Paper & Ink palette.
+/// Source of truth: this file and [AppTheme].
 abstract final class ReflectColors {
-  static const accentPrimary = Color(0xFF7A9E9F);
-  static const accentSoft = Color(0xFFE8F0F0);
-  static const pageBackground = Color(0xFFFAFAF8);
-  static const cardSurface = Color(0xFFFFFFFF);
-  static const inputSurface = Color(0xFFF5F5F3);
-  static const textPrimary = Color(0xFF1A1A1A);
-  static const textSecondary = Color(0xFF8A8A8A);
+  // v2 Paper & Ink
+  static const paper = Color(0xFFF5F3EE);
+  static const paperSoft = Color(0xFFEDE9E2);
+  static const ink = Color(0xFF0D0D0D);
+  static const hairline = Color(0xFFE0DBD3);
+
+  // Semantic aliases (backward compatible names)
+  static const pageBackground = paper;
+  static const cardSurface = paper;
+  static const inputSurface = paperSoft;
+  static const textPrimary = ink;
+  static const textSecondary = Color(0xFF6B6B6B);
+
+  /// Primary actions, FAB, active emphasis — ink in v2.
+  static const accentPrimary = ink;
+  static const accentSoft = paperSoft;
+
   static const overdue = Color(0xFFC45C5C);
 
   static const priorityP1 = Color(0xFFC45C5C);
@@ -35,7 +45,8 @@ abstract final class ReflectSpacing {
   static const double lg = 24;
   static const double xl = 32;
 
-  static const double cardRadius = 16;
+  /// v2 max control radius.
+  static const double cardRadius = 8;
   static const double pillRadius = 20;
-  static const double fabRadius = 16;
+  static const double fabRadius = 28;
 }

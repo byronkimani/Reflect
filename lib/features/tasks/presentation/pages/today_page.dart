@@ -6,6 +6,7 @@ import 'package:reflect/core/presentation/theme/reflect_colors.dart';
 import 'package:reflect/core/presentation/utils/adaptive_dialog.dart';
 import 'package:reflect/core/presentation/utils/day_greeting.dart';
 import 'package:reflect/core/presentation/utils/reflect_page_insets.dart';
+import 'package:reflect/core/presentation/widgets/reflect_page_header.dart';
 import 'package:reflect/core/presentation/widgets/reflect_fab.dart';
 import 'package:reflect/core/presentation/widgets/reflect_icon_button.dart';
 import 'package:reflect/core/presentation/widgets/reflect_progress_bar.dart';
@@ -53,64 +54,44 @@ class TodayPage extends StatelessWidget {
                   CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
-                        child: Padding(
-                          padding: reflectTabHeaderPadding(context),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        child: ReflectPageHeader(
+                          eyebrow: greeting,
+                          title: DateFormat('EEEE, MMM d').format(now),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          greeting,
-                                          style: textTheme.titleMedium
-                                              ?.copyWith(
-                                            color: ReflectColors.textSecondary,
-                                          ),
-                                        ),
-                                        Text(
-                                          DateFormat('EEEE, MMM d').format(now),
-                                          style: textTheme.headlineMedium,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ReflectIconButton(
-                                    icon: Icons.tune,
-                                    tooltip: 'Filter',
-                                    onPressed: () => showTaskListFilterSheet(
-                                      context,
-                                      context.read<TaskListBloc>(),
-                                      filter,
-                                    ),
-                                  ),
-                                  ReflectIconButton(
-                                    icon: Icons.sort_by_alpha,
-                                    tooltip: 'Sort',
-                                    onPressed: () => showTaskListSortMenu(
-                                      context,
-                                      context.read<TaskListBloc>(),
-                                      sortMode,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (totalToday > 0) ...[
-                                const SizedBox(height: 12),
-                                ReflectProgressBar(
-                                  progress: progress,
-                                  label: '$doneToday of $totalToday done today',
+                              ReflectIconButton(
+                                icon: Icons.tune,
+                                tooltip: 'Filter',
+                                onPressed: () => showTaskListFilterSheet(
+                                  context,
+                                  context.read<TaskListBloc>(),
+                                  filter,
                                 ),
-                              ],
+                              ),
+                              ReflectIconButton(
+                                icon: Icons.sort_by_alpha,
+                                tooltip: 'Sort',
+                                onPressed: () => showTaskListSortMenu(
+                                  context,
+                                  context.read<TaskListBloc>(),
+                                  sortMode,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
+                      if (totalToday > 0)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                            child: ReflectProgressBar(
+                              progress: progress,
+                              label: '$doneToday / $totalToday',
+                            ),
+                          ),
+                        ),
                       if (overdue.isNotEmpty) ...[
                         const SliverToBoxAdapter(
                           child: ReflectSectionLabel(
@@ -127,24 +108,7 @@ class TodayPage extends StatelessWidget {
                         ),
                       ],
                       const SliverToBoxAdapter(
-                        child: ReflectSectionLabel(
-                          title: 'TODAY',
-                          color: ReflectColors.accentPrimary,
-                        ),
-                      ),
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                          child: Text(
-                            'TASKS',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.2,
-                              color: ReflectColors.textSecondary,
-                            ),
-                          ),
-                        ),
+                        child: ReflectSectionLabel(title: 'TODAY'),
                       ),
                       if (allTasks.isEmpty)
                         SliverToBoxAdapter(

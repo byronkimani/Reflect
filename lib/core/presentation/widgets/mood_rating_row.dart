@@ -36,17 +36,17 @@ class MoodRatingRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: selected
-                      ? Border.all(color: ReflectColors.accentPrimary, width: 2)
-                      : null,
+                      ? Border.all(color: ReflectColors.ink, width: 2)
+                      : Border.all(color: ReflectColors.hairline),
                   color: selected
-                      ? ReflectColors.accentSoft
+                      ? ReflectColors.paperSoft
                       : Colors.transparent,
                 ),
                 child: Icon(
                   _icons[index],
                   size: 28,
                   color: selected
-                      ? ReflectColors.accentPrimary
+                      ? ReflectColors.ink
                       : ReflectColors.textSecondary,
                 ),
               ),

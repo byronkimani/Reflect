@@ -32,7 +32,7 @@ void main() {
       await tester.pumpWidget(harness.buildApp());
       await tester.pumpAndSettle();
 
-      expect(find.text('TASKS'), findsOneWidget);
+      expect(find.text('TODAY'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('navigates to backlog branch', (tester) async {
@@ -62,7 +62,7 @@ void main() {
       harness.router.go('/reflect');
       await tester.pumpAndSettle();
 
-      expect(find.text('Daily Review'), findsOneWidget);
+      expect(find.text('REFLECT'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('navigates to more options branch', (tester) async {
@@ -72,7 +72,7 @@ void main() {
       harness.router.go('/more');
       await tester.pumpAndSettle();
 
-      expect(find.text('More options'), findsOneWidget);
+      expect(find.text('More'), findsOneWidget);
     });
 
     testWidgets('opens new task form from today branch', (tester) async {
@@ -123,7 +123,7 @@ void main() {
       harness.router.push('/today/review');
       await tester.pumpAndSettle();
 
-      expect(find.text('Daily Review'), findsOneWidget);
+      expect(find.text('REFLECT'), findsAtLeastNWidgets(1));
     });
 
     testWidgets('opens backlog task form with backlog context', (tester) async {

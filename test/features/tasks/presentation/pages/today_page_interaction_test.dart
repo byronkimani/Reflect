@@ -82,7 +82,7 @@ void main() {
 
     expect(find.byType(ReflectProgressBar), findsOneWidget);
     expect(find.byType(ReflectFab), findsOneWidget);
-    expect(find.text('1 of 2 done today'), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
   });
 
   testWidgets('TodayPage shows TODAY section label', (tester) async {

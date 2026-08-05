@@ -52,10 +52,10 @@ void main() {
     await tester.pumpWidget(buildPage());
     await tester.pump();
 
-    expect(find.text('Daily Review'), findsOneWidget);
+    expect(find.text('REFLECT'), findsOneWidget);
     expect(find.text('How was your day?'), findsOneWidget);
-    expect(find.text('Wins & Growth'), findsOneWidget);
-    expect(find.text('Gratitude'), findsOneWidget);
+    expect(find.text('WINS & GROWTH'), findsOneWidget);
+    expect(find.text('GRATITUDE'), findsOneWidget);
     expect(find.text('Share up to 3 things'), findsOneWidget);
     expect(find.byType(MoodRatingRow), findsOneWidget);
     expect(find.text('Add another'), findsOneWidget);
@@ -270,7 +270,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Daily Review saved!'), findsOneWidget);
-    expect(find.text('Daily Review'), findsOneWidget);
+    expect(find.text('REFLECT'), findsOneWidget);
   });
 
   testWidgets('success state shows snackbar and pops pushed route', (

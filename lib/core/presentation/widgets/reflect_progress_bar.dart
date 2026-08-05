@@ -22,8 +22,8 @@ class ReflectProgressBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: clamped,
               minHeight: 4,
-              backgroundColor: ReflectColors.inputSurface,
-              color: ReflectColors.accentPrimary,
+              backgroundColor: ReflectColors.paperSoft,
+              color: ReflectColors.ink,
             ),
           ),
         ),

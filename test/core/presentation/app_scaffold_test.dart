@@ -89,18 +89,18 @@ void main() {
     testWidgets('renders all navigation destinations', (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      expect(find.text('Today'), findsOneWidget);
-      expect(find.text('Backlog'), findsOneWidget);
-      expect(find.text('Goals'), findsOneWidget);
-      expect(find.text('Reflect'), findsOneWidget);
-      expect(find.text('More'), findsOneWidget);
+      expect(find.text('TODAY'), findsOneWidget);
+      expect(find.text('BACKLOG'), findsOneWidget);
+      expect(find.text('GOALS'), findsOneWidget);
+      expect(find.text('REFLECT'), findsOneWidget);
+      expect(find.text('MORE'), findsOneWidget);
     });
 
     testWidgets('tapping Today when already selected does not reload TaskListBloc',
         (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      await tester.tap(find.text('Today'));
+      await tester.tap(find.text('TODAY'));
       await tester.pumpAndSettle();
 
       verifyNever(() => mockTaskListBloc.add(any()));
@@ -111,7 +111,7 @@ void main() {
     testWidgets('tapping Today from another tab reloads TaskListBloc', (tester) async {
       await tester.pumpWidget(buildWidget(currentIndex: 1));
 
-      await tester.tap(find.text('Today'));
+      await tester.tap(find.text('TODAY'));
       await tester.pumpAndSettle();
 
       verify(() => mockTaskListBloc.add(any(that: isA<LoadTasksForDate>())))
@@ -124,7 +124,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      await tester.tap(find.text('Backlog'));
+      await tester.tap(find.text('BACKLOG'));
       await tester.pumpAndSettle();
 
       verify(() => mockTaskListBloc.add(const TaskListEvent.loadBacklog()))
@@ -136,7 +136,7 @@ void main() {
     testWidgets('tapping Goals destination calls goBranch', (tester) async {
       await tester.pumpWidget(buildWidget());
 
-      await tester.tap(find.text('Goals'));
+      await tester.tap(find.text('GOALS'));
       await tester.pumpAndSettle();
 
       expect(calledIndex, 2);
